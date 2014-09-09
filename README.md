@@ -11,5 +11,7 @@ scramv1 b -j 8
 How to run
 ===========
 
+cd EcalCalibAlgos/test/
+
 eg: ./SubmitPhisym_2012.sh 206539 206542 2012D FT_R_70_V1::All caf
 eg: ./RunPhisymStep2_2012.sh 206539 206542 2012D FT_R_70_V1::All caf // run only the step2
