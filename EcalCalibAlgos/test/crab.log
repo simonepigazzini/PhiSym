@@ -1,0 +1,64 @@
+DEBUG 2015-02-18 15:35:03,088: 	 Executing command: 'status'
+DEBUG 2015-02-18 15:35:03,091: 	 Found /afs/cern.ch/user/b/bmarzocc/.crab3 file
+DEBUG 2015-02-18 15:35:03,104: 	 Checking credentials
+DEBUG 2015-02-18 15:35:03,105: 	 Found proxy file /tmp/x509up_u35923
+DEBUG 2015-02-18 15:35:03,105: 	 Getting proxy life time left
+DEBUG 2015-02-18 15:35:03,612: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u35923 -timeleft
+ output : 82635
+
+ error: 
+ retcode : 0
+DEBUG 2015-02-18 15:35:04,015: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u35923 -actimeleft
+ output : 82635
+
+ error: 
+ retcode : 0
+DEBUG 2015-02-18 15:35:04,015: 	 Proxy valid for 22:57:15 hours
+ERROR 2015-02-18 15:35:04,016: 	 Working directory for task crab_PhiSymStep1 not found 
+ERROR 2015-02-18 15:35:04,016: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/bin/crab", line 181, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/bin/crab", line 166, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/lib/python2.6/site-packages/CRABClient/Commands/SubCommand.py", line 292, in __init__
+    self.loadLocalCache()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/lib/python2.6/site-packages/CRABClient/Commands/SubCommand.py", line 396, in loadLocalCache
+    self.cachedinfo, self.logfile = loadCache(self.requestarea, self.logger)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/lib/python2.6/site-packages/CRABClient/ClientUtilities.py", line 379, in loadCache
+    raise TaskNotFoundException(msg)
+TaskNotFoundException: Working directory for task crab_PhiSymStep1 not found 
+DEBUG 2015-02-19 17:34:17,746: 	 Executing command: 'status'
+DEBUG 2015-02-19 17:34:17,747: 	 Found /afs/cern.ch/user/b/bmarzocc/.crab3 file
+DEBUG 2015-02-19 17:34:17,761: 	 Checking credentials
+DEBUG 2015-02-19 17:34:17,762: 	 Found proxy file /tmp/x509up_u35923
+DEBUG 2015-02-19 17:34:17,762: 	 Getting proxy life time left
+DEBUG 2015-02-19 17:34:18,165: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u35923 -timeleft
+ output : 72858
+
+ error: 
+ retcode : 0
+DEBUG 2015-02-19 17:34:18,570: 	 Executing : 
+ command : voms-proxy-info -file /tmp/x509up_u35923 -actimeleft
+ output : 72858
+
+ error: 
+ retcode : 0
+DEBUG 2015-02-19 17:34:18,570: 	 Proxy valid for 20:14:18 hours
+ERROR 2015-02-19 17:34:18,570: 	 Cannot find .requestcache file inside the working directory for task AlCaPhiSym_Run2012D-v1_RAW_208538_208539
+ERROR 2015-02-19 17:34:18,570: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/bin/crab", line 181, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/bin/crab", line 166, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/lib/python2.6/site-packages/CRABClient/Commands/SubCommand.py", line 292, in __init__
+    self.loadLocalCache()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/lib/python2.6/site-packages/CRABClient/Commands/SubCommand.py", line 396, in loadLocalCache
+    self.cachedinfo, self.logfile = loadCache(self.requestarea, self.logger)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.13.patch1/lib/python2.6/site-packages/CRABClient/ClientUtilities.py", line 385, in loadCache
+    raise CachefileNotFoundException(msg)
+CachefileNotFoundException: Cannot find .requestcache file inside the working directory for task AlCaPhiSym_Run2012D-v1_RAW_208538_208539

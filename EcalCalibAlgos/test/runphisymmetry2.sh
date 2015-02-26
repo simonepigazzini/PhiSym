@@ -11,6 +11,7 @@
 #
 
 crabcfg=phisym-cfg.crab.cfg
+crab3cfg=phisym-cfg_crab.py
 datadir=$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/data
 step2out="CalibHistos.root ehistos.root etsumMean_barl.dat etsumMean_endc.dat PhiSymmetryCalibration_miscal_resid.root PhiSymmetryCalibration.root etsummary_barl.dat etsummary_endc.dat" 
 
@@ -61,33 +62,54 @@ cd  $rundir
 
 # create and submit jobs
 echo "$0: Invoking  crab"
-crab -cfg $crabcfg -create    
-crab -submit
+if [ "$mode" == "caf" ] || [ "$mode" == "remoteGlidein" ]
+then
+   source /cvmfs/cms.cern.ch/crab/crab.sh
+   crab -cfg $crabcfg -create 
+   exit 0   
+   crab -submit
 
-findcrabdir
+   findcrabdir
 
-#keep checking if crab is done
-crabstatus=0  
-while [  $crabstatus -eq 0 ]; do
+   #keep checking if crab is done
+   crabstatus=0  
+   while [  $crabstatus -eq 0 ]; do
 
-   sleep 120
-   crabdone
+     sleep 120
+     crabdone
    
-done
+   done
 
-#if [ $njobs -ne $nzero ] ; then
-#    echo "ERROR: some jobs failed - "
-#    echo "Manually resubmit with crab --forceResubmit"
-#    echo "Then run step2 manually with step2-only.sh"
-#    exit 1
-#fi
+   crab -getoutput 
+elif [ "$mode" == "crab3" ]
+then
+   source /cvmfs/cms.cern.ch/crab3/crab.sh
+   crab submit $crab3cfg
 
-crab -getoutput 
+   findcrabdir
+
+   #keep checking if crab is done
+   crabstatus=0  
+   while [  $crabstatus -eq 0 ]; do
+
+     sleep 120
+     crab3done
+   
+   done
+
+   crab getoutput 
+fi
 
 echo "$0: jobs done,  process step 2"
 #crab is done, run step 2
 
-i="res" #this is what function dostep2 calls the output dir
+#this is what function dostep2 calls the output dir
+i="res"
+if [ "$mode" == "crab3" ]
+then
+  i="results"
+fi
+
 dostep2
 
 echo "$0 Done at `date`. Results in $rundir/$i"

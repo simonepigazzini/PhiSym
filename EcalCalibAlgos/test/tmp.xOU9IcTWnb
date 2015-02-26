@@ -1,0 +1,11 @@
+Task name:			150213_132450_crab3test-5:bmarzocc_crab_PhiSymStep1
+Task status:			SUBMITTED
+Glidemon monitoring URL:	http://glidemon.web.cern.ch/glidemon/jobs.php?taskname=150213_132450_crab3test-5%3Abmarzocc_crab_PhiSymStep1
+Dashboard monitoring URL:	http://dashb-cms-job.cern.ch/dashboard/templates/task-analysis/#user=bmarzocc&refresh=0&table=Jobs&p=1&records=25&activemenu=2&status=&site=&tid=150213_132450_crab3test-5%3Abmarzocc_crab_PhiSymStep1
+Details:			idle            3.0% ( 24/788)
+				running         0.1% (  1/788)
+				unsubmitted    96.8% (763/788)
+				finished       96.8% (763/788)
+
+No publication information (publication has been disabled in the crab configuration file)
+Log file is /afs/cern.ch/work/b/bmarzocc/PhiSymmetry/CMSSW_7_4_0_pre6/src/PhiSym/EcalCalibAlgos/test/AlCaPhiSym_Run2012D-v1_RAW_206596_206597/crab_PhiSymStep1/crab.log

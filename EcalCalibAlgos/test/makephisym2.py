@@ -21,7 +21,7 @@ import string, sys, os, getopt, subprocess, time, shutil
 
 
 def usage():
-    print "Usage: makephisym.py --mode=[caf|grid] --dataset=[datasetname]"
+    print "Usage: makephisym.py --mode=[caf|grid|crab3] --dataset=[datasetname]"
     print "       --runrange=[first-last] --globaltag=[tag] [--step2only]"
     print "       --group=[Collisions10,Collisions11] "
     
@@ -44,7 +44,6 @@ step2only=0
 
 cmssw_py_template=   'phisym-cfg.py.tmpl'
 cmssw_py_step2_template= 'phisym_step2.py.tmpl'
-crab_cfg_template=   'phisym-cfg.crab.tmpl'
 runreg_cfg_template= 'runreg.cfg.tmpl'
 
 
@@ -52,9 +51,14 @@ for opt, arg in opts:
     
      if opt in ("-m", "--mode"):
         mode = arg
-        if mode != 'caf' and mode != 'remoteGlidein' :
-           print sys.argv[0]+" mode must be caf or glite"
+        if mode != 'caf' and mode != 'remoteGlidein'  and mode != 'crab3' :
+           print sys.argv[0]+" mode must be caf, glite or crab3"
            sys.exit(2)
+
+        if mode == 'crab3':
+           crab_cfg_template=   'phisym-cfg.crab3.tmpl'
+        else:
+           crab_cfg_template=   'phisym-cfg.crab.tmpl'
             
      if opt in ("-d","--dataset"):
       dataset= arg        
@@ -88,7 +92,7 @@ if dataset=='':
 
 if mode=='':    
     usage()
-    print "Please specify mode caf or glite"
+    print "Please specify mode caf, glite or crab3"
     sys.exit(2)
 
 if group=='':
@@ -101,14 +105,12 @@ print "Querying DBS ..."
 #query='dbs search --url=\"http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet\" --query=\"find file where dataset = '+dataset+' and run ='+repr(firstrun)+'\"'
 query = '$PWD/das_client.py --query=\"file dataset='+dataset+'   run ='+repr(firstrun)+'\"'
 
-
 queryp=subprocess.Popen(query,stdout=subprocess.PIPE,shell=True)
 queryp.wait()
 res=queryp.stdout
 lines=res.readlines()
 step2file=lines[len(lines)-1]
 step2file=step2file[:len(step2file)-1] # this ugly trick to remove trailing /n
-
 
 if step2file.find(".root") is -1 :
     print "Error, dbs search gave no files"
@@ -118,9 +120,14 @@ f = open(crab_cfg_template)
 data=f.read()
 data=data.replace('MODE',mode)
 data=data.replace('DATASET',dataset)
-outfile = open('phisym-cfg.crab.cfg',"w")
-outfile.write(data)
-outfile.close()
+if mode == 'crab3':
+   outfile = open('phisym-cfg_crab.py',"w")
+   outfile.write(data)
+   outfile.close()
+else:
+   outfile = open('phisym-cfg.crab.cfg',"w")
+   outfile.write(data)
+   outfile.close()
 
 f = open(cmssw_py_step2_template)
 data=f.read()
@@ -180,6 +187,9 @@ else:
 if not step2only:   
    shutil.move('jsonls-alcaphisym.txt',dirname)
    shutil.move('phisym-cfg.py',dirname)
-   shutil.move('phisym-cfg.crab.cfg',dirname)
+   if mode == 'crab3': 
+      shutil.move('phisym-cfg_crab.py',dirname)
+   else:
+      shutil.move('phisym-cfg.crab.cfg',dirname)
 
 os.rename('phisym_step2.py',dirname+'/phisym_step2.py')
