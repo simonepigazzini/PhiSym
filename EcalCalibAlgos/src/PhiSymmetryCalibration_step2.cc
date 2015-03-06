@@ -434,20 +434,20 @@ void  PhiSymmetryCalibration_step2::fillConstantsHistos(){
   } // sides
 
 
-for(int ix =1; ix <101; ix++)
-{
-for(int iy =1; iy <101; iy++)
-{
-double icp = endcapmapnew_plus.GetBinContent(ix, iy);
-double icm = endcapmapnew_minus.GetBinContent(ix, iy);
-if(icp!=0 && icm!=0)
-{
-endcapratio.Fill(icp/icm);
-endcapmapratio.SetBinContent(ix,iy, icp/icm);
-}
-}
+  for(int ix =1; ix <=kEndcWedgesX; ix++)
+  {
+      for(int iy =1; iy <=kEndcWedgesY; iy++)
+      {
+          double icp = endcapmapnew_plus.GetBinContent(ix, iy);
+          double icm = endcapmapnew_minus.GetBinContent(ix, iy);
+          if(icp!=0 && icm!=0)
+          {
+             endcapratio.Fill(icp/icm);
+             endcapmapratio.SetBinContent(ix,iy, icp/icm);
+          }
+      }
 
-}
+  }
   barreletamap.Write();
   barreletamapraw.Write();
   rawconst_endc_h.Write();
@@ -640,16 +640,14 @@ void PhiSymmetryCalibration_step2::fillHistos()
       esum_barl_histos[index_b]=new TH1F(t.str().c_str(),"",50,low_e-.2*low_e,high_e+.1*high_e);
       t.str("");
       
-         t << "NH_barl_" << ieta+1 << "_" << sign;
- 	  NH_barl_histos[index_b]=new
-   TH1F(t.str().c_str(),"",100,low_hit-0.2*low_hit,high_hit+0.1*high_hit);
-    t.str("");
+      t << "NH_barl_" << ieta+1 << "_" << sign;
+      NH_barl_histos[index_b]=new TH1F(t.str().c_str(),"",100,low_hit-0.2*low_hit,high_hit+0.1*high_hit);
+      t.str("");
       
        
-t << "NHTT_barl_" << ieta+1 << "_" << sign;
- 	  NHTT_barl_histos[index_b]=new
-   TH1F(t.str().c_str(),"",1000,25*(low_hit-0.2*low_hit),25*(high_hit+0.1*high_hit));
-    t.str("");
+      t << "NHTT_barl_" << ieta+1 << "_" << sign;
+      NHTT_barl_histos[index_b]=new TH1F(t.str().c_str(),"",1000,25*(low_hit-0.2*low_hit),25*(high_hit+0.1*high_hit));
+      t.str("");
       
       // fill barrel ET sum histos
       int ngc=0;
@@ -1449,7 +1447,7 @@ void  PhiSymmetryCalibration_step2::outResidHistos(){
   TFile f("PhiSymmetryCalibration_miscal_resid.root","recreate");
 
   for (int sign=0; sign<kSides; sign++) {
-    for (int ieta=0; ieta<85; ieta++) {
+    for (int ieta=0; ieta<kBarlRings; ieta++) {
       int index_b = ieta+sign*kBarlRings;
       miscal_resid_barl_histos[index_b]->Write();
       correl_barl_histos[index_b]->Write();
@@ -1457,7 +1455,7 @@ void  PhiSymmetryCalibration_step2::outResidHistos(){
       delete correl_barl_histos[index_b];
     }
   
-    for (int ring=0; ring<39; ring++) {
+    for (int ring=0; ring<kEndcEtaRings; ring++) {
       int index_e = ring+sign*kEndcEtaRings;
       miscal_resid_endc_histos[index_e]->Write();
       correl_endc_histos[index_e]->Write();      

@@ -42,17 +42,17 @@ class PhiSymmetryCalibration_step2 :  public edm::EDAnalyzer
   
   // Transverse energy sum arrays
   double etsum_barl_[kBarlRings]  [kBarlWedges] [kSides];
-  double etsum_endc_[kEndcWedgesX][kEndcWedgesX][kSides];
-  double etsum_endc_uncorr[kEndcWedgesX][kEndcWedgesX][kSides];
+  double etsum_endc_[kEndcWedgesX][kEndcWedgesY][kSides];
+  double etsum_endc_uncorr[kEndcWedgesX][kEndcWedgesY][kSides];
   double etsumMean_barl_[kBarlRings][kSides];
   double etsumMean_endc_[kEndcEtaRings][kSides];
    
   unsigned int nhits_barl_[kBarlRings][kBarlWedges] [kSides];
-  unsigned int nhits_endc_[kEndcWedgesX][kEndcWedgesX][kSides];
+  unsigned int nhits_endc_[kEndcWedgesX][kEndcWedgesY][kSides];
    
    
   double esum_barl_[kBarlRings]  [kBarlWedges] [kSides];
-  double esum_endc_[kEndcWedgesX][kEndcWedgesX][kSides];
+  double esum_endc_[kEndcWedgesX][kEndcWedgesY][kSides];
 
   double esumMean_barl_[kBarlRings][kSides];
   double esumMean_endc_[kEndcEtaRings][kSides];
@@ -67,7 +67,7 @@ class PhiSymmetryCalibration_step2 :  public edm::EDAnalyzer
  
    // calibration const not corrected for k
   float rawconst_barl[kBarlRings][kBarlWedges][kSides];
-  float rawconst_endc[kEndcWedgesX][kEndcWedgesX][kSides];   
+  float rawconst_endc[kEndcWedgesX][kEndcWedgesY][kSides];   
 
 
   // calibration constants not multiplied by old ones

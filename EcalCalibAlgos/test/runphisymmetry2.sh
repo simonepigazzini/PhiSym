@@ -65,8 +65,7 @@ echo "$0: Invoking  crab"
 if [ "$mode" == "caf" ] || [ "$mode" == "remoteGlidein" ]
 then
    source /cvmfs/cms.cern.ch/crab/crab.sh
-   crab -cfg $crabcfg -create 
-   exit 0   
+   crab -cfg $crabcfg -create    
    crab -submit
 
    findcrabdir
@@ -80,7 +79,8 @@ then
    
    done
 
-   crab -getoutput 
+   crab -getoutput
+ 
 elif [ "$mode" == "crab3" ]
 then
    source /cvmfs/cms.cern.ch/crab3/crab.sh
