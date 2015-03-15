@@ -21,12 +21,11 @@ import string, sys, os, getopt, subprocess, time, shutil
 
 
 def usage():
-    print "Usage: makephisym.py --mode=[caf|grid|crab3] --dataset=[datasetname]"
-    print "       --runrange=[first-last] --globaltag=[tag] [--step2only]"
-    print "       --group=[Collisions10,Collisions11] "
+    print "Usage: makephisym2_MC.py --mode=[caf|grid|crab3] --dataset=[datasetname]"
+    print "       --globaltag=[tag] [--step2only]"
     
 try:
-     opts, args = getopt.getopt(sys.argv[1:], "m:d:r:g:so:", ["mode=","dataset=","runrange=","globaltag=","step2only","group="])
+     opts, args = getopt.getopt(sys.argv[1:], "m:d:g:s", ["mode=","dataset=","globaltag=","step2only"])
 
 except getopt.GetoptError:
      #* print help information and exit:*
@@ -36,9 +35,6 @@ except getopt.GetoptError:
 
 mode=''
 dataset=''
-group=''
-firstrun=0
-lastrun=0
 globaltag=''
 step2only=0
 
@@ -62,13 +58,6 @@ for opt, arg in opts:
             
      if opt in ("-d","--dataset"):
       dataset= arg        
- 
-
-     if opt in ("-r","--runrange"):
-         range=arg.split('-')
-         firstrun=int(range[0])
-         lastrun =int(range[1])
-
             
      if opt in ("-g","--globaltag"):
          globaltag=arg
@@ -76,13 +65,6 @@ for opt, arg in opts:
      if opt in ("-s","--step2only"):
          step2only=1
 
-     if opt in ("-o","--group"):
-         group=arg    
-
-if firstrun==0 or lastrun==0:
-    usage()
-    print "Run range must be like 144536-145789"
-    sys.exit(2)
 
 if dataset=='':
     usage()
@@ -94,16 +76,11 @@ if mode=='':
     usage()
     print "Please specify mode caf, glite or crab3"
     sys.exit(2)
-
-if group=='':
-    usage()
-    print "Please specify group, e.g. Collisions11"
-    sys.exit(2)
         
 print "Querying DBS ..."
 
 #query='dbs search --url=\"http://cmsdbsprod.cern.ch/cms_dbs_prod_global/servlet/DBSServlet\" --query=\"find file where dataset = '+dataset+' and run ='+repr(firstrun)+'\"'
-query = '$PWD/das_client.py --query=\"file dataset='+dataset+'   run ='+repr(firstrun)+'\"'
+query = '$PWD/das_client.py --query=\"file dataset='+dataset+'\"'
 
 queryp=subprocess.Popen(query,stdout=subprocess.PIPE,shell=True)
 queryp.wait()
@@ -121,15 +98,15 @@ data=f.read()
 data=data.replace('MODE',mode)
 data=data.replace('DATASET',dataset)
 if mode == 'crab3':
-   data=data.replace('LUMIMASK','jsonls-alcaphisym.txt')
-   data=data.replace('SPLITTING','LumiBased')
+   data=data.replace('LUMIMASK','')
+   data=data.replace('SPLITTING','EventBased')
    outfile = open('phisym-cfg_crab.py',"w")
    outfile.write(data)
    outfile.close()
 else:
-   data=data.replace('LUMIMASK','lumi_mask=jsonls-alcaphisym.txt')
-   data=data.replace('TOTALNUMBERLUMIS','total_number_of_lumis = -1')
-   data=data.replace('LUMISPERJOB','lumis_per_job = 100')
+   data=data.replace('LUMIMASK','#lumi_mask=jsonls-alcaphisym.txt')
+   data=data.replace('TOTALNUMBERLUMIS','#total_number_of_lumis = -1')
+   data=data.replace('LUMISPERJOB','#lumis_per_job = 100')
    outfile = open('phisym-cfg.crab.cfg',"w")
    outfile.write(data)
    outfile.close()
@@ -150,15 +127,6 @@ outfile = open('phisym-cfg.py',"w")
 outfile.write(data)
 outfile.close()
 
-f = open(runreg_cfg_template)
-data=f.read()
-data=data.replace('FIRSTRUN',repr(firstrun))
-data=data.replace('LASTRUN',repr(lastrun))
-data=data.replace('GROUP',group)
-outfile = open('runreg.cfg',"w")
-outfile.write(data)
-outfile.close()
-
 #if not step2only:
 #   print "Querying run registry ..."
 #   runreg_stdout=open('runreg.log','w')
@@ -174,7 +142,7 @@ outfile.close()
 #   print "done"
 
 friendly_datasetname=dataset.replace('/','_')
-dirname=friendly_datasetname[1:]+'_'+repr(firstrun)+'_'+repr(lastrun)
+dirname=friendly_datasetname[1:]
 
 if not step2only:
    try :
@@ -190,7 +158,6 @@ else:
        sys.exit(1)
        
 if not step2only:   
-   shutil.move('jsonls-alcaphisym.txt',dirname)
    shutil.move('phisym-cfg.py',dirname)
    if mode == 'crab3': 
       shutil.move('phisym-cfg_crab.py',dirname)

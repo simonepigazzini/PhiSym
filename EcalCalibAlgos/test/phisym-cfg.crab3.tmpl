@@ -14,9 +14,9 @@ config.JobType.outputFiles = ['etsum_barl_1.dat','etsum_endc_1.dat','k_barl.dat'
 
 config.section_('Data')
 config.Data.inputDataset = 'DATASET'
-config.Data.lumiMask = 'jsonls-alcaphisym.txt'
+config.Data.lumiMask = 'LUMIMASK'
 config.Data.inputDBS = 'https://cmsweb.cern.ch/dbs/prod/global/DBSReader/'
-config.Data.splitting = 'LumiBased'
+config.Data.splitting = 'SPLITTING'
 config.Data.unitsPerJob = 10
 config.Data.outLFN = '/store/group/dpg_ecal/alca_ecalcalib/bmarzocc/PhiSymmetryStep1/'
 config.Data.ignoreLocality = True

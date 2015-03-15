@@ -4,17 +4,17 @@
 
 import FWCore.ParameterSet.Config as cms
 
-import RecoLocalCalo.EcalRecProducers.ecalRecalibRecHit_cfi 
-
 process=cms.Process("PHISYM")
 
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-#process.load('Configuration/StandardSequences/GeometryPilot2_cff')
 process.load('Configuration.Geometry.GeometryPilot2_cff')
 process.load('Calibration/EcalAlCaRecoProducers/alcastreamEcalPhiSym_cff' )
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
 process.load('L1TriggerConfig.L1GtConfigProducers.L1GtTriggerMaskTechTrigConfig_cff')
 process.load('HLTrigger/HLTfilters/hltLevel1GTSeed_cfi')
+process.load('RecoLocalCalo.EcalRecProducers.ecalMultiFitUncalibRecHit_cfi')
+process.load('RecoLocalCalo.EcalRecProducers.ecalUncalibRecHit_cfi')
+process.load('RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi')
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
@@ -23,27 +23,31 @@ process.MessageLogger.cerr.default = cms.untracked.PSet(
     reportEvery = cms.untracked.int32(5000)
     )
 
-isMC=False
-recalib=True
-runFromUncalibrator=True
-
-if (not isMC):
-    process.maxEvents = cms.untracked.PSet(
-        input = cms.untracked.int32(100000)
-        )
-else:
-    process.maxEvents = cms.untracked.PSet(
-        input = cms.untracked.int32(400000)
-        )
-    
 process.source = cms.Source("PoolSource",
-#                            fileNames = cms.untracked.vstring('root://pccmsrm27///cms/local/meridian/phiSimmetry/Commisioning12_189770.root')
-#                            fileNames = cms.untracked.vstring('/store/data/Commissioning12/AlCaPhiSym/RAW/v1/000/190/389/DA64A111-AC7E-E111-A2EF-003048F024DC.root')
-#                            fileNames = cms.untracked.vstring('/store/data/Commissioning12/AlCaPhiSym/RAW/v1/000/190/389/6648778C-B47E-E111-9512-BCAEC518FF40.root')
                             fileNames = cms.untracked.vstring('/store/data/Run2012A/AlCaPhiSym/RAW/v1/000/190/482/D08E58E5-4B7F-E111-8BBD-003048D2C0F4.root')
-#                            fileNames = cms.untracked.vstring('/store/relval/CMSSW_5_2_3/RelValMinBias/GEN-SIM-RECO/START52_V5-v1/0043/36B29A9E-2B7A-E111-98DB-003048678B7C.root')
                             )
 
+runMultiFit=True
+
+#ecalUncalibRecHit
+process.ecalUncalibRecHit.EBdigiCollection = cms.InputTag("HLTEcalPhiSymFilter","phiSymEcalDigisEB")
+process.ecalUncalibRecHit.EEdigiCollection = cms.InputTag("HLTEcalPhiSymFilter","phiSymEcalDigisEE")
+
+#ecalMultiFitUncalibRecHit
+process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag("HLTEcalPhiSymFilter","phiSymEcalDigisEB")
+process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag("HLTEcalPhiSymFilter","phiSymEcalDigisEE")
+
+#ecalRecHit (no ricovery)
+process.ecalRecHit.killDeadChannels = cms.bool( False )
+process.ecalRecHit.recoverEBVFE = cms.bool( False )
+process.ecalRecHit.recoverEEVFE = cms.bool( False )
+process.ecalRecHit.recoverEBFE = cms.bool( False )
+process.ecalRecHit.recoverEEFE = cms.bool( False )
+process.ecalRecHit.recoverEEIsolatedChannels = cms.bool( False )
+process.ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
+if (not runMultiFit):
+    process.ecalRecHit.EBuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEB")
+    process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEE")
 
 process.phisymcalib = cms.EDAnalyzer("PhiSymmetryCalibration",
                                      ecalRecHitsProducer = cms.string("hltAlCaPhiSymStream"),
@@ -59,67 +63,16 @@ process.phisymcalib = cms.EDAnalyzer("PhiSymmetryCalibration",
                                      statusThreshold = cms.untracked.int32(0)
                                      )
 
-if (recalib):
-    process.phisymcalib.ecalRecHitsProducer=cms.string("ecalPhiSymCorrected")
-if (isMC):
-    process.phisymcalib.ecalRecHitsProducer=cms.string("ecalRecHit")
-    process.phisymcalib.barrelHitCollection = cms.string("EcalRecHitsEB")
-    process.phisymcalib.endcapHitCollection = cms.string("EcalRecHitsEE")
 
 # the xml file must be put in 
 # $CMSSW_BASE/src/CalibCalorimetry/CaloMiscalibTools/data
 
-#process.CaloMiscalibTools = cms.ESSource("CaloMiscalibTools",
-#  fileNameEndcap = cms.untracked.string('EcalIntercalibConstants_2011B_Sept_a.xml'),
-#  fileNameBarrel = cms.untracked.string('EcalIntercalibConstants_2011B_Sept_a.xml')
-#  )
-#process.prefer("CaloMiscalibTools")
-
-#apply calibrations
-process.ecalPhiSymCorrected =  RecoLocalCalo.EcalRecProducers.ecalRecalibRecHit_cfi.ecalRecHit.clone(
-            doEnergyScale = cms.bool(True),
-            doIntercalib = cms.bool(True),
-            EERecHitCollection = cms.InputTag("hltAlCaPhiSymStream","phiSymEcalRecHitsEE"),
-            EBRecHitCollection = cms.InputTag("hltAlCaPhiSymStream","phiSymEcalRecHitsEB"),
-            doLaserCorrections = cms.bool(True),
-            EBRecalibRecHitCollection = cms.string('phiSymEcalRecHitsEB'),
-            EERecalibRecHitCollection = cms.string('phiSymEcalRecHitsEE')
-)
-
-if (runFromUncalibrator):
-    process.ecalPhiSymCorrected.EBRecHitCollection = cms.InputTag("hltAlCaPhiSymUncalibrator","phiSymEcalRecHitsEB")
-    process.ecalPhiSymCorrected.EERecHitCollection = cms.InputTag("hltAlCaPhiSymUncalibrator","phiSymEcalRecHitsEE")
-
-#process.GlobalTag.globaltag = 'GR_P_V32::All' o 'GR_R_52_V7'
 process.GlobalTag.globaltag = 'GLOBALTAG'
 
-process.GlobalTag.toGet = cms.VPSet(
- 	   
-    cms.PSet(record = cms.string("EcalLaserAPDPNRatiosRcd"),
-             tag = cms.string("EcalLaserAPDPNRatios_20130130_447_p1_v2"),
-             connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_42X_ECAL_LAS") 
-             ),
- 	    
-    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-         tag = cms.string("EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies"),
-            connect = cms.untracked.string("frontier://FrontierInt/CMS_COND_ECAL") 
-           )
-	    
-#    cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
-#            tag = cms.string("EcalADCToGeVConstant_Bon_V20111129"),
-#            connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL") 
-#            ),
- 
-#    cms.PSet(record = cms.string("EcalLaserAlphasRcd"),
-#            tag = cms.string("EcalLaserAlphas_EB_2012avgps_EE_sic1_btcp116"),
-#            connect = cms.untracked.string("frontier://FrontierInt/CMS_COND_ECAL") 
-#            )
+if (not runMultiFit):
+    process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
+else:
+    process.reconstruction_step = cms.Sequence( process.ecalMultiFitUncalibRecHit + process.ecalRecHit )
 
-	    
-)
-
-
-process.p = cms.Path(process.ecalphiSymHLT*process.offlineBeamSpot)
-if (recalib):
-    process.p *= process.ecalPhiSymCorrected
+process.p = cms.Path(process.reconstruction_step)
 process.p *= process.phisymcalib
