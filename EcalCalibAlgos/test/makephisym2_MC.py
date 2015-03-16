@@ -99,7 +99,6 @@ data=data.replace('MODE',mode)
 data=data.replace('DATASET',dataset)
 if mode == 'crab3':
    data=data.replace('LUMIMASK','')
-   data=data.replace('SPLITTING','EventBased')
    outfile = open('phisym-cfg_crab.py',"w")
    outfile.write(data)
    outfile.close()
@@ -122,24 +121,11 @@ outfile.close()
 
 f = open(cmssw_py_template)
 data=f.read()
+data=data.replace('RAWTODIGI','RawToDigi_cff')
 data=data.replace('GLOBALTAG',globaltag)
 outfile = open('phisym-cfg.py',"w")
 outfile.write(data)
 outfile.close()
-
-#if not step2only:
-#   print "Querying run registry ..."
-#   runreg_stdout=open('runreg.log','w')
-#   #rregargs=['']
-#   #ret =subprocess.Popen(rregargs,0,"./runregparse.py",stdout=runreg_stdout)
-#   rc=subprocess.check_call(['./runregparse.py'],stdout=runreg_stdout)
-
-   #rc=cmsRun.returncode
-#   if  rc != 0  :
-#       print "Errors invoking dbs"
-#       sys.exit(1)
-
-#   print "done"
 
 friendly_datasetname=dataset.replace('/','_')
 dirname=friendly_datasetname[1:]
