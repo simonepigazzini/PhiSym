@@ -113,7 +113,7 @@ else:
 f = open(cmssw_py_step2_template)
 data=f.read()
 data=data.replace('GLOBALTAG',globaltag)
-data=data.replace('STEP2FILES',step2file)
+data=data.replace('STEP2FILES','/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/840/7ED7D113-7A43-E211-BD93-001D09F24D8A.root')
 outfile = open('phisym_step2.py',"w")
 outfile.write(data)
 outfile.close()

@@ -34,7 +34,7 @@ process.maxEvents = cms.untracked.PSet(
                                        )
 
 
-isStream=True
+isStream=False
 runMultiFit=True
 
 #ecalUncalibRecHit
@@ -75,12 +75,12 @@ process.phisymcalib = cms.EDAnalyzer("PhiSymmetryCalibration",
 # $CMSSW_BASE/src/CalibCalorimetry/CaloMiscalibTools/data
 
 process.GlobalTag.globaltag = 'GLOBALTAG'
-#process.GlobalTag.toGet = cms.VPSet(
-#        cms.PSet(record = cms.string("EcalTimeBiasCorrectionsRcd"),
-#        tag = cms.string("EcalTimeBiasCorrections_data2011"),
-#        connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_ECAL_000")
-#        )
-#)
+process.GlobalTag.toGet = cms.VPSet(
+        cms.PSet(record = cms.string("EcalTimeBiasCorrectionsRcd"),
+        tag = cms.string("EcalTimeBiasCorrections_data2011"),
+        connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_ECAL_000")
+        )
+)
 
 if (not runMultiFit):
     process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
