@@ -6,12 +6,8 @@ import FWCore.ParameterSet.Config as cms
 
 process=cms.Process("PHISYM")
 
-process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
-process.load('Configuration.Geometry.GeometryPilot2_cff')
-process.load('Calibration/EcalAlCaRecoProducers/alcastreamEcalPhiSym_cff' )
-process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
-process.load('L1TriggerConfig.L1GtConfigProducers.L1GtTriggerMaskTechTrigConfig_cff')
-process.load('HLTrigger/HLTfilters/hltLevel1GTSeed_cfi')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+process.load('Configuration.Geometry.GeometryExtended2015Reco_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.RAWTODIGI')
 process.load('RecoLocalCalo.EcalRecProducers.ecalMultiFitUncalibRecHit_cfi')
@@ -36,6 +32,19 @@ process.maxEvents = cms.untracked.PSet(
 
 isStream=False
 runMultiFit=True
+isBX50ns=True
+
+if (runMultiFit):
+    if (isBX50ns):
+        process.ecalMultiFitUncalibRecHit.algoPSet = cms.PSet(
+                                             useLumiInfoRunHeader = cms.bool(False),
+                                             activeBXs = cms.vint32(-4,-2,0,2,4)
+                                                 )
+    else:
+        process.ecalMultiFitUncalibRecHit.algoPSet = cms.PSet(
+                                             useLumiInfoRunHeader = cms.bool(False),
+                                             activeBXs = cms.vint32(-5,-4,-3,-2,-1,0,1,2,3,4)
+                                                 ) 
 
 #ecalUncalibRecHit
 if (isStream):
@@ -75,12 +84,6 @@ process.phisymcalib = cms.EDAnalyzer("PhiSymmetryCalibration",
 # $CMSSW_BASE/src/CalibCalorimetry/CaloMiscalibTools/data
 
 process.GlobalTag.globaltag = 'GLOBALTAG'
-#process.GlobalTag.toGet = cms.VPSet(
-#        cms.PSet(record = cms.string("EcalTimeBiasCorrectionsRcd"),
-#        tag = cms.string("EcalTimeBiasCorrections_data2011"),
-#        connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_ECAL_000")
-#        )
-#)
 
 if (not runMultiFit):
     process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
