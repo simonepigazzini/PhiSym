@@ -86,7 +86,7 @@ process.phisymcalib = cms.EDAnalyzer("PhiSymmetryCalibration",
 process.GlobalTag.globaltag = 'GLOBALTAG'
 process.GlobalTag.toGet = cms.VPSet(
  	   
-    cms.PSet(record = cms.string("EcalIntercalibConstantsMCRcd"),
+    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
              tag = cms.string("EcalIntercalibConstantsMC_mc"),
              connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL") 
              )
