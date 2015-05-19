@@ -84,6 +84,13 @@ process.phisymcalib = cms.EDAnalyzer("PhiSymmetryCalibration",
 # $CMSSW_BASE/src/CalibCalorimetry/CaloMiscalibTools/data
 
 process.GlobalTag.globaltag = 'GLOBALTAG'
+process.GlobalTag.toGet = cms.VPSet(
+ 	   
+    cms.PSet(record = cms.string("EcalIntercalibConstantsMCRcd"),
+             tag = cms.string("EcalIntercalibConstantsMC_mc"),
+             connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL") 
+             )
+)
 
 if (not runMultiFit):
     process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
