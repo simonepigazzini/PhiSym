@@ -1,0 +1,5 @@
+<lcgdict>
+  <class name="PhiSymRecHit"/>
+  <class name="std::vector<PhiSymRecHit>"/>
+  <class name="edm::Wrapper<std::vector<PhiSymRecHit> >"/>
+</lcgdict>

@@ -1,0 +1,14 @@
+#include "DataFormats/Common/interface/Wrapper.h"
+
+#include "PhiSym/EcalCalibDataFormat/interface/PhiSymRecHit.h"
+
+namespace
+{
+    struct dictionary
+    {
+        PhiSymRecHit dummy11;
+        std::vector<PhiSymRecHit> dummy12;
+        typedef std::vector<PhiSymRecHit> PhiSymRecHitCollection;
+        edm::Wrapper<PhiSymRecHitCollection> dummy13;
+    };
+}
