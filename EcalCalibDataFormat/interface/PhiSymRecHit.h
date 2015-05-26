@@ -22,7 +22,7 @@ class PhiSymRecHit
 public:
     //---ctors---
     PhiSymRecHit();
-    PhiSymRecHit(float& id);
+    PhiSymRecHit(float& id, float* etValues=NULL);
     
     //---dtor---
     ~PhiSymRecHit();

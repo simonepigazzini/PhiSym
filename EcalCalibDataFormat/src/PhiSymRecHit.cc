@@ -5,15 +5,16 @@ PhiSymRecHit::PhiSymRecHit():
     id_(0), nHits_(0), et2Sum_(0)
 {}
 
-PhiSymRecHit::PhiSymRecHit(float& id):
+PhiSymRecHit::PhiSymRecHit(float& id, float* etValues):
     id_(id), nHits_(0), et2Sum_(0)
-{}
+{
+    if(etValues)
+        AddHit(etValues);
+}
 
 //**********destructor********************************************************************
 PhiSymRecHit::~PhiSymRecHit()
-{
-    //delete[] etSum_;
-}
+{}
 
 //**********utils*************************************************************************
 

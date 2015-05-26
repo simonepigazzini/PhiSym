@@ -58,6 +58,7 @@ private:
     float          eCutEB_;
     int            nMisCalib_;
     vector<double> misCalibValues_;
+    int            lumisToSum_;
     int            statusThreshold_;
     int            nLumis_;
 
@@ -79,6 +80,7 @@ testProducer::testProducer(const edm::ParameterSet& pSet):
     eCutEB_(pSet.getParameter<double>("eCut_barrel")),
     nMisCalib_(pSet.getParameter<int>("nMisCalib")),
     misCalibValues_(pSet.getParameter<vector<double> >("misCalibValues")),
+    lumisToSum_(pSet.getParameter<int>("lumisToSum")),
     statusThreshold_(pSet.getUntrackedParameter<int>("statusThreshold",3)),
     nLumis_(0),
     ecalGeoAndStatus_(NULL)
@@ -114,7 +116,7 @@ void testProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::E
 void testProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::EventSetup const& setup)
 {
     //---put the collection in the LuminosityBlocks tree
-    if(nLumis_ == 2)
+    if(nLumis_ == lumisToSum_)
     {
         lumi.put(recHitCollEB_, "EB");
         lumi.put(recHitCollEE_, "EE");
@@ -138,8 +140,8 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     setup.get<CaloGeometryRecord>().get(geoHandle);
     const CaloSubdetectorGeometry* barrelGeometry = 
         geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    // const CaloSubdetectorGeometry* endcapGeometry = 
-    //     geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+    const CaloSubdetectorGeometry* endcapGeometry = 
+        geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     
     //---get the channel status only once
     if(!ecalGeoAndStatus_)
@@ -190,21 +192,21 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         //---if first hit initialize the cristall
         if(!found)
         {
-            recHitCollEB_->push_back(PhiSymRecHit(currentId));
+            recHitCollEB_->push_back(PhiSymRecHit(currentId, etValues));
             detIdKeyEB_.push_back(currentId);
         }
     }
 
     //---EE---
-    for(auto& recHit : *barrelRecHitsHandle_.product())
+    for(auto& recHit : *endcapRecHitsHandle_.product())
     {
         //---check channel status
         EEDetId eeHit = EEDetId(recHit.id());
-        float eta=barrelGeometry->getGeometry(eeHit)->getPosition().eta();
+        float eta=endcapGeometry->getGeometry(eeHit)->getPosition().eta();
         if(!ecalGeoAndStatus_->goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
             continue;
 
-        //---compute et + miscalibration
+        //---compute et + miscalibration FIXME
         float currentId(recHit.id().rawId());                
         float* etValues = new float[nMisCalib_];        
         for(int iMis=0; iMis<nMisCalib_; ++iMis)
@@ -232,7 +234,7 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         //---if first hit initialize the cristall
         if(!found)
         {
-            recHitCollEE_->push_back(PhiSymRecHit(currentId));
+            recHitCollEE_->push_back(PhiSymRecHit(currentId, etValues));
             detIdKeyEE_.push_back(currentId);
         }
     }    
