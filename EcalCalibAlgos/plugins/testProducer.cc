@@ -195,31 +195,47 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         }
     }
 
-    // //---EE---
-    // for(auto& recHit : *endcapRecHitsHandle_.product())
-    // {
-    //     float currentId(recHit.id().rawId());
-    //     float etValues[5]={1,1,1,1,1};
-    //     bool found=false;
-    //     if(detIdKeyEE_.size() != recHitCollEE_->size())
-    //         edm::LogError("") << "[PhiSymmetryCalibration] Error! PhiSymRecHitCollection and DetIdKeys have different size" << endl;
-    //     for(unsigned int iId=0; iId<detIdKeyEE_.size(); ++iId)
-    //     {
-    //         //---if found add update the rechit
-    //         if(detIdKeyEE_.at(iId) == currentId)
-    //         {
-    //             recHitCollEE_->at(iId).AddHit(etValues);
-    //             found=true;
-    //             break;
-    //         }
-    //     }
-    //     //---if first hit initialize the cristall
-    //     if(!found)
-    //     {
-    //         recHitCollEE_->push_back(PhiSymRecHit(currentId));
-    //         detIdKeyEE_.push_back(currentId);
-    //     }
-    // }
+    //---EE---
+    for(auto& recHit : *barrelRecHitsHandle_.product())
+    {
+        //---check channel status
+        EEDetId eeHit = EEDetId(recHit.id());
+        float eta=barrelGeometry->getGeometry(eeHit)->getPosition().eta();
+        if(!ecalGeoAndStatus_->goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
+            continue;
+
+        //---compute et + miscalibration
+        float currentId(recHit.id().rawId());                
+        float* etValues = new float[nMisCalib_];        
+        for(int iMis=0; iMis<nMisCalib_; ++iMis)
+        {
+            etValues[iMis] = recHit.energy()/cosh(eta)*misCalibValues_[iMis];
+            //---set et to zero if out of range [e_thr, et_thr+1]
+            if(etValues[iMis]*cosh(eta) < eCutEB_ || etValues[iMis] > eCutEB_/cosh(eta)+1)                
+                etValues[iMis] = 0;
+        }
+
+        //---loop over the known rechits
+        bool found=false;
+        if(detIdKeyEE_.size() != recHitCollEE_->size())
+            edm::LogError("") << "[PhiSymmetryCalibration] Error! PhiSymRecHitCollection and DetIdKeys have different size" << endl;        
+        for(unsigned int iId=0; iId<detIdKeyEE_.size(); ++iId)
+        {
+            //---if found update the rechit
+            if(detIdKeyEE_.at(iId) == currentId)
+            {
+                recHitCollEE_->at(iId).AddHit(etValues);
+                found=true;
+                break;
+            }
+        }
+        //---if first hit initialize the cristall
+        if(!found)
+        {
+            recHitCollEE_->push_back(PhiSymRecHit(currentId));
+            detIdKeyEE_.push_back(currentId);
+        }
+    }    
 }
 
 DEFINE_FWK_MODULE(testProducer);
