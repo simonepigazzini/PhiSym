@@ -25,13 +25,13 @@ public:
     PhiSymRecHit(float& id);
     
     //---dtor---
-    ~PhiSymRecHit(){};
+    ~PhiSymRecHit();
 
     //---getters---
-    inline float GetDetId()          {return id_;};
-    inline float GetSumEt(int iMis=0){return etSum_[iMis];};
-    inline float GetSumEt2()         {return et2Sum_;};
-    inline float GetNhits()          {return nHits_;};
+    inline float GetRawId()           const {return id_;};
+    inline float GetSumEt(int iMis=0) const {return etSum_[iMis];};
+    inline float GetSumEt2()          const {return et2Sum_;};
+    inline float GetNhits()           const {return nHits_;};
 
     //---utils---
     void         AddHit(float* etValues);
@@ -39,10 +39,10 @@ public:
 
 private:
 
-    float id_;
-    int   nHits_;
-    float etSum_[5]={0,0,0,0,0};
-    float et2Sum_;
+    float  id_;
+    int    nHits_;
+    float  etSum_[5]={0,0,0,0,0};
+    float  et2Sum_;
 };
 
 namespace edm

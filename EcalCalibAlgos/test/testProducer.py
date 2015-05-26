@@ -33,9 +33,8 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('/store/data/Run2012D/SingleElectron/RAW/v1/000/208/307/0085A34B-BD3A-E211-B6E9-003048D2BC4C.root')
+                            fileNames = cms.untracked.vstring('/store/data/Commissioning2015/AlCaPhiSym/RAW/v1/000/240/226/00000/9087B70C-A2E1-E411-A01E-02163E013902.root')
 )
-#/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/203/774/B492587E-FF08-E211-953F-BCAEC53296FB.root
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -44,7 +43,7 @@ process.configurationMetadata = cms.untracked.PSet(
     name = cms.untracked.string('testProducer')
 )
 
-isStream=False
+isStream=True
 runMultiFit=True
 isBX50ns=True
 
@@ -95,17 +94,6 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
                                          fileName = cms.untracked.string(options.outputFile)
 )
 
-# Path and EndPath definitions
-# process.PHISYM = cms.Path(process.testProducer)
-# process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
-
-# # Schedule definition
-# process.schedule = cms.Schedule(process.PHISYM, process.RECOSIMoutput_step)
-
-
-# the xml file must be put in 
-# $CMSSW_BASE/src/CalibCalorimetry/CaloMiscalibTools/data
-
 process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_R_74_V8A::All')
 # process.GlobalTag.globaltag = 'FT_R_70_V1::All'
 # process.GlobalTag.toGet = cms.VPSet(
@@ -123,7 +111,7 @@ else:
 
 if (isStream):
     process.p = cms.Path(process.reconstruction_step)
-    process.p *= process.phisymcalib
+    process.p *= process.testProducer
 else:
     process.p = cms.Path(process.RawToDigi) 
     process.p *= process.L1Reco
