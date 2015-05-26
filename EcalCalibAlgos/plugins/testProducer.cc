@@ -56,6 +56,8 @@ private:
     edm::InputTag ebTag_;
     edm::InputTag eeTag_;
     float          eCutEB_;
+    float          AP_;
+    float          B_;
     int            nMisCalib_;
     vector<double> misCalibValues_;
     int            lumisToSum_;
@@ -78,6 +80,8 @@ testProducer::testProducer(const edm::ParameterSet& pSet):
     ebTag_(pSet.getParameter<edm::InputTag>("barrelHitCollection")),
     eeTag_(pSet.getParameter<edm::InputTag>("endcapHitCollection")),
     eCutEB_(pSet.getParameter<double>("eCut_barrel")),
+    AP_(pSet.getParameter<double>("AP")),
+    B_(pSet.getParameter<double>("B")),
     nMisCalib_(pSet.getParameter<int>("nMisCalib")),
     misCalibValues_(pSet.getParameter<vector<double> >("misCalibValues")),
     lumisToSum_(pSet.getParameter<int>("lumisToSum")),
@@ -206,14 +210,21 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         if(!ecalGeoAndStatus_->goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
             continue;
 
-        //---compute et + miscalibration FIXME
+        //---compute et + miscalibration
         float currentId(recHit.id().rawId());                
-        float* etValues = new float[nMisCalib_];        
+        float* etValues = new float[nMisCalib_];
+        float eCutEE=0;
+        for (int ring=0; ring<kEndcEtaRings; ring++)
+        {
+            if(eta>ecalGeoAndStatus_->etaBoundary_[ring] && eta<ecalGeoAndStatus_->etaBoundary_[ring+1])
+                eCutEE = AP_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*B_;
+        }
+
         for(int iMis=0; iMis<nMisCalib_; ++iMis)
         {
             etValues[iMis] = recHit.energy()/cosh(eta)*misCalibValues_[iMis];
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[iMis]*cosh(eta) < eCutEB_ || etValues[iMis] > eCutEB_/cosh(eta)+1)                
+            if(etValues[iMis]*cosh(eta) < eCutEE || etValues[iMis] > eCutEE/cosh(eta)+1)
                 etValues[iMis] = 0;
         }
 
