@@ -17,6 +17,9 @@
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
 #include "DataFormats/EcalDetId/interface/EEDetId.h"
 
+#include "CalibCalorimetry/EcalLaserCorrection/interface/EcalLaserDbService.h"
+#include "CalibCalorimetry/EcalLaserCorrection/interface/EcalLaserDbRecord.h"
+
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloCellGeometry.h"
@@ -131,6 +134,7 @@ void testProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::Ev
 
 void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 {
+    //---get recHits collections - check for errors
     event.getByLabel(ebTag_, barrelRecHitsHandle_);
     if(!barrelRecHitsHandle_.isValid())
         edm::LogError("") << "[PhiSymmetryCalibration] Error! Can't get EB RecHits!" << endl;
@@ -139,6 +143,13 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     if(!endcapRecHitsHandle_.isValid())
         edm::LogError("") << "[PhiSymmetryCalibration] Error! Can't get EE RecHits!" << endl;
 
+    //---get the laser corrections
+    edm::Timestamp evtTimeStamp(event.time().value());
+    edm::ESHandle<EcalLaserDbService> laser;
+    setup.get<EcalLaserDbRecord>().get(laser);
+    if(!laser.isValid())
+        edm::LogError("") << "[PhiSymmetryCalibration] Error! Can't get the laser corrections!" << endl;
+    
     //---get the ecal geometry
     edm::ESHandle<CaloGeometry> geoHandle;
     setup.get<CaloGeometryRecord>().get(geoHandle);
@@ -162,6 +173,7 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     //---EB---
     for(auto& recHit : *barrelRecHitsHandle_.product())
     {
+        cout << laser.product()->getLaserCorrection(recHit.id(), edm::Timestamp(event.time().value())) << endl;
         //---check channel status
         EBDetId ebHit = EBDetId(recHit.id());
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
@@ -169,7 +181,7 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             continue;
 
         //---compute et + miscalibration
-        float currentId(recHit.id().rawId());                
+        uint32_t currentId(recHit.id().rawId());                
         float* etValues = new float[nMisCalib_];        
         for(int iMis=0; iMis<nMisCalib_; ++iMis)
         {
@@ -188,7 +200,8 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             //---if found update the rechit
             if(detIdKeyEB_.at(iId) == currentId)
             {
-                recHitCollEB_->at(iId).AddHit(etValues);
+                recHitCollEB_->at(iId).AddHit(etValues,
+                                              laser.product()->getLaserCorrection(recHit.id(), evtTimeStamp));
                 found=true;
                 break;
             }
@@ -211,7 +224,7 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             continue;
 
         //---compute et + miscalibration
-        float currentId(recHit.id().rawId());                
+        uint32_t currentId(recHit.id().rawId());                
         float* etValues = new float[nMisCalib_];
         float eCutEE=0;
         for (int ring=0; ring<kEndcEtaRings; ring++)
@@ -237,7 +250,8 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             //---if found update the rechit
             if(detIdKeyEE_.at(iId) == currentId)
             {
-                recHitCollEE_->at(iId).AddHit(etValues);
+                recHitCollEE_->at(iId).AddHit(etValues,
+                                              laser.product()->getLaserCorrection(recHit.id(), evtTimeStamp));
                 found=true;
                 break;
             }

@@ -22,7 +22,7 @@ class PhiSymRecHit
 public:
     //---ctors---
     PhiSymRecHit();
-    PhiSymRecHit(float& id, float* etValues=NULL);
+    PhiSymRecHit(uint32_t& id, float* etValues=NULL);
     
     //---dtor---
     ~PhiSymRecHit();
@@ -34,15 +34,17 @@ public:
     inline float GetNhits()           const {return nHits_;};
 
     //---utils---
-    void         AddHit(float* etValues);
+    void         AddHit(float* etValues, float laserCorr=0);
     void         Reset();
 
 private:
 
-    float  id_;
-    int    nHits_;
-    float  etSum_[5]={0,0,0,0,0};
-    float  et2Sum_;
+    uint32_t id_;
+    int      nHits_;
+    float    etSum_[5]={0,0,0,0,0};
+    float    et2Sum_;
+    float    lcSum_;
+    float    lc2Sum_;
 };
 
 namespace edm

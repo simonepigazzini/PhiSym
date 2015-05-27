@@ -31,6 +31,11 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
 )
 
+# skip bad events
+process.options = cms.untracked.PSet(
+    SkipEvent = cms.untracked.vstring('ProductNotFound')
+)
+
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring('/store/data/Commissioning2015/AlCaPhiSym/RAW/v1/000/240/226/00000/9087B70C-A2E1-E411-A01E-02163E013902.root')

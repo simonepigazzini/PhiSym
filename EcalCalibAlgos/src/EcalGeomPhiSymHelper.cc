@@ -18,8 +18,8 @@
 
 void EcalGeomPhiSymHelper::setup(const CaloGeometry* geometry, 
 				 const EcalChannelStatus* chStatus,
-				 int statusThresold){
-
+				 int statusThresold,
+                                 bool printOutFile){
   
   for (int ieta=0; ieta<kBarlRings; ieta++)    nBads_barl[ieta] = 0;
   for (int ring=0; ring<kEndcEtaRings; ring++) nBads_endc[ring] = 0;
@@ -181,14 +181,16 @@ void EcalGeomPhiSymHelper::setup(const CaloGeometry* geometry,
     } //ring
 
     // Print out detid->ring association 
-    std::fstream eeringsf("endcaprings.dat",std::ios::out);
-    for (endcapIt=endcapCells.begin(); endcapIt!=endcapCells.end();endcapIt++){
-      EEDetId eedet(*endcapIt);
-      eeringsf<< eedet.hashedIndex()<< " " 
-	      << endcapRing_[eedet.ix()-1][eedet.iy()-1] << " " 
-              << cellPhi_ [eedet.ix()-1][eedet.iy()-1] << " "
-              << cellArea_[eedet.ix()-1][eedet.iy()-1]/
-	         meanCellArea_[endcapRing_[eedet.ix()-1][eedet.iy()-1]] <<   std::endl;
-              
+    if(printOutFile)
+    {
+        std::fstream eeringsf("endcaprings.dat",std::ios::out);
+        for (endcapIt=endcapCells.begin(); endcapIt!=endcapCells.end();endcapIt++){
+            EEDetId eedet(*endcapIt);
+            eeringsf<< eedet.hashedIndex()<< " " 
+                    << endcapRing_[eedet.ix()-1][eedet.iy()-1] << " " 
+                    << cellPhi_ [eedet.ix()-1][eedet.iy()-1] << " "
+                    << cellArea_[eedet.ix()-1][eedet.iy()-1]/
+                meanCellArea_[endcapRing_[eedet.ix()-1][eedet.iy()-1]] <<   std::endl;
+        }         
     }
 }

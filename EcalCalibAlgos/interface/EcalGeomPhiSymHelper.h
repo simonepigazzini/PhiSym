@@ -24,7 +24,8 @@ class EcalGeomPhiSymHelper {
 
   void setup(const CaloGeometry* geometry, 
 	     const EcalChannelStatus* chstatus,
-	     int statusThreshold);
+	     int statusThreshold,
+             bool printOutFile=true);
 
   GlobalPoint cellPos_[kEndcWedgesX][kEndcWedgesY];
   double cellPhi_     [kEndcWedgesX][kEndcWedgesY];  
