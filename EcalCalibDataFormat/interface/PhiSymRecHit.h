@@ -17,6 +17,9 @@
 
 #include "DataFormats/DetId/interface/DetId.h"
 
+//---define the number of allowed mis-calibrated values for etSum_ (+ the central value)
+#define N_VALUES 5
+
 class PhiSymRecHit
 {
 public:
@@ -40,8 +43,8 @@ public:
 private:
 
     uint32_t id_;
-    int      nHits_;
-    float    etSum_[5]={0,0,0,0,0};
+    uint32_t nHits_;
+    float    etSum_[N_VALUES];
     float    et2Sum_;
     float    lcSum_;
     float    lc2Sum_;

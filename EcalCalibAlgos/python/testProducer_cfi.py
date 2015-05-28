@@ -8,5 +8,6 @@ testProducer = cms.EDProducer("testProducer",
             B = cms.double(0.6),
             nMisCalib = cms.int32(5), # fixed
             misCalibValues = cms.vdouble(1, 0.975, 0.95, 1.025, 1.05),
-            lumisToSum = cms.int32(75)
+            lumisToSum = cms.int32(75),                              
+            statusThreshold = cms.untracked.int32(0)
 )

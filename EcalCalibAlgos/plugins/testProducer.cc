@@ -88,7 +88,7 @@ testProducer::testProducer(const edm::ParameterSet& pSet):
     nMisCalib_(pSet.getParameter<int>("nMisCalib")),
     misCalibValues_(pSet.getParameter<vector<double> >("misCalibValues")),
     lumisToSum_(pSet.getParameter<int>("lumisToSum")),
-    statusThreshold_(pSet.getUntrackedParameter<int>("statusThreshold",3)),
+    statusThreshold_(pSet.getUntrackedParameter<int>("statusThreshold")),
     nLumis_(0),
     ecalGeoAndStatus_(NULL)
 {    
@@ -158,22 +158,19 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     const CaloSubdetectorGeometry* endcapGeometry = 
         geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     
-    //---get the channel status only once
+    //---get the channel status 
+    edm::ESHandle<EcalChannelStatus> chStatus;
+    setup.get<EcalChannelStatusRcd>().get(chStatus);
+
     if(!ecalGeoAndStatus_)
     {
-        edm::ESHandle<EcalChannelStatus> chStatus;
-        setup.get<EcalChannelStatusRcd>().get(chStatus);
-        edm::ESHandle<CaloGeometry> geoHandle;
-        setup.get<CaloGeometryRecord>().get(geoHandle);
-        
         ecalGeoAndStatus_ = new EcalGeomPhiSymHelper();
-        ecalGeoAndStatus_->setup(&(*geoHandle), &(*chStatus), statusThreshold_);
+        ecalGeoAndStatus_->setup(&(*geoHandle), &(*chStatus), statusThreshold_, false);
     }
 
     //---EB---
     for(auto& recHit : *barrelRecHitsHandle_.product())
     {
-        cout << laser.product()->getLaserCorrection(recHit.id(), edm::Timestamp(event.time().value())) << endl;
         //---check channel status
         EBDetId ebHit = EBDetId(recHit.id());
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
