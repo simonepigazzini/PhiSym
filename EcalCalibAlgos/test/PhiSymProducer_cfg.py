@@ -17,6 +17,7 @@ process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
 process.load('RecoLocalCalo.EcalRecProducers.ecalMultiFitUncalibRecHit_cfi')
 process.load('RecoLocalCalo.EcalRecProducers.ecalUncalibRecHit_cfi')
 process.load('RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi')
+process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
 
@@ -45,7 +46,7 @@ process.source = cms.Source("PoolSource",
 process.configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.20 $'),
     annotation = cms.untracked.string('step_PHISYM nevts:'+str(options.maxEvents)),
-    name = cms.untracked.string('testProducer')
+    name = cms.untracked.string('PhiSymProducer')
 )
 
 isStream=True
@@ -86,12 +87,12 @@ if (not runMultiFit):
     process.ecalRecHit.EBuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEB")
     process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEE")
 
-process.load('PhiSym.EcalCalibAlgos.testProducer_cfi')
+process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
     "drop *",
-    "keep *_testProducer_*_*")
+    "keep *_PhiSymProducer_*_*")
 
 process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
                                          splitLevel = cms.untracked.int32(0),
@@ -116,13 +117,15 @@ else:
 
 if (isStream):
     process.p = cms.Path(process.reconstruction_step)
-    process.p *= process.testProducer
+    process.p *= process.offlineBeamSpot
+    process.p *= process.PhiSymProducer
 else:
     process.p = cms.Path(process.RawToDigi) 
     process.p *= process.L1Reco
     process.p *= process.reconstruction_step
-    process.p *= process.testProducer
+    process.p *= process.offlineBeamSpot
+    process.p *= process.PhiSymProducer
 
-#process.path = cms.Path(process.testProducer)
+#process.path = cms.Path(process.PhiSymProducer)
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 process.schedule = cms.Schedule(process.p, process.RECOSIMoutput_step)

@@ -16,7 +16,7 @@
 <use   name="RecoLocalCalo/EcalRecAlgos"/>
 <use   name="Calibration/Tools"/>
 <use   name="CalibCalorimetry/CaloMiscalibTools"/>
-<use   name="PhiSym/EcalCalibDataFormat"/>
+<use   name="PhiSym/EcalCalibDataFormats"/>
 <use   name="PhiSym/EcalCalibAlgos"/>
 <flags EDM_PLUGIN="1"/>
 <export>

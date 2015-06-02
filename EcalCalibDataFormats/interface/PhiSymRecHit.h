@@ -6,19 +6,19 @@
  * Dataformat dedicated to Phi Symmetry ecal calibration
  * 
  * Note: SumEt array ordering:
- *       0 - central value
- *       1 - mis-calib -5%
- *       2 - mis-calib -2.5%
- *       3 - mis-calib +2.5%
- *       4 - mis-calib +5%
+ *       0         - central value
+ *       1<->N/2   - misCalib<1
+ *       N/2+1<->N - misCalib>1
  */
 
+#include <iostream>
+#include <iomanip>
 #include <vector>
 
 #include "DataFormats/DetId/interface/DetId.h"
 
 //---define the number of allowed mis-calibrated values for etSum_ (+ the central value)
-#define N_VALUES 5
+#define N_MISCALIB_VALUES 11
 
 class PhiSymRecHit
 {
@@ -32,27 +32,29 @@ public:
 
     //---getters---
     inline float GetRawId()           const {return id_;};
+    inline float GetNhits()           const {return nHits_;};
     inline float GetSumEt(int iMis=0) const {return etSum_[iMis];};
     inline float GetSumEt2()          const {return et2Sum_;};
-    inline float GetNhits()           const {return nHits_;};
+    inline float GetLCSum()           const {return lcSum_;};
+    inline float GetLC2Sum()          const {return lc2Sum_;};
 
     //---utils---
     void         AddHit(float* etValues, float laserCorr=0);
     void         Reset();
 
+    //---operators---
+    friend std::ostream& operator<<(std::ostream& out, const PhiSymRecHit& obj);
+
 private:
 
     uint32_t id_;
     uint32_t nHits_;
-    float    etSum_[N_VALUES];
+    float    etSum_[N_MISCALIB_VALUES];
     float    et2Sum_;
     float    lcSum_;
     float    lc2Sum_;
 };
 
-namespace edm
-{
-    typedef std::vector<PhiSymRecHit> PhiSymRecHitCollection;
-}
+typedef std::vector<PhiSymRecHit> PhiSymRecHitCollection;
 
 #endif

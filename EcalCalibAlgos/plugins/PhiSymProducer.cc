@@ -1,5 +1,5 @@
-#ifndef TEST_PRODUCER_H
-#define TEST_PRODUCER_H
+#ifndef _PHISYM_PRODUCER_
+#define _PHISYM_PRODUCER_
 
 #include <iostream>
 #include <memory>
@@ -29,19 +29,20 @@
 #include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 #include "CondFormats/EcalObjects/interface/EcalChannelStatusCode.h"
 
-#include "PhiSym/EcalCalibDataFormat/interface/PhiSymRecHit.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymLumiInfo.h"
 #include "PhiSym/EcalCalibAlgos/interface/EcalGeomPhiSymHelper.h"
 
 using namespace std;
 
 //****************************************************************************************
 
-class testProducer : public edm::one::EDProducer<edm::EndLuminosityBlockProducer,
+class PhiSymProducer : public edm::one::EDProducer<edm::EndLuminosityBlockProducer,
                                                  edm::one::WatchLuminosityBlocks>
 {
 public:
-    explicit testProducer(const edm::ParameterSet& pSet);
-    ~testProducer();
+    explicit PhiSymProducer(const edm::ParameterSet& pSet);
+    ~PhiSymProducer();
 
 private:
 
@@ -62,7 +63,8 @@ private:
     float          AP_;
     float          B_;
     int            nMisCalib_;
-    vector<double> misCalibValues_;
+    vector<double> misCalibRangeEB_;
+    vector<double> misCalibRangeEE_;
     int            lumisToSum_;
     int            statusThreshold_;
     int            nLumis_;
@@ -71,60 +73,67 @@ private:
     EcalGeomPhiSymHelper* ecalGeoAndStatus_;
 
     //---output
-    auto_ptr<edm::PhiSymRecHitCollection> recHitCollEB_;
-    auto_ptr<edm::PhiSymRecHitCollection> recHitCollEE_;
+    auto_ptr<PhiSymLumiInfoCollection> lumiInfo_;
+    auto_ptr<PhiSymRecHitCollection> recHitCollEB_;
+    auto_ptr<PhiSymRecHitCollection> recHitCollEE_;
     vector<float> detIdKeyEB_;
     vector<float> detIdKeyEE_;
 };
 
 //----------IMPLEMENTATION----------------------------------------------------------------
 
-testProducer::testProducer(const edm::ParameterSet& pSet):
+PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     ebTag_(pSet.getParameter<edm::InputTag>("barrelHitCollection")),
     eeTag_(pSet.getParameter<edm::InputTag>("endcapHitCollection")),
     eCutEB_(pSet.getParameter<double>("eCut_barrel")),
     AP_(pSet.getParameter<double>("AP")),
     B_(pSet.getParameter<double>("B")),
     nMisCalib_(pSet.getParameter<int>("nMisCalib")),
-    misCalibValues_(pSet.getParameter<vector<double> >("misCalibValues")),
+    misCalibRangeEB_(pSet.getParameter<vector<double> >("misCalibRangeEB")),
+    misCalibRangeEE_(pSet.getParameter<vector<double> >("misCalibRangeEE")),
     lumisToSum_(pSet.getParameter<int>("lumisToSum")),
     statusThreshold_(pSet.getUntrackedParameter<int>("statusThreshold")),
     nLumis_(0),
     ecalGeoAndStatus_(NULL)
 {    
     //---register the product
-    produces<edm::PhiSymRecHitCollection, edm::InLumi>("EB");
-    produces<edm::PhiSymRecHitCollection, edm::InLumi>("EE");
+    produces<PhiSymLumiInfoCollection, edm::InLumi>();
+    produces<PhiSymRecHitCollection, edm::InLumi>("EB");
+    produces<PhiSymRecHitCollection, edm::InLumi>("EE");
 }
 
-testProducer::~testProducer()
+PhiSymProducer::~PhiSymProducer()
 {}
 
-void testProducer::beginJob()
+void PhiSymProducer::beginJob()
 {}
 
-void testProducer::endJob()
+void PhiSymProducer::endJob()
 {}
 
-void testProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
+void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
     //---reset the RecHit and DetId vectors
     if(nLumis_ == 0)
     {
-        recHitCollEB_ = auto_ptr<edm::PhiSymRecHitCollection>(new edm::PhiSymRecHitCollection);
-        recHitCollEE_ = auto_ptr<edm::PhiSymRecHitCollection>(new edm::PhiSymRecHitCollection);
+        lumiInfo_ = auto_ptr<PhiSymLumiInfoCollection>(new PhiSymLumiInfoCollection);
+        lumiInfo_->push_back(PhiSymLumiInfo());
+        
+        recHitCollEB_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
+        recHitCollEE_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
         detIdKeyEB_.clear();
-        detIdKeyEE_.clear();
+        detIdKeyEE_.clear();        
     }
     
     ++nLumis_;
 }
 
-void testProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::EventSetup const& setup)
+void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::EventSetup const& setup)
 {
     //---put the collection in the LuminosityBlocks tree
     if(nLumis_ == lumisToSum_)
     {
+        lumi.put(lumiInfo_);
         lumi.put(recHitCollEB_, "EB");
         lumi.put(recHitCollEE_, "EE");
     
@@ -132,7 +141,7 @@ void testProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::Ev
     }       
 }
 
-void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
+void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 {
     //---get recHits collections - check for errors
     event.getByLabel(ebTag_, barrelRecHitsHandle_);
@@ -143,6 +152,12 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     if(!endcapRecHitsHandle_.isValid())
         edm::LogError("") << "[PhiSymmetryCalibration] Error! Can't get EE RecHits!" << endl;
 
+    //---get the beamspot
+    uint64_t totHitsEB=0;
+    uint64_t totHitsEE=0;
+    edm::Handle<reco::BeamSpot> recoBeamSpotHandle;
+    event.getByLabel("offlineBeamSpot", recoBeamSpotHandle);
+    
     //---get the laser corrections
     edm::Timestamp evtTimeStamp(event.time().value());
     edm::ESHandle<EcalLaserDbService> laser;
@@ -179,13 +194,18 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 
         //---compute et + miscalibration
         uint32_t currentId(recHit.id().rawId());                
-        float* etValues = new float[nMisCalib_];        
-        for(int iMis=0; iMis<nMisCalib_; ++iMis)
+        float* etValues = new float[nMisCalib_+1];
+        float  misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
+        for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)
         {
-            etValues[iMis] = recHit.energy()/cosh(eta)*misCalibValues_[iMis];
+            //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]
+            int index = iMis > 0 ? iMis+nMisCalib_/2 : iMis == 0 ? 0 : iMis+nMisCalib_/2+1; 
+            etValues[index] = recHit.energy()/cosh(eta)*(1+misCalibStep*iMis);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[iMis]*cosh(eta) < eCutEB_ || etValues[iMis] > eCutEB_/cosh(eta)+1)                
-                etValues[iMis] = 0;
+            if(etValues[index]*cosh(eta) < eCutEB_ || etValues[index] > eCutEB_/cosh(eta)+1)                
+                etValues[index] = 0;
+            if(etValues[0] > 0)
+                ++totHitsEB;
         }
 
         //---loop over the known rechits
@@ -222,20 +242,24 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 
         //---compute et + miscalibration
         uint32_t currentId(recHit.id().rawId());                
-        float* etValues = new float[nMisCalib_];
+        float* etValues = new float[nMisCalib_+1];
+        float  misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
         float eCutEE=0;
-        for (int ring=0; ring<kEndcEtaRings; ring++)
+        for(int ring=0; ring<kEndcEtaRings; ring++)
         {
             if(eta>ecalGeoAndStatus_->etaBoundary_[ring] && eta<ecalGeoAndStatus_->etaBoundary_[ring+1])
                 eCutEE = AP_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*B_;
         }
-
-        for(int iMis=0; iMis<nMisCalib_; ++iMis)
+        for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)
         {
-            etValues[iMis] = recHit.energy()/cosh(eta)*misCalibValues_[iMis];
+            //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]
+            int index = iMis > 0 ? iMis+nMisCalib_/2 : iMis == 0 ? 0 : iMis+nMisCalib_/2+1; 
+            etValues[index] = recHit.energy()/cosh(eta)*(1+misCalibStep*iMis);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[iMis]*cosh(eta) < eCutEE || etValues[iMis] > eCutEE/cosh(eta)+1)
-                etValues[iMis] = 0;
+            if(etValues[index]*cosh(eta) < eCutEE || etValues[index] > eCutEE/cosh(eta)+1)                
+                etValues[index] = 0;
+            if(etValues[0] > 0)
+                ++totHitsEE;
         }
 
         //---loop over the known rechits
@@ -259,9 +283,12 @@ void testProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             recHitCollEE_->push_back(PhiSymRecHit(currentId, etValues));
             detIdKeyEE_.push_back(currentId);
         }
-    }    
+    }
+
+    //---update the beamspot
+    lumiInfo_->at(0).Update(recoBeamSpotHandle.product(), totHitsEB, totHitsEE);
 }
 
-DEFINE_FWK_MODULE(testProducer);
+DEFINE_FWK_MODULE(PhiSymProducer);
 
 #endif

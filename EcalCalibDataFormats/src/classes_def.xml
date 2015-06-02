@@ -2,4 +2,7 @@
   <class name="PhiSymRecHit"/>
   <class name="std::vector<PhiSymRecHit>"/>
   <class name="edm::Wrapper<std::vector<PhiSymRecHit> >"/>
+  <class name="PhiSymLumiInfo"/>
+  <class name="std::vector<PhiSymLumiInfo>"/>
+  <class name="edm::Wrapper<std::vector<PhiSymLumiInfo> >"/>
 </lcgdict>
