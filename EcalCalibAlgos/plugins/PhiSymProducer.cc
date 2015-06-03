@@ -118,7 +118,7 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
     {
         lumiInfo_ = auto_ptr<PhiSymInfoCollection>(new PhiSymInfoCollection);
         lumiInfo_->push_back(PhiSymInfo());
-        lumiInfo_->back->setStartLumi(lumi);
+        lumiInfo_->back().setStartLumi(lumi);
         recHitCollEB_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
         recHitCollEE_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
         detIdKeyEB_.clear();
@@ -133,7 +133,7 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
     //---put the collection in the LuminosityBlocks tree
     if(nLumis_ == lumisToSum_)
     {
-      lumiInfo_->back->setEndLumi(lumi);
+      lumiInfo_->back().setEndLumi(lumi);
       lumi.put(lumiInfo_);
       lumi.put(recHitCollEB_, "EB");
       lumi.put(recHitCollEE_, "EE");
