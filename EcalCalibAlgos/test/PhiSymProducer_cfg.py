@@ -67,13 +67,13 @@ if (runMultiFit):
 
 #ecalUncalibRecHit
 if (isStream):
-    process.ecalUncalibRecHit.EBdigiCollection = cms.InputTag("HLTEcalPhiSymFilter","phiSymEcalDigisEB")
-    process.ecalUncalibRecHit.EEdigiCollection = cms.InputTag("HLTEcalPhiSymFilter","phiSymEcalDigisEE")
+    process.ecalUncalibRecHit.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
+    process.ecalUncalibRecHit.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
 
 #ecalMultiFitUncalibRecHit
 if (isStream):
-    process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag("HLTEcalPhiSymFilter","phiSymEcalDigisEB")
-    process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag("HLTEcalPhiSymFilter","phiSymEcalDigisEE")
+    process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
+    process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
 
 #ecalRecHit (no ricovery)
 process.ecalRecHit.killDeadChannels = cms.bool( False )
@@ -100,14 +100,17 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
                                          fileName = cms.untracked.string(options.outputFile)
 )
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V55::All')
-# process.GlobalTag.globaltag = 'FT_R_70_V1::All'
-# process.GlobalTag.toGet = cms.VPSet(
-#     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-#              tag = cms.string("EcalIntercalibConstantsMC_mc"),
-#              connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL")
-#              )
-#     )
+process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_E_V48')
+process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(record = cms.string("EcalChannelStatusRcd"),
+             tag = cms.string("EcalChannelStatus_v1_hlt"),
+             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
+         ),
+    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
+             tag = cms.string("EcalIntercalibConstants_V1_express"),
+             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
+         )
+)
 
 
 if (not runMultiFit):

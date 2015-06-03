@@ -71,7 +71,7 @@ void PhiSymCalibration::beginLuminosityBlock(edm::LuminosityBlock const& lumi, e
     {}
 }
 
-void endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
+void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
     for(int iRing=0; iRing<kBarlRings; ++iRing)
     {
