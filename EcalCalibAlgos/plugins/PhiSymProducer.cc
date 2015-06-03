@@ -30,7 +30,7 @@
 #include "CondFormats/EcalObjects/interface/EcalChannelStatusCode.h"
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
-#include "PhiSym/EcalCalibDataFormats/interface/PhiSymLumiInfo.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
 #include "PhiSym/EcalCalibAlgos/interface/EcalGeomPhiSymHelper.h"
 
 using namespace std;
@@ -73,7 +73,7 @@ private:
     EcalGeomPhiSymHelper* ecalGeoAndStatus_;
 
     //---output
-    auto_ptr<PhiSymLumiInfoCollection> lumiInfo_;
+    auto_ptr<PhiSymInfoCollection> lumiInfo_;
     auto_ptr<PhiSymRecHitCollection> recHitCollEB_;
     auto_ptr<PhiSymRecHitCollection> recHitCollEE_;
     vector<float> detIdKeyEB_;
@@ -97,7 +97,7 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     ecalGeoAndStatus_(NULL)
 {    
     //---register the product
-    produces<PhiSymLumiInfoCollection, edm::InLumi>();
+    produces<PhiSymInfoCollection, edm::InLumi>();
     produces<PhiSymRecHitCollection, edm::InLumi>("EB");
     produces<PhiSymRecHitCollection, edm::InLumi>("EE");
 }
@@ -116,8 +116,8 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
     //---reset the RecHit and DetId vectors
     if(nLumis_ == 0)
     {
-        lumiInfo_ = auto_ptr<PhiSymLumiInfoCollection>(new PhiSymLumiInfoCollection);
-        lumiInfo_->push_back(PhiSymLumiInfo());
+        lumiInfo_ = auto_ptr<PhiSymInfoCollection>(new PhiSymInfoCollection);
+        lumiInfo_->push_back(PhiSymInfo());
         
         recHitCollEB_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
         recHitCollEE_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
@@ -204,9 +204,9 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             //---set et to zero if out of range [e_thr, et_thr+1]
             if(etValues[index]*cosh(eta) < eCutEB_ || etValues[index] > eCutEB_/cosh(eta)+1)                
                 etValues[index] = 0;
-            if(etValues[0] > 0)
-                ++totHitsEB;
         }
+        if(etValues[0] > 0)
+            ++totHitsEB;
 
         //---loop over the known rechits
         bool found=false;
@@ -258,9 +258,9 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             //---set et to zero if out of range [e_thr, et_thr+1]
             if(etValues[index]*cosh(eta) < eCutEE || etValues[index] > eCutEE/cosh(eta)+1)                
                 etValues[index] = 0;
-            if(etValues[0] > 0)
-                ++totHitsEE;
         }
+        if(etValues[0] > 0)
+            ++totHitsEE;
 
         //---loop over the known rechits
         bool found=false;

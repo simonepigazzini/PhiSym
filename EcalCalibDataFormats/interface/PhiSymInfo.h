@@ -1,5 +1,5 @@
-#ifndef DATAFORMAT_PHISYMLumiINFO_H
-#define DATAFORMAT_PHISYMLumiINFO_H
+#ifndef DATAFORMAT_PHISYMINFO_H
+#define DATAFORMAT_PHISYMINFO_H
 
 #include <vector>
 
@@ -7,14 +7,14 @@
 
 //****************************************************************************************
 
-class PhiSymLumiInfo
+class PhiSymInfo
 {
 public:
     //---ctors---
-    PhiSymLumiInfo();
+    PhiSymInfo();
     
     //---dtor---
-    ~PhiSymLumiInfo();
+    ~PhiSymInfo();
 
     //---getters---
     inline uint64_t GetTotHitsEB()  const {return totHitsEB_;};
@@ -27,7 +27,7 @@ public:
     void            Update(const reco::BeamSpot* bs, uint64_t& nEB, uint64_t& nEE);
 
     //---operators---
-    friend std::ostream& operator<<(std::ostream& out, const PhiSymLumiInfo& obj);
+    friend std::ostream& operator<<(std::ostream& out, const PhiSymInfo& obj);
 
 private:
 
@@ -42,6 +42,6 @@ private:
     float    meanSigmaZ_;
 };
 
-typedef std::vector<PhiSymLumiInfo> PhiSymLumiInfoCollection;
+typedef std::vector<PhiSymInfo> PhiSymInfoCollection;
 
 #endif

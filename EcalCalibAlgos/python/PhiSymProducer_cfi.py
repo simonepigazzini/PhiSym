@@ -10,6 +10,6 @@ PhiSymProducer = cms.EDProducer(
     nMisCalib = cms.int32(10), # <= 10; even; central value does not count 
     misCalibRangeEB = cms.vdouble(0.95, 1.05),
     misCalibRangeEE = cms.vdouble(0.90, 1.10),
-    lumisToSum = cms.int32(1),                              
+    lumisToSum = cms.int32(1),          
     statusThreshold = cms.untracked.int32(0)
 )

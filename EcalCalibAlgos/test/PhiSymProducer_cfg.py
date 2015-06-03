@@ -10,7 +10,7 @@ options.parseArguments()
 
 process=cms.Process("PHISYM")
 
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')#condDBv2_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.load('Configuration.Geometry.GeometryExtended2015Reco_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
@@ -39,7 +39,7 @@ process.options = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('/store/data/Commissioning2015/AlCaPhiSym/RAW/v1/000/240/226/00000/9087B70C-A2E1-E411-A01E-02163E013902.root')
+                            fileNames = cms.untracked.vstring('/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/920/00000/F082B567-DE09-E511-B94D-02163E011D50.root')
 )
 
 # Production Info
@@ -100,7 +100,7 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
                                          fileName = cms.untracked.string(options.outputFile)
 )
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_R_74_V8A::All')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V55::All')
 # process.GlobalTag.globaltag = 'FT_R_70_V1::All'
 # process.GlobalTag.toGet = cms.VPSet(
 #     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),

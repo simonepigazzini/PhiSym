@@ -1,17 +1,17 @@
-#include "PhiSym/EcalCalibDataFormats/interface/PhiSymLumiInfo.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
 
 //**********constructors******************************************************************
-PhiSymLumiInfo::PhiSymLumiInfo():
+PhiSymInfo::PhiSymInfo():
     totHitsEB_(0), totHitsEE_(0), nEvents_(0),
     meanX_(0), meanSigmaX_(0), meanY_(0), meanSigmaY_(0), meanZ_(0), meanSigmaZ_(0)
 {}
 
 //**********destructor********************************************************************
-PhiSymLumiInfo::~PhiSymLumiInfo()
+PhiSymInfo::~PhiSymInfo()
 {}
 
 //**********getters***********************************************************************
-float PhiSymLumiInfo::GetMean(char k) const
+float PhiSymInfo::GetMean(char k) const
 {
     if(k == 'X')
         return meanX_;
@@ -23,7 +23,7 @@ float PhiSymLumiInfo::GetMean(char k) const
     return -999;
 }
 
-float PhiSymLumiInfo::GetMeanSigma(char k) const
+float PhiSymInfo::GetMeanSigma(char k) const
 {
     if(k == 'X')
         return meanSigmaX_;
@@ -36,7 +36,7 @@ float PhiSymLumiInfo::GetMeanSigma(char k) const
 }
 
 //**********utils*************************************************************************
-void PhiSymLumiInfo::Update(const reco::BeamSpot* bs, uint64_t& nEB, uint64_t& nEE)
+void PhiSymInfo::Update(const reco::BeamSpot* bs, uint64_t& nEB, uint64_t& nEE)
 {
     meanX_ = (meanX_*nEvents_ + bs->x0())/(nEvents_+1);
     meanY_ = (meanY_*nEvents_ + bs->y0())/(nEvents_+1);
@@ -54,16 +54,16 @@ void PhiSymLumiInfo::Update(const reco::BeamSpot* bs, uint64_t& nEB, uint64_t& n
 
 //**********operators*********************************************************************
 
-std::ostream& operator<<(std::ostream& out, const PhiSymLumiInfo& obj)
+std::ostream& operator<<(std::ostream& out, const PhiSymInfo& obj)
 {
     //---dump all the informations
     out << std::endl;
     out << std::setw(20) << "# event: " << obj.GetNEvents() << std::endl;
     out << std::setw(20) << "hits EB: " << obj.GetTotHitsEB() << std::endl;
     out << std::setw(20) << "hits EE: " << obj.GetTotHitsEE() << std::endl;
-    out << std::setw(20) << "X: mean | meanSigma: " << obj.GetMean('X') << obj.GetMeanSigma('X') <<std::endl;
-    out << std::setw(20) << "Y: mean | meanSigma: " << obj.GetMean('Y') << obj.GetMeanSigma('Y') <<std::endl;
-    out << std::setw(20) << "Z: mean | meanSigma: " << obj.GetMean('Z') << obj.GetMeanSigma('Z') <<std::endl;
+    out << std::setw(20) << "X: mean | meanSigma: " << obj.GetMean('X') << " | " << obj.GetMeanSigma('X') <<std::endl;
+    out << std::setw(20) << "Y: mean | meanSigma: " << obj.GetMean('Y') << " | " << obj.GetMeanSigma('Y') <<std::endl;
+    out << std::setw(20) << "Z: mean | meanSigma: " << obj.GetMean('Z') << " | " << obj.GetMeanSigma('Z') <<std::endl;
     out << std::endl;
     
     return out;

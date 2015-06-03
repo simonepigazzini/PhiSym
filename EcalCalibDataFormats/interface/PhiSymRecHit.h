@@ -31,12 +31,12 @@ public:
     ~PhiSymRecHit();
 
     //---getters---
-    inline float GetRawId()           const {return id_;};
-    inline float GetNhits()           const {return nHits_;};
-    inline float GetSumEt(int iMis=0) const {return etSum_[iMis];};
-    inline float GetSumEt2()          const {return et2Sum_;};
-    inline float GetLCSum()           const {return lcSum_;};
-    inline float GetLC2Sum()          const {return lc2Sum_;};
+    inline uint32_t GetRawId()           const {return id_;};
+    inline uint32_t GetNhits()           const {return nHits_;};
+    inline float    GetSumEt(int iMis=0) const {return etSum_[iMis];};
+    inline float    GetSumEt2()          const {return et2Sum_;};
+    inline float    GetLCSum()           const {return lcSum_;};
+    inline float    GetLC2Sum()          const {return lc2Sum_;};
 
     //---utils---
     void         AddHit(float* etValues, float laserCorr=0);
