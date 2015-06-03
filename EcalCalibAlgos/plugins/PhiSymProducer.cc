@@ -13,6 +13,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
 #include "DataFormats/EcalDetId/interface/EEDetId.h"
@@ -31,6 +33,7 @@
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
+#include "PhiSym/EcalCalibAlgos/interface/PhiSymFile.h"
 #include "PhiSym/EcalCalibAlgos/interface/EcalGeomPhiSymHelper.h"
 
 using namespace std;
@@ -60,6 +63,7 @@ private:
     edm::InputTag ebTag_;
     edm::InputTag eeTag_;
     float          eCutEB_;
+    float          eThresholdEB_;
     float          AP_;
     float          B_;
     int            nMisCalib_;
@@ -72,12 +76,15 @@ private:
     //---geometry
     EcalGeomPhiSymHelper* ecalGeoAndStatus_;
 
-    //---output
+    //---output edm
     auto_ptr<PhiSymInfoCollection> lumiInfo_;
     auto_ptr<PhiSymRecHitCollection> recHitCollEB_;
     auto_ptr<PhiSymRecHitCollection> recHitCollEE_;
     vector<float> detIdKeyEB_;
     vector<float> detIdKeyEE_;
+    //---output plain tree
+    auto_ptr<PhiSymFile> outFile_;
+    edm::Service<TFileService> fs_;
 };
 
 //----------IMPLEMENTATION----------------------------------------------------------------
@@ -86,6 +93,7 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     ebTag_(pSet.getParameter<edm::InputTag>("barrelHitCollection")),
     eeTag_(pSet.getParameter<edm::InputTag>("endcapHitCollection")),
     eCutEB_(pSet.getParameter<double>("eCut_barrel")),
+    eThresholdEB_(pSet.getParameter<double>("eThreshold_barrel")),
     AP_(pSet.getParameter<double>("AP")),
     B_(pSet.getParameter<double>("B")),
     nMisCalib_(pSet.getParameter<int>("nMisCalib")),
@@ -106,7 +114,9 @@ PhiSymProducer::~PhiSymProducer()
 {}
 
 void PhiSymProducer::beginJob()
-{}
+{
+    outFile_ = new PhiSymFile(fs_->file())
+}
 
 void PhiSymProducer::endJob()
 {}
@@ -202,7 +212,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             int index = iMis > 0 ? iMis+nMisCalib_/2 : iMis == 0 ? 0 : iMis+nMisCalib_/2+1; 
             etValues[index] = recHit.energy()/cosh(eta)*(1+misCalibStep*iMis);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[index]*cosh(eta) < eCutEB_ || etValues[index] > eCutEB_/cosh(eta)+1)                
+            if(etValues[index]*cosh(eta) < eCutEB_ || etValues[index] > eCutEB_/cosh(eta)+eThresholdEB_)                
                 etValues[index] = 0;
         }
         if(etValues[0] > 0)
