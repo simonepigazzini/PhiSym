@@ -39,7 +39,7 @@ process.options = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/920/00000/F082B567-DE09-E511-B94D-02163E011D50.root')
+                           fileNames = cms.untracked.vstring('/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/908/00000/CA131875-EF09-E511-9E93-02163E0138D9.root')
 )
 
 # Production Info
@@ -88,7 +88,7 @@ if (not runMultiFit):
     process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEE")
 
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
-
+process.PhiSymProducer.applyEtThreshold=cms.untracked.bool(False)
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
     "drop *",
