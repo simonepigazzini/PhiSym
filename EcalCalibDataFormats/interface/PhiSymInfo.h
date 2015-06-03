@@ -4,6 +4,9 @@
 #include <vector>
 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/Provenance/interface/LuminosityBlockID.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
+
 
 //****************************************************************************************
 
@@ -23,6 +26,9 @@ public:
     float           GetMean(char k)      const;
     float           GetMeanSigma(char k) const;
 
+    void            setStartLumi(edm::LuminosityBlock const& lumi);
+    void            setEndLumi(edm::LuminosityBlock const& lumi);
+
     //---utils---
     void            Update(const reco::BeamSpot* bs, uint64_t& nEB, uint64_t& nEE);
 
@@ -30,10 +36,13 @@ public:
     friend std::ostream& operator<<(std::ostream& out, const PhiSymInfo& obj);
 
 private:
+    edm::LuminosityBlockID startLumi_;
+    edm::LuminosityBlockID endLumi_;
 
     uint64_t totHitsEB_;
     uint64_t totHitsEE_;
     uint32_t nEvents_;
+    
     float    meanX_;
     float    meanSigmaX_;
     float    meanY_;

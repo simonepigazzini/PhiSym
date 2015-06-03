@@ -35,6 +35,15 @@ float PhiSymInfo::GetMeanSigma(char k) const
     return -999;
 }
 
+void PhiSymInfo::setStartLumi(edm::LuminosityBlock const& lumi)
+{
+  startLumi_=lumi.luminosityBlockAuxiliary().id();
+}
+
+void PhiSymInfo::setEndLumi(edm::LuminosityBlock const& lumi)
+{
+  endLumi_=lumi.luminosityBlockAuxiliary().id();
+}
 //**********utils*************************************************************************
 void PhiSymInfo::Update(const reco::BeamSpot* bs, uint64_t& nEB, uint64_t& nEE)
 {
