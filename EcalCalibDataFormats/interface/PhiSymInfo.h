@@ -43,8 +43,6 @@ private:
     uint64_t totHitsEE_;
     uint32_t nEvents_;
     
-    uint32_t nLumis;
- 
     float    meanX_;
     float    meanSigmaX_;
     float    meanY_;
