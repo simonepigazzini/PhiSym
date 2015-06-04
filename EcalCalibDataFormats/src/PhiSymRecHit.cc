@@ -8,7 +8,7 @@ PhiSymRecHit::PhiSymRecHit():
         etSum_[i] = 0;
 }
             
-PhiSymRecHit::PhiSymRecHit(uint32_t& id, float* etValues):
+PhiSymRecHit::PhiSymRecHit(uint32_t id, float* etValues):
     id_(id), nHits_(0), et2Sum_(0)
 {
     for(int i=0; i<N_MISCALIB_VALUES; ++i)
