@@ -10,8 +10,9 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -83,6 +84,8 @@ private:
     vector<float> detIdKeyEB_;
     vector<float> detIdKeyEE_;
     //---output plain tree
+    bool makeSpectraTreeEB_;
+    bool makeSpectraTreeEE_;
     auto_ptr<PhiSymFile> outFile_;
     edm::Service<TFileService> fs_;
 };
@@ -100,9 +103,11 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     misCalibRangeEB_(pSet.getParameter<vector<double> >("misCalibRangeEB")),
     misCalibRangeEE_(pSet.getParameter<vector<double> >("misCalibRangeEE")),
     lumisToSum_(pSet.getParameter<int>("lumisToSum")),
-    statusThreshold_(pSet.getUntrackedParameter<int>("statusThreshold")),
+    statusThreshold_(pSet.getParameter<int>("statusThreshold")),
     nLumis_(0),
-    ecalGeoAndStatus_(NULL)
+    ecalGeoAndStatus_(NULL),
+    makeSpectraTreeEB_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEB")),
+    makeSpectraTreeEE_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEE"))
 {    
     //---register the product
     produces<PhiSymInfoCollection, edm::InLumi>();
@@ -115,11 +120,18 @@ PhiSymProducer::~PhiSymProducer()
 
 void PhiSymProducer::beginJob()
 {
-    outFile_ = new PhiSymFile(fs_->file())
+    if(makeSpectraTreeEB_ || makeSpectraTreeEE_)
+        outFile_ = auto_ptr<PhiSymFile>(new PhiSymFile(&fs_->file()));
 }
 
 void PhiSymProducer::endJob()
-{}
+{
+    outFile_->cd();
+    if(makeSpectraTreeEB_)
+        outFile_->ebTree.Write("eb_xstals");
+    if(makeSpectraTreeEE_)
+        outFile_->eeTree.Write("ee_xstals");
+}
 
 void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
@@ -201,7 +213,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
         if(!ecalGeoAndStatus_->goodCell_barl[abs(ebHit.ieta())-1][ebHit.iphi()-1][ebHit.ieta()>0 ? 1 : 0])
             continue;
-
+        
         //---compute et + miscalibration
         uint32_t currentId(recHit.id().rawId());                
         float* etValues = new float[nMisCalib_+1];
@@ -216,7 +228,16 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
                 etValues[index] = 0;
         }
         if(etValues[0] > 0)
-            ++totHitsEB;
+            ++totHitsEB;        
+
+        //---fill the plain tree
+        if(makeSpectraTreeEB_)
+        {
+            outFile_->ebTree.ieta = ebHit.ieta();
+            outFile_->ebTree.iphi = ebHit.iphi();
+            outFile_->ebTree.et = recHit.energy()/cosh(eta);
+            outFile_->ebTree.Fill();
+        }
 
         //---loop over the known rechits
         bool found=false;
@@ -249,16 +270,20 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         float eta=endcapGeometry->getGeometry(eeHit)->getPosition().eta();
         if(!ecalGeoAndStatus_->goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
             continue;
-
+       
         //---compute et + miscalibration
         uint32_t currentId(recHit.id().rawId());                
         float* etValues = new float[nMisCalib_+1];
         float  misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
         float eCutEE=0;
+        int iring=0;
         for(int ring=0; ring<kEndcEtaRings; ring++)
         {
             if(eta>ecalGeoAndStatus_->etaBoundary_[ring] && eta<ecalGeoAndStatus_->etaBoundary_[ring+1])
+            {
+                iring = ring;
                 eCutEE = AP_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*B_;
+            }
         }
         for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)
         {
@@ -272,6 +297,16 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         if(etValues[0] > 0)
             ++totHitsEE;
 
+        //---fill the plain tree
+        if(makeSpectraTreeEE_)
+        {
+            outFile_->eeTree.iring = iring;
+            outFile_->eeTree.ix = eeHit.ix();
+            outFile_->eeTree.iy = eeHit.iy();
+            outFile_->eeTree.et = recHit.energy()/cosh(eta);
+            outFile_->eeTree.Fill();
+        }        
+        
         //---loop over the known rechits
         bool found=false;
         if(detIdKeyEE_.size() != recHitCollEE_->size())

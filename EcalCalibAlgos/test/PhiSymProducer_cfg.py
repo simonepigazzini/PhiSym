@@ -100,7 +100,11 @@ if (not runMultiFit):
     process.ecalRecHit.EBuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEB")
     process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEE")
 
+# PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
+
+process.PhiSymProducer.makeSpectraTreeEB = True
+process.PhiSymProducer.makeSpectraTreeEE = True
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
@@ -113,6 +117,10 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
                                          fileName = cms.untracked.string(options.outputFile)
 )
 
+process.TFileService = cms.Service("TFileService",
+                                   fileName = cms.string("phisym_spectra.root"))
+
+# GLOBAL-TAG
 process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_E_V48')
 process.GlobalTag.toGet = cms.VPSet(
     cms.PSet(record = cms.string("EcalChannelStatusRcd"),
@@ -125,7 +133,7 @@ process.GlobalTag.toGet = cms.VPSet(
          )
 )
 
-
+# SCHEDULE
 if (not runMultiFit):
     process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
 else:
@@ -142,6 +150,5 @@ else:
     process.p *= process.offlineBeamSpot
     process.p *= process.PhiSymProducer
 
-#process.path = cms.Path(process.PhiSymProducer)
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 process.schedule = cms.Schedule(process.p, process.RECOSIMoutput_step)

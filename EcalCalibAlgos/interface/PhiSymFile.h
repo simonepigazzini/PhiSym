@@ -11,14 +11,14 @@ using namespace std;
 
 //**********EB TREE***********************************************************************
 
-class EBsTree
+class EBTree
 {
 public: 
 
     //---ctors---
-    EBsTree();
+    EBTree();
     //---dtor---
-    ~EBsTree() {};
+    ~EBTree() {};
     //---wrappers
     inline void Fill() {tree_->Fill();};
     inline void Write(const char* name) {tree_->Write(name);};
@@ -34,7 +34,7 @@ private:
     TTree* tree_;    
 };
 
-EBsTree::EBsTree()
+EBTree::EBTree()
 {
     tree_ = new TTree();
     //---init
@@ -50,14 +50,14 @@ EBsTree::EBsTree()
 
 //**********EE TREE***********************************************************************
 
-class EEsTree
+class EETree
 {
 public: 
 
     //---ctors---
-    EEsTree();
+    EETree();
     //---dtor---
-    ~EEsTree() {};
+    ~EETree() {};
     //---wrappers
     inline void Fill() {tree_->Fill();};
     inline void Write(const char* name) {tree_->Write(name);};
@@ -74,7 +74,7 @@ private:
     TTree* tree_;    
 };
 
-EEsTree::EEsTree()
+EETree::EETree()
 {
     tree_ = new TTree();
     //---init
@@ -103,7 +103,7 @@ public:
     inline void cd() {file_->cd();};
 
     EBTree ebTree;
-    EETree ebTree;
+    EETree eeTree;
     
 private:
     
