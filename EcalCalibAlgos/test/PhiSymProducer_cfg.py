@@ -88,7 +88,7 @@ if (not runMultiFit):
     process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEE")
 
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
-process.PhiSymProducer.applyEtThreshold=cms.untracked.bool(False)
+# process.PhiSymProducer.applyEtThreshold=cms.untracked.bool(False)
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
     "drop *",
