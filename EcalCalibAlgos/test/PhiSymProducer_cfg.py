@@ -21,7 +21,7 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.MessageLogger.cerr.default = cms.untracked.PSet(
     limit = cms.untracked.int32(10000000),
     reportEvery = cms.untracked.int32(5000)
@@ -39,7 +39,20 @@ process.options = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                           fileNames = cms.untracked.vstring('/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/908/00000/CA131875-EF09-E511-9E93-02163E0138D9.root')
+                            fileNames = cms.untracked.vstring(
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/04281A56-F509-E511-8C9A-02163E0143C5.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/0657B565-EC09-E511-825B-02163E011DC2.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/18766157-F509-E511-93A8-02163E011DE4.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/1A16BC83-F909-E511-B17C-02163E011B6D.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/2235CE58-F509-E511-804E-02163E013826.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/368DD35A-F509-E511-BAD4-02163E011891.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/3ECCF956-F509-E511-8E13-02163E011DE4.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/66007B5B-F509-E511-A910-02163E014349.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/6ABBFC56-F509-E511-8AF7-02163E01396D.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/AE98FA5A-F509-E511-A205-02163E0142B3.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/F098F257-F509-E511-9270-02163E012124.root',
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/FA57815A-F509-E511-86CD-02163E011B82.root')
+                                #'/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/920/00000/F082B567-DE09-E511-B94D-02163E011D50.root')
 )
 
 # Production Info
