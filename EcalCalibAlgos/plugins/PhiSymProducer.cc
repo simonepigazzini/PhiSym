@@ -73,7 +73,7 @@ private:
     int            lumisToSum_;
     int            statusThreshold_;
     int            nLumis_;
-
+    bool           applyEtThreshold_;
     //---geometry
     EcalGeomPhiSymHelper* ecalGeoAndStatus_;
 
@@ -105,6 +105,7 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     lumisToSum_(pSet.getParameter<int>("lumisToSum")),
     statusThreshold_(pSet.getParameter<int>("statusThreshold")),
     nLumis_(0),
+    applyEtThreshold_(pSet.getUntrackedParameter<bool>("applyEtThreshold")),
     ecalGeoAndStatus_(NULL),
     makeSpectraTreeEB_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEB")),
     makeSpectraTreeEE_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEE"))
@@ -225,7 +226,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             etValues[index] = recHit.energy()/cosh(eta)*(1+misCalibStep*iMis);
             //---set et to zero if out of range [e_thr, et_thr+1]
             if(etValues[index]*cosh(eta) < eCutEB_ || etValues[index] > eCutEB_/cosh(eta)+eThresholdEB_)                
-                etValues[index] = 0;
+	      etValues[index] = 0;
         }
         if(etValues[0] > 0)
             ++totHitsEB;        
@@ -291,7 +292,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             int index = iMis > 0 ? iMis+nMisCalib_/2 : iMis == 0 ? 0 : iMis+nMisCalib_/2+1; 
             etValues[index] = recHit.energy()/cosh(eta)*(1+misCalibStep*iMis);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[index]*cosh(eta) < eCutEE || etValues[index] > eCutEE/cosh(eta)+1)                
+            if(applyEtThreshold_ && (etValues[index]*cosh(eta) < eCutEE || etValues[index] > eCutEE/cosh(eta)+1))                
                 etValues[index] = 0;
         }
         if(etValues[0] > 0)
