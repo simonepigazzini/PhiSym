@@ -25,7 +25,7 @@ class PhiSymRecHit
 public:
     //---ctors---
     PhiSymRecHit();
-    PhiSymRecHit(uint32_t& id, float* etValues=NULL);
+    PhiSymRecHit(uint32_t id, float* etValues=NULL);
     
     //---dtor---
     ~PhiSymRecHit();
