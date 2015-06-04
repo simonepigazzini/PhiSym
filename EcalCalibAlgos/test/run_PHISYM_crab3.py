@@ -3,7 +3,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 config.section_('General')
-config.General.requestName     = 'PHISYM_test_production'
+config.General.requestName     = 'PHISYM_test_production_Commisioning2015'
 config.General.transferLogs    = True
 config.General.transferOutputs = True
 
@@ -11,8 +11,7 @@ config.section_('JobType')
 config.JobType.pluginName      = 'Analysis'
 
 # Name of the CMSSW configuration file
-config.JobType.psetName        = 'testProducer.py'
-#config.JobType.outputFiles     = ['GEN-SIM_H125GG-VBF_SLHC25_patch3.root']
+config.JobType.psetName        = 'PhiSymProducer_cfg.py'
 
 config.section_('Data')
 # This string determines the primary dataset of the newly-produced outputs.
