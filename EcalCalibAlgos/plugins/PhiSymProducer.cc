@@ -65,8 +65,13 @@ private:
     edm::InputTag eeTag_;
     float          eCutEB_;
     float          eThresholdEB_;
-    float          AP_;
-    float          B_;
+    float          Aplus_;
+    float          Bplus_;
+    float          Cplus_;
+    float          Aminus_;
+    float          Bminus_;
+    float          Cminus_;
+    int            ADCcutEE_;
     int            nMisCalib_;
     vector<double> misCalibRangeEB_;
     vector<double> misCalibRangeEE_;
@@ -97,8 +102,13 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     eeTag_(pSet.getParameter<edm::InputTag>("endcapHitCollection")),
     eCutEB_(pSet.getParameter<double>("eCut_barrel")),
     eThresholdEB_(pSet.getParameter<double>("eThreshold_barrel")),
-    AP_(pSet.getParameter<double>("AP")),
-    B_(pSet.getParameter<double>("B")),
+    Aplus_(pSet.getParameter<double>("Aplus")),
+    Bplus_(pSet.getParameter<double>("Bplus")),
+    Cplus_(pSet.getParameter<double>("Cplus")),
+    Aminus_(pSet.getParameter<double>("Aminus")),
+    Bminus_(pSet.getParameter<double>("Bminus")),
+    Cminus_(pSet.getParameter<double>("Cminus")),
+    ADCcutEE_(pSet.getParameter<int>("ADCcutEE")),
     nMisCalib_(pSet.getParameter<int>("nMisCalib")),
     misCalibRangeEB_(pSet.getParameter<vector<double> >("misCalibRangeEB")),
     misCalibRangeEE_(pSet.getParameter<vector<double> >("misCalibRangeEE")),
@@ -136,7 +146,19 @@ void PhiSymProducer::endJob()
 
 void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
-    //---reset the RecHit and DetId vectors
+    //---update plain tree run and lumi info
+    if(makeSpectraTreeEB_)
+    {
+        outFile_->ebTree.run = lumi.luminosityBlockAuxiliary().run();
+        outFile_->ebTree.lumi = lumi.luminosityBlockAuxiliary().luminosityBlock();
+    }
+    if(makeSpectraTreeEE_)
+    {
+        outFile_->eeTree.run = lumi.luminosityBlockAuxiliary().run();
+        outFile_->eeTree.lumi = lumi.luminosityBlockAuxiliary().luminosityBlock();
+    }
+    
+    //---reset the RecHit and LumiInfo collection
     if(nLumis_ == 0)
     {
         lumiInfo_ = auto_ptr<PhiSymInfoCollection>(new PhiSymInfoCollection);
@@ -176,11 +198,11 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
     //---put the collection in the LuminosityBlocks tree
     if(nLumis_ == lumisToSum_)
     {
-      lumiInfo_->back().setEndLumi(lumi);
-      lumi.put(lumiInfo_);
-      lumi.put(recHitCollEB_, "EB");
-      lumi.put(recHitCollEE_, "EE");
-      nLumis_ = 0;
+        lumiInfo_->back().setEndLumi(lumi);
+        lumi.put(lumiInfo_);
+        lumi.put(recHitCollEB_, "EB");
+        lumi.put(recHitCollEE_, "EE");
+        nLumis_ = 0;
     }       
 }
 
@@ -283,8 +305,13 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             if(fabs(eta)>ecalGeoAndStatus_->etaBoundary_[ring] && fabs(eta)<ecalGeoAndStatus_->etaBoundary_[ring+1])
             {
                 iring = ring;
-                //eCutEE = 20*(C_ + B_*ring
-                eCutEE = AP_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*B_;
+                if(eta>0)
+                    eCutEE = ADCcutEE_*(Cplus_ + Bplus_*ring + Aplus_*ring*ring)/1000;
+                else
+                {
+                    eCutEE = ADCcutEE_*(Cminus_ + Bminus_*ring + Aminus_*ring*ring)/1000;
+                    iring = -ring;
+                }
             }
         }
         for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)

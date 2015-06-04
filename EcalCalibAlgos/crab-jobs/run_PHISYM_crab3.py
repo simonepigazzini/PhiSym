@@ -21,7 +21,7 @@ config.Data.inputDBS           = 'global'
 config.Data.splitting          = 'LumiBased'
 config.Data.lumiMask           = 'Run2015A_v0.json'
 config.Data.unitsPerJob        = 100
-config.Data.totalUnits         = 10000
+config.Data.totalUnits         = 1000000
 config.Data.publication        = True
 #config.Data.ignoreLocality     = True
 
@@ -31,5 +31,5 @@ config.Data.outLFNDirBase      =  '/store/user/spigazzi/'
 
 config.section_('Site')
 # Where the output files will be transmitted to
-config.Site.storageSite        = 'T3_IT_MIB'
+config.Site.storageSite        = 'T2_IT_Rome'
 

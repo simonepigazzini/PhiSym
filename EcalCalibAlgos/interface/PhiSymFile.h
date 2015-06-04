@@ -25,6 +25,8 @@ public:
     inline void Write(string name) {tree_->Write(name.c_str());};
     
     //---branches variables---
+    uint32_t run;
+    uint32_t lumi;
     int ieta;
     int iphi;
     float et;
@@ -38,11 +40,15 @@ EBTree::EBTree()
 {
     tree_ = new TTree();
     //---init
+    run=0;
+    lumi=0;
     ieta=0;
     iphi=0;
     et=0;
     
     //---create branches
+    tree_->Branch("run", &run, "run/i");
+    tree_->Branch("lumi", &lumi, "lumi/i");
     tree_->Branch("ieta", &ieta, "ieta/I");
     tree_->Branch("iphi", &iphi, "iphi/I");
     tree_->Branch("et", &et, "et/F");
@@ -64,6 +70,8 @@ public:
     inline void Write(string name) {tree_->Write(name.c_str());};
     
     //---branches variables---
+    uint32_t run;
+    uint32_t lumi;
     int iring;
     int ix;
     int iy;
@@ -78,12 +86,16 @@ EETree::EETree()
 {
     tree_ = new TTree();
     //---init
+    run=0;
+    lumi=0;
     iring=0;
     ix=0;
     iy=0;
     et=0;
     
     //---create branches
+    tree_->Branch("run", &run, "run/i");
+    tree_->Branch("lumi", &lumi, "lumi/i");
     tree_->Branch("iring", &iring, "iring/I");
     tree_->Branch("ix", &ix, "ix/I");
     tree_->Branch("iy", &iy, "iy/I");
