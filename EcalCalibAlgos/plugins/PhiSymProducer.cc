@@ -80,7 +80,7 @@ private:
     int            nLumis_;
     bool           applyEtThreshold_;
     //---geometry
-    EcalGeomPhiSymHelper* ecalGeoAndStatus_;
+    EcalGeomPhiSymHelper ecalGeoAndStatus_;
 
     //---output edm
     auto_ptr<PhiSymInfoCollection> lumiInfo_;
@@ -116,7 +116,6 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     statusThreshold_(pSet.getParameter<int>("statusThreshold")),
     nLumis_(0),
     applyEtThreshold_(pSet.getParameter<bool>("applyEtThreshold")),
-    ecalGeoAndStatus_(NULL),
     makeSpectraTreeEB_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEB")),
     makeSpectraTreeEE_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEE"))
 {    
@@ -243,11 +242,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     edm::ESHandle<EcalChannelStatus> chStatus;
     setup.get<EcalChannelStatusRcd>().get(chStatus);
 
-    if(!ecalGeoAndStatus_)
-    {
-        ecalGeoAndStatus_ = new EcalGeomPhiSymHelper();
-        ecalGeoAndStatus_->setup(&(*geoHandle), &(*chStatus), statusThreshold_, false);
-    }
+    ecalGeoAndStatus_.setup(&(*geoHandle), &(*chStatus), statusThreshold_, false);
 
     //---EB---
     for(auto& recHit : *barrelRecHitsHandle_.product())
@@ -255,7 +250,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         //---check channel status
         EBDetId ebHit = EBDetId(recHit.id());
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
-        if(!ecalGeoAndStatus_->goodCell_barl[abs(ebHit.ieta())-1][ebHit.iphi()-1][ebHit.ieta()>0 ? 1 : 0])
+        if(!ecalGeoAndStatus_.goodCell_barl[abs(ebHit.ieta())-1][ebHit.iphi()-1][ebHit.ieta()>0 ? 1 : 0])
             continue;
         
         //---compute et + miscalibration
@@ -285,7 +280,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             outFile_->ebTree.et = recHit.energy()/cosh(eta);
             outFile_->ebTree.Fill();
         }
-	
+	delete[] etValues;
     }
     //---EE---
     for(auto& recHit : *endcapRecHitsHandle_.product())
@@ -293,7 +288,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         //---check channel status
         EEDetId eeHit = EEDetId(recHit.id());
         float eta=endcapGeometry->getGeometry(eeHit)->getPosition().eta();
-        if(!ecalGeoAndStatus_->goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
+        if(!ecalGeoAndStatus_.goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
             continue;
        
         //---compute et + miscalibration
@@ -303,7 +298,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         int iring=0;
         for(int ring=0; ring<kEndcEtaRings; ring++)
         {
-            if(fabs(eta)>ecalGeoAndStatus_->etaBoundary_[ring] && fabs(eta)<ecalGeoAndStatus_->etaBoundary_[ring+1])
+            if(fabs(eta)>ecalGeoAndStatus_.etaBoundary_[ring] && fabs(eta)<ecalGeoAndStatus_.etaBoundary_[ring+1])
             {
                 iring = ring;
                 if(eta>0)
@@ -339,7 +334,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             outFile_->eeTree.et = recHit.energy()/cosh(eta);
             outFile_->eeTree.Fill();
         }        
-        
+        delete[] etValues;
     }
     
     //---update the beamspot
