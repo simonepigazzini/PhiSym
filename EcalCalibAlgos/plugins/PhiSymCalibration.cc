@@ -38,7 +38,7 @@ public:
     explicit PhiSymCalibration(const edm::ParameterSet& pSet);
     ~PhiSymCalibration() {};
 
-d    //---methods
+    //---methods
     virtual void beginJob() override;
     virtual void beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup) override;
     virtual void endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup) override;

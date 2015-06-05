@@ -80,7 +80,7 @@ private:
     int            nLumis_;
     bool           applyEtThreshold_;
     //---geometry
-    EcalGeomPhiSymHelper ecalGeoAndStatus_;
+    EcalGeomPhiSymHelper* ecalGeoAndStatus_;
 
     //---output edm
     auto_ptr<PhiSymInfoCollection> lumiInfo_;
@@ -116,6 +116,7 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     statusThreshold_(pSet.getParameter<int>("statusThreshold")),
     nLumis_(0),
     applyEtThreshold_(pSet.getParameter<bool>("applyEtThreshold")),
+    ecalGeoAndStatus_(NULL),
     makeSpectraTreeEB_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEB")),
     makeSpectraTreeEE_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEE"))
 {    
@@ -238,21 +239,24 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     const CaloSubdetectorGeometry* endcapGeometry = 
         geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     
-    //---get the channel status 
-    edm::ESHandle<EcalChannelStatus> chStatus;
-    setup.get<EcalChannelStatusRcd>().get(chStatus);
-
-    ecalGeoAndStatus_.setup(&(*geoHandle), &(*chStatus), statusThreshold_, false);
-
+    //---get the channel status only once
+    if(!ecalGeoAndStatus_)
+    {
+        edm::ESHandle<EcalChannelStatus> chStatus;
+        setup.get<EcalChannelStatusRcd>().get(chStatus);
+        ecalGeoAndStatus_ = new EcalGeomPhiSymHelper();
+        ecalGeoAndStatus_->setup(&(*geoHandle), &(*chStatus), statusThreshold_, false);
+    }
+    
     //---EB---
     for(auto& recHit : *barrelRecHitsHandle_.product())
     {
         //---check channel status
         EBDetId ebHit = EBDetId(recHit.id());
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
-        if(!ecalGeoAndStatus_.goodCell_barl[abs(ebHit.ieta())-1][ebHit.iphi()-1][ebHit.ieta()>0 ? 1 : 0])
+        if(!ecalGeoAndStatus_->goodCell_barl[abs(ebHit.ieta())-1][ebHit.iphi()-1][ebHit.ieta()>0 ? 1 : 0])
             continue;
-        
+
         //---compute et + miscalibration
         float* etValues = new float[nMisCalib_+1];
         float  misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
@@ -288,7 +292,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         //---check channel status
         EEDetId eeHit = EEDetId(recHit.id());
         float eta=endcapGeometry->getGeometry(eeHit)->getPosition().eta();
-        if(!ecalGeoAndStatus_.goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
+        if(!ecalGeoAndStatus_->goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
             continue;
        
         //---compute et + miscalibration
@@ -298,7 +302,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         int iring=0;
         for(int ring=0; ring<kEndcEtaRings; ring++)
         {
-            if(fabs(eta)>ecalGeoAndStatus_.etaBoundary_[ring] && fabs(eta)<ecalGeoAndStatus_.etaBoundary_[ring+1])
+            if(fabs(eta)>ecalGeoAndStatus_->etaBoundary_[ring] && fabs(eta)<ecalGeoAndStatus_->etaBoundary_[ring+1])
             {
                 iring = ring;
                 if(eta>0)

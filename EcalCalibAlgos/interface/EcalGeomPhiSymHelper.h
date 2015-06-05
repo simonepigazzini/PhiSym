@@ -19,30 +19,28 @@ class  CaloGeometry;
 
 class EcalGeomPhiSymHelper {
 
- public:
+public:
   
+    void setup(const CaloGeometry* geometry, 
+               const EcalChannelStatus* chstatus,
+               int statusThreshold,
+               bool printOutFile=true);
 
-  void setup(const CaloGeometry* geometry, 
-	     const EcalChannelStatus* chstatus,
-	     int statusThreshold,
-             bool printOutFile=true);
-
-  GlobalPoint cellPos_[kEndcWedgesX][kEndcWedgesY];
-  double cellPhi_     [kEndcWedgesX][kEndcWedgesY];  
-  double cellArea_    [kEndcWedgesX][kEndcWedgesY];
-  double phi_endc_    [kMaxEndciPhi][kEndcEtaRings]; 
-  double meanCellArea_[kEndcEtaRings];
-  double etaBoundary_ [kEndcEtaRings+1];
-  int endcapRing_     [kEndcWedgesX][kEndcWedgesY];  
-  int nRing_          [kEndcEtaRings];
+    GlobalPoint cellPos_[kEndcWedgesX][kEndcWedgesY];
+    double cellPhi_     [kEndcWedgesX][kEndcWedgesY];  
+    double cellArea_    [kEndcWedgesX][kEndcWedgesY];
+    double phi_endc_    [kMaxEndciPhi][kEndcEtaRings]; 
+    double meanCellArea_[kEndcEtaRings];
+    double etaBoundary_ [kEndcEtaRings+1];
+    int endcapRing_     [kEndcWedgesX][kEndcWedgesY];  
+    int nRing_          [kEndcEtaRings];
  
-  // informations about good cells
-  bool goodCell_barl[kBarlRings][kBarlWedges][kSides];
-  bool goodCell_endc[kEndcWedgesX][kEndcWedgesX][kSides];   
-  int nBads_barl[kBarlRings];
-  int nBads_endc[kEndcEtaRings];
+    // informations about good cells
+    bool goodCell_barl[kBarlRings][kBarlWedges][kSides];
+    bool goodCell_endc[kEndcWedgesX][kEndcWedgesX][kSides];   
+    int nBads_barl[kBarlRings];
+    int nBads_endc[kEndcEtaRings];
 
 };
-
 
 #endif
