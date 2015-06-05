@@ -137,7 +137,8 @@ void PhiSymProducer::beginJob()
 
 void PhiSymProducer::endJob()
 {
-    outFile_->cd();
+    if(makeSpectraTreeEB_ || makeSpectraTreeEE_)
+        outFile_->cd();
     if(makeSpectraTreeEB_)
         outFile_->ebTree.Write("eb_xstals");
     if(makeSpectraTreeEE_)
