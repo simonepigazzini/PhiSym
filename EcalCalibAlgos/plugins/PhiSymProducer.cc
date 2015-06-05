@@ -340,7 +340,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         }        
         
     }
-
+    
     //---update the beamspot
     lumiInfo_->at(0).Update(recoBeamSpotHandle.product(), totHitsEB, totHitsEE);
 }

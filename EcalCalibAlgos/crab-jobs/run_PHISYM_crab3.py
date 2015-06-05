@@ -12,6 +12,8 @@ config.JobType.pluginName      = 'Analysis'
 
 # Name of the CMSSW configuration file
 config.JobType.psetName        = 'PhiSymProducer_cfg.py'
+config.JobType.maxMemoryMB     = 4000
+config.JobType.priority        = 20
 
 config.section_('Data')
 # This string determines the primary dataset of the newly-produced outputs.
@@ -20,8 +22,8 @@ config.Data.inputDataset       = '/AlCaPhiSym/Run2015A-v1/RAW'
 config.Data.inputDBS           = 'global'
 config.Data.splitting          = 'LumiBased'
 config.Data.lumiMask           = 'Run2015A_v0.json'
-config.Data.unitsPerJob        = 100
-config.Data.totalUnits         = 1000000
+config.Data.unitsPerJob        = 10
+config.Data.totalUnits         = -1
 config.Data.publication        = True
 #config.Data.ignoreLocality     = True
 

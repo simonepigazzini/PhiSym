@@ -21,6 +21,7 @@ public:
     ~EBTree() {};
     //---wrappers
     inline void Fill() {tree_->Fill();};
+    inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
     inline void Write(const char* name) {tree_->Write(name);};
     inline void Write(string name) {tree_->Write(name.c_str());};
     
@@ -66,6 +67,7 @@ public:
     ~EETree() {};
     //---wrappers
     inline void Fill() {tree_->Fill();};
+    inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
     inline void Write(const char* name) {tree_->Write(name);};
     inline void Write(string name) {tree_->Write(name.c_str());};
     
@@ -129,6 +131,8 @@ PhiSymFile::PhiSymFile(TFile* file)
 {
     file_ = file;
     file_->cd();
+    ebTree.SetMaxVirtualSize(100);
+    eeTree.SetMaxVirtualSize(100);
 }
 
 #endif 
