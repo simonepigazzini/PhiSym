@@ -24,6 +24,7 @@ config.Data.lumiMask           = 'Run2015A_v0.json'
 config.Data.unitsPerJob        = 20
 config.Data.totalUnits         = -1
 config.Data.publication        = True
+config.Data.isbchecksum        = ''
 #config.Data.ignoreLocality     = True
 
 # This string is used to construct the output dataset name

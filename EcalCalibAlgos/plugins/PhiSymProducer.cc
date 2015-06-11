@@ -127,7 +127,9 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
 }
 
 PhiSymProducer::~PhiSymProducer()
-{}
+{
+    delete ecalGeoAndStatus_;
+}
 
 void PhiSymProducer::beginJob()
 {
@@ -245,7 +247,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         edm::ESHandle<EcalChannelStatus> chStatus;
         setup.get<EcalChannelStatusRcd>().get(chStatus);
         ecalGeoAndStatus_ = new EcalGeomPhiSymHelper();
-        ecalGeoAndStatus_->setup(&(*geoHandle), &(*chStatus), statusThreshold_, false);
+        ecalGeoAndStatus_->setup(false, statusThreshold_, &(*geoHandle), &(*chStatus));
     }
     
     //---EB---
@@ -259,7 +261,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 
         //---compute et + miscalibration
         float* etValues = new float[nMisCalib_+1];
-        float  misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
+        float misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
         for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)
         {
             //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]

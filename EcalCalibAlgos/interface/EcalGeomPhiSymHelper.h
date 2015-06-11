@@ -12,7 +12,7 @@ static const int  kEndcWedgesX = 100;
 static const int  kEndcWedgesY = 100;
 
 static const int  kEndcEtaRings  = 39;
-static const int kMaxEndciPhi = 360;
+static const int  kMaxEndciPhi = 360;
 
 
 class  CaloGeometry;
@@ -20,11 +20,13 @@ class  CaloGeometry;
 class EcalGeomPhiSymHelper {
 
 public:
-  
-    void setup(const CaloGeometry* geometry, 
-               const EcalChannelStatus* chstatus,
-               int statusThreshold,
-               bool printOutFile=true);
+
+    //---setters
+    void setGeometry(const CaloGeometry* geometry){geometry_ = geometry;};
+    void setChStatus(const EcalChannelStatus* chStatus, int th){chStatus_ = chStatus; statusThreshold_=th;};
+    void setup(bool verbose=true, int statusThreshold=-1,
+               const CaloGeometry* geometry=NULL, 
+               const EcalChannelStatus* chstatus=NULL);
 
     GlobalPoint cellPos_[kEndcWedgesX][kEndcWedgesY];
     double cellPhi_     [kEndcWedgesX][kEndcWedgesY];  
@@ -35,11 +37,17 @@ public:
     int endcapRing_     [kEndcWedgesX][kEndcWedgesY];  
     int nRing_          [kEndcEtaRings];
  
-    // informations about good cells
+    //---informations about good cells
     bool goodCell_barl[kBarlRings][kBarlWedges][kSides];
     bool goodCell_endc[kEndcWedgesX][kEndcWedgesX][kSides];   
     int nBads_barl[kBarlRings];
     int nBads_endc[kEndcEtaRings];
+
+private:
+    const CaloGeometry*      geometry_;
+    const EcalChannelStatus* chStatus_;
+    int                      statusThreshold_;
+    bool                     verbose_;
 
 };
 

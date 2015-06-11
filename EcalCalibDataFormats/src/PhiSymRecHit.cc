@@ -50,6 +50,18 @@ void PhiSymRecHit::Reset()
 
 //**********operators*********************************************************************
 
+PhiSymRecHit& PhiSymRecHit::operator+=(const PhiSymRecHit& rhs)
+{
+    nHits_ += rhs.GetNhits();
+    et2Sum_ += rhs.GetSumEt2();
+    lcSum_ += rhs.GetLCSum();
+    lc2Sum_ += rhs.GetLC2Sum();
+    for(short i=0; i<N_MISCALIB_VALUES; ++i)
+        etSum_[i] += rhs.GetSumEt(i);
+
+    return *this;
+}
+
 std::ostream& operator<<(std::ostream& out, const PhiSymRecHit& obj)
 {
     //---dump all the informations
