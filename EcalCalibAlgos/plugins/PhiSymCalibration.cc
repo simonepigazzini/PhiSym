@@ -337,18 +337,19 @@ void PhiSymCalibration::ComputeKfactors()
     kFactFitFunc->SetParameter(0, 1);
     TGraphErrors* kFactorGraph = new TGraphErrors();    
 
-    //---EB
+    //---EB---
+    //---ring-averaged k-factors
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
     {
         if(ebRingsSumEt_[iRing][0] == 0)
             continue;
-        float variance = sqrt(ebRingsSumEt2_[iRing]-pow(ebRingsSumEt_[iRing][0], 2))/ebRingsSumEt_[iRing][0];
+        float error = sqrt(ebRingsSumEt2_[iRing]-pow(ebRingsSumEt_[iRing][0], 2))/ebRingsSumEt_[iRing][0];
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             float point = ebRingsSumEt_[iRing][iMis]/ebRingsSumEt_[iRing][0]-1;
-            float error = variance*sqrt(pow(point, 2)+1);
+            float p_error = error*sqrt(pow(point, 2)+1);
             kFactorGraph->SetPoint(iMis, misCalibValuesEB_[iMis]-1, point);
-            kFactorGraph->SetPointError(iMis, 0, error);
+            kFactorGraph->SetPointError(iMis, 0, p_error);
         }
         kFactorGraph->Fit(kFactFitFunc, "Q");
         kFactorsEB_[iRing]=kFactorGraph->GetFunction("kFFF")->GetParameter(0);
@@ -361,19 +362,24 @@ void PhiSymCalibration::ComputeKfactors()
         outFile_->eb_rings.iring = iRing<85 ? iRing-85 : iRing-84;
         outFile_->eb_rings.Fill();
     }
+    // //---channel-based k-factors
+    // for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
+    // {
+    //     if(ebXstals_.GetNhits() == 0)
+    // }
 
-    //---EE
+    //---EE---
     for(int iRing=0; iRing<kNRingsEE; ++iRing)
     {
         if(eeRingsSumEt_[iRing][0] == 0)
             continue;
-        float variance = sqrt(eeRingsSumEt2_[iRing]-pow(eeRingsSumEt_[iRing][0], 2))/eeRingsSumEt_[iRing][0];
+        float error = sqrt(eeRingsSumEt2_[iRing]-pow(eeRingsSumEt_[iRing][0], 2))/eeRingsSumEt_[iRing][0];
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             float point = eeRingsSumEt_[iRing][iMis]/eeRingsSumEt_[iRing][0]-1;
-            float error = variance*sqrt(pow(point, 2)+1);
+            float p_error = error*sqrt(pow(point, 2)+1);
             kFactorGraph->SetPoint(iMis, misCalibValuesEE_[iMis]-1, point);
-            kFactorGraph->SetPointError(iMis, 0, error);
+            kFactorGraph->SetPointError(iMis, 0, p_error);
         }
         kFactorGraph->Fit(kFactFitFunc, "Q");
         kFactorsEE_[iRing]=kFactorGraph->GetFunction("kFFF")->GetParameter(0);

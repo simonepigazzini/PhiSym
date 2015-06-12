@@ -5,7 +5,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 # parse commad line options
 options = VarParsing('analysis')
 options.maxEvents = -1
-options.outputFile = 'PHISYM_Run2015A_v0_test.root'
+options.outputFile = 'PHISYM_Run2015A_v1_1lumi.root'
 options.parseArguments()
 
 process=cms.Process("PHISYM")

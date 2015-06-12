@@ -54,7 +54,7 @@ void EcalGeomPhiSymHelper::setup(bool verbose, int statusThreshold,
         int sign = eb.zside()>0 ? 1 : 0;
     
         int chs= (*chStatus_)[*barrelIt].getStatusCode() & 0x001F;
-        if(chs <=  statusThreshold_)
+        if(chs <= statusThreshold_)
             goodCell_barl[abs(eb.ieta())-1][eb.iphi()-1][sign] = true;
     	    
         if(!goodCell_barl[abs(eb.ieta())-1][eb.iphi()-1][sign])

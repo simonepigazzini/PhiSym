@@ -59,6 +59,7 @@ private:
     virtual void endJob();
 
     //---input 
+    edm::ESHandle<EcalChannelStatus> chStatus_;
     edm::Handle<EBRecHitCollection> barrelRecHitsHandle_;
     edm::Handle<EERecHitCollection> endcapRecHitsHandle_;
     edm::InputTag ebTag_;
@@ -166,7 +167,7 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
     {
         lumiInfo_ = auto_ptr<PhiSymInfoCollection>(new PhiSymInfoCollection);
         lumiInfo_->push_back(PhiSymInfo());
-        lumiInfo_->back().setStartLumi(lumi);
+        lumiInfo_->back().SetStartLumi(lumi);
         recHitCollEB_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
         recHitCollEE_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
 	//---get the ecal geometry
@@ -201,7 +202,7 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
     //---put the collection in the LuminosityBlocks tree
     if(nLumis_ == lumisToSum_)
     {
-        lumiInfo_->back().setEndLumi(lumi);
+        lumiInfo_->back().SetEndLumi(lumi);
         lumi.put(lumiInfo_);
         lumi.put(recHitCollEB_, "EB");
         lumi.put(recHitCollEE_, "EE");
@@ -244,10 +245,9 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     //---get the channel status only once
     if(!ecalGeoAndStatus_)
     {
-        edm::ESHandle<EcalChannelStatus> chStatus;
-        setup.get<EcalChannelStatusRcd>().get(chStatus);
+        setup.get<EcalChannelStatusRcd>().get(chStatus_);
         ecalGeoAndStatus_ = new EcalGeomPhiSymHelper();
-        ecalGeoAndStatus_->setup(false, statusThreshold_, &(*geoHandle), &(*chStatus));
+        ecalGeoAndStatus_->setup(false, statusThreshold_, &(*geoHandle), &(*chStatus_));
     }
     
     //---EB---
@@ -257,7 +257,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         EBDetId ebHit = EBDetId(recHit.id());
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
         if(!ecalGeoAndStatus_->goodCell_barl[abs(ebHit.ieta())-1][ebHit.iphi()-1][ebHit.ieta()>0 ? 1 : 0])
-            continue;
+            lumiInfo_->back().SetBadChannel(recHit.id(), (*chStatus_)[ebHit].getStatusCode());
 
         //---compute et + miscalibration
         float* etValues = new float[nMisCalib_+1];

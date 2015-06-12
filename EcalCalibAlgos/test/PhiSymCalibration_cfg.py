@@ -85,7 +85,7 @@ process.source = cms.Source("PoolSource",
 
 # Output TFile
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("phisym_kfactors.root"))
+                                   fileName = cms.string("phisym_intercalibs_150lumis.root"))
 
 process.path = cms.Path(process.PhiSymCalibration)
 
