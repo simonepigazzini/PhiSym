@@ -34,7 +34,7 @@
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
-#include "PhiSym/EcalCalibAlgos/interface/CalibrationFile.h"
+#include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
 #include "PhiSym/EcalCalibAlgos/interface/EcalGeomPhiSymHelper.h"
 
 using namespace std;

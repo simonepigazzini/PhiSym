@@ -2,6 +2,8 @@
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
+#include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymFile.h"
 
 namespace
 {
@@ -14,6 +16,15 @@ namespace
         PhiSymInfo dummy21;
         std::vector<PhiSymInfo> dummy22;
         edm::Wrapper<PhiSymInfoCollection> dummy23;
+
+        EBTree dummy31;
+        EETree dummy32;
+        PhiSymFile dummy33;
+
+        RingsTree dummy41;
+        CristalsEBTree dummy42;
+        CristalsEETree dummy43;
+        CalibrationFile dummy44;
     };
 
 }
