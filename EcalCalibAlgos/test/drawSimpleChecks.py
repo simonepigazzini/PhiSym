@@ -16,7 +16,8 @@ ROOT.AutoLibraryLoader.enable()
 from DataFormats.FWLite import Handle, Events, Lumis
 
 # open file (you can use 'edmFileUtil -d /store/whatever.root' to get the physical file name)
-lumis = Lumis("file:phisym.root")
+#lumis = Lumis("file:phisym.root")
+lumis = Lumis("root://cmsxrootd.fnal.gov///store/user/spigazzi/AlCaPhiSym/crab_PHISYM_test_production_Run2015A_v1/150608_072558/0000/PHISYM_Run2015A_v0_test_4.root")
 
 handlePhiSymInfo  = Handle ("std::vector<PhiSymInfo>")
 handlePhiSymRecHitsEB  = Handle ("std::vector<PhiSymRecHit>")
@@ -46,20 +47,24 @@ for i,lumi in enumerate(lumis):
     phiSymRecHitsEE = handlePhiSymRecHitsEE.product()
     print "Run "+str(phiSymInfo.back().getStartLumi().run())+" Lumi "+str(phiSymInfo.back().getStartLumi().luminosityBlock())
     print "NEvents in this LS "+str(phiSymInfo.back().GetNEvents())
+    print "TotHits EB "+str(phiSymInfo.back().GetTotHitsEB())+" Avg occ EB "+str(float(phiSymInfo.back().GetTotHitsEB())/phiSymInfo.back().GetNEvents()) 
+    print "TotHits EE "+str(phiSymInfo.back().GetTotHitsEE())+" Avg occ EE "+str(float(phiSymInfo.back().GetTotHitsEE())/phiSymInfo.back().GetNEvents()) 
+
     print "EB PhiSymRecHits "+str(phiSymRecHitsEB.size())
     print "EE PhiSymRecHits "+str(phiSymRecHitsEE.size())
+
     for hit in phiSymRecHitsEB:
         myId=ROOT.EBDetId(hit.GetRawId())
         histos["EB_EtMap"].Fill(myId.iphi(),myId.ieta(),hit.GetSumEt(0))
-        histos["EB_OccupancyMap"].Fill(myId.iphi(),myId.ieta(),hit.GetNhits()/info.GetNEvents())
+        histos["EB_OccupancyMap"].Fill(myId.iphi(),myId.ieta(),hit.GetNhits())
     for hit in phiSymRecHitsEE:
         myId=ROOT.EEDetId(hit.GetRawId())
         if (myId.zside()<0):
             histos["EEM_EtMap"].Fill(myId.ix(),myId.iy(),hit.GetSumEt(0))
-            histos["EEM_OccupancyMap"].Fill(myId.ix(),myId.iy(),hit.GetNhits()/info.GetNEvents())
+            histos["EEM_OccupancyMap"].Fill(myId.ix(),myId.iy(),hit.GetNhits())
         else:
             histos["EEP_EtMap"].Fill(myId.ix(),myId.iy(),hit.GetSumEt(0))
-            histos["EEP_OccupancyMap"].Fill(myId.ix(),myId.iy(),hit.GetNhits()/info.GetNEvents())
+            histos["EEP_OccupancyMap"].Fill(myId.ix(),myId.iy(),hit.GetNhits())
 
 outFile=ROOT.TFile("phiSymStreamCheck.root","RECREATE")
 for histo in histos.keys():

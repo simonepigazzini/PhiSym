@@ -40,7 +40,7 @@ process.options = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-                                'root://eoscms//eos/cms/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/908/00000/9E2FD26B-EF09-E511-87E4-02163E011804.root')
+                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/908/00000/7E213B41-2F0A-E511-9261-02163E011D69.root')
                             # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/04281A56-F509-E511-8C9A-02163E0143C5.root',
                             # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/0657B565-EC09-E511-825B-02163E011DC2.root',
                             # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/18766157-F509-E511-93A8-02163E011DE4.root',
@@ -104,8 +104,8 @@ if (not runMultiFit):
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 # process.PhiSymProducer.applyEtThreshold=cms.bool(False)
-process.PhiSymProducer.makeSpectraTreeEB = True
-process.PhiSymProducer.makeSpectraTreeEE = True
+process.PhiSymProducer.makeSpectraTreeEB = False
+process.PhiSymProducer.makeSpectraTreeEE = False
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
