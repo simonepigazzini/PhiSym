@@ -21,10 +21,13 @@ public:
     ~EBTree() {};
     //---wrappers
     inline void Fill() {tree_->Fill();};
+    inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
     inline void Write(const char* name) {tree_->Write(name);};
     inline void Write(string name) {tree_->Write(name.c_str());};
     
     //---branches variables---
+    uint32_t run;
+    uint32_t lumi;
     int ieta;
     int iphi;
     float et;
@@ -38,11 +41,15 @@ EBTree::EBTree()
 {
     tree_ = new TTree();
     //---init
+    run=0;
+    lumi=0;
     ieta=0;
     iphi=0;
     et=0;
     
     //---create branches
+    tree_->Branch("run", &run, "run/i");
+    tree_->Branch("lumi", &lumi, "lumi/i");
     tree_->Branch("ieta", &ieta, "ieta/I");
     tree_->Branch("iphi", &iphi, "iphi/I");
     tree_->Branch("et", &et, "et/F");
@@ -60,10 +67,13 @@ public:
     ~EETree() {};
     //---wrappers
     inline void Fill() {tree_->Fill();};
+    inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
     inline void Write(const char* name) {tree_->Write(name);};
     inline void Write(string name) {tree_->Write(name.c_str());};
     
     //---branches variables---
+    uint32_t run;
+    uint32_t lumi;
     int iring;
     int ix;
     int iy;
@@ -78,12 +88,16 @@ EETree::EETree()
 {
     tree_ = new TTree();
     //---init
+    run=0;
+    lumi=0;
     iring=0;
     ix=0;
     iy=0;
     et=0;
     
     //---create branches
+    tree_->Branch("run", &run, "run/i");
+    tree_->Branch("lumi", &lumi, "lumi/i");
     tree_->Branch("iring", &iring, "iring/I");
     tree_->Branch("ix", &ix, "ix/I");
     tree_->Branch("iy", &iy, "iy/I");
@@ -117,6 +131,8 @@ PhiSymFile::PhiSymFile(TFile* file)
 {
     file_ = file;
     file_->cd();
+    ebTree.SetMaxVirtualSize(100);
+    eeTree.SetMaxVirtualSize(100);
 }
 
 #endif 

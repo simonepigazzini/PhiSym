@@ -59,14 +59,20 @@ private:
     virtual void endJob();
 
     //---input 
+    edm::ESHandle<EcalChannelStatus> chStatus_;
     edm::Handle<EBRecHitCollection> barrelRecHitsHandle_;
     edm::Handle<EERecHitCollection> endcapRecHitsHandle_;
     edm::InputTag ebTag_;
     edm::InputTag eeTag_;
     float          eCutEB_;
     float          eThresholdEB_;
-    float          AP_;
-    float          B_;
+    float          Aplus_;
+    float          Bplus_;
+    float          Cplus_;
+    float          Aminus_;
+    float          Bminus_;
+    float          Cminus_;
+    int            ADCcutEE_;
     int            nMisCalib_;
     vector<double> misCalibRangeEB_;
     vector<double> misCalibRangeEE_;
@@ -97,8 +103,13 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     eeTag_(pSet.getParameter<edm::InputTag>("endcapHitCollection")),
     eCutEB_(pSet.getParameter<double>("eCut_barrel")),
     eThresholdEB_(pSet.getParameter<double>("eThreshold_barrel")),
-    AP_(pSet.getParameter<double>("AP")),
-    B_(pSet.getParameter<double>("B")),
+    Aplus_(pSet.getParameter<double>("Aplus")),
+    Bplus_(pSet.getParameter<double>("Bplus")),
+    Cplus_(pSet.getParameter<double>("Cplus")),
+    Aminus_(pSet.getParameter<double>("Aminus")),
+    Bminus_(pSet.getParameter<double>("Bminus")),
+    Cminus_(pSet.getParameter<double>("Cminus")),
+    ADCcutEE_(pSet.getParameter<int>("ADCcutEE")),
     nMisCalib_(pSet.getParameter<int>("nMisCalib")),
     misCalibRangeEB_(pSet.getParameter<vector<double> >("misCalibRangeEB")),
     misCalibRangeEE_(pSet.getParameter<vector<double> >("misCalibRangeEE")),
@@ -117,7 +128,9 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
 }
 
 PhiSymProducer::~PhiSymProducer()
-{}
+{
+    delete ecalGeoAndStatus_;
+}
 
 void PhiSymProducer::beginJob()
 {
@@ -127,7 +140,8 @@ void PhiSymProducer::beginJob()
 
 void PhiSymProducer::endJob()
 {
-    outFile_->cd();
+    if(makeSpectraTreeEB_ || makeSpectraTreeEE_)
+        outFile_->cd();
     if(makeSpectraTreeEB_)
         outFile_->ebTree.Write("eb_xstals");
     if(makeSpectraTreeEE_)
@@ -136,12 +150,24 @@ void PhiSymProducer::endJob()
 
 void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
-    //---reset the RecHit and DetId vectors
+    //---update plain tree run and lumi info
+    if(makeSpectraTreeEB_)
+    {
+        outFile_->ebTree.run = lumi.luminosityBlockAuxiliary().run();
+        outFile_->ebTree.lumi = lumi.luminosityBlockAuxiliary().luminosityBlock();
+    }
+    if(makeSpectraTreeEE_)
+    {
+        outFile_->eeTree.run = lumi.luminosityBlockAuxiliary().run();
+        outFile_->eeTree.lumi = lumi.luminosityBlockAuxiliary().luminosityBlock();
+    }
+    
+    //---reset the RecHit and LumiInfo collection
     if(nLumis_ == 0)
     {
         lumiInfo_ = auto_ptr<PhiSymInfoCollection>(new PhiSymInfoCollection);
         lumiInfo_->push_back(PhiSymInfo());
-        lumiInfo_->back().setStartLumi(lumi);
+        lumiInfo_->back().SetStartLumi(lumi);
         recHitCollEB_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
         recHitCollEE_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
 	//---get the ecal geometry
@@ -156,16 +182,16 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
 	std::vector<DetId> endcapDetIds=endcapGeometry->getValidDetIds(DetId::Ecal, EcalEndcap);
 	recHitCollEB_->resize(barrelDetIds.size());
 	recHitCollEE_->resize(endcapDetIds.size());
-	for ( auto& ebDetId : barrelDetIds )
-	  {
+	for(auto& ebDetId : barrelDetIds)
+        {
 	    EBDetId myId(ebDetId);
-	    recHitCollEB_->at(myId.denseIndex())=PhiSymRecHit(ebDetId.rawId(),0);
-	  }
-	for ( auto& eeDetId : endcapDetIds )
-	  {
+	    recHitCollEB_->at(myId.denseIndex())=PhiSymRecHit(ebDetId.rawId(), 0);
+        }
+	for(auto& eeDetId : endcapDetIds)
+        {
 	    EEDetId myId(eeDetId);
-	    recHitCollEE_->at(myId.denseIndex())=PhiSymRecHit(eeDetId.rawId(),0);
-	  }
+	    recHitCollEE_->at(myId.denseIndex())=PhiSymRecHit(eeDetId.rawId(), 0);
+        }
     }
     
     ++nLumis_;
@@ -176,11 +202,11 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
     //---put the collection in the LuminosityBlocks tree
     if(nLumis_ == lumisToSum_)
     {
-      lumiInfo_->back().setEndLumi(lumi);
-      lumi.put(lumiInfo_);
-      lumi.put(recHitCollEB_, "EB");
-      lumi.put(recHitCollEE_, "EE");
-      nLumis_ = 0;
+        lumiInfo_->back().SetEndLumi(lumi);
+        lumi.put(lumiInfo_);
+        lumi.put(recHitCollEB_, "EB");
+        lumi.put(recHitCollEE_, "EE");
+        nLumis_ = 0;
     }       
 }
 
@@ -216,28 +242,26 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     const CaloSubdetectorGeometry* endcapGeometry = 
         geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     
-    //---get the channel status 
-    edm::ESHandle<EcalChannelStatus> chStatus;
-    setup.get<EcalChannelStatusRcd>().get(chStatus);
-
+    //---get the channel status only once
     if(!ecalGeoAndStatus_)
     {
+        setup.get<EcalChannelStatusRcd>().get(chStatus_);
         ecalGeoAndStatus_ = new EcalGeomPhiSymHelper();
-        ecalGeoAndStatus_->setup(&(*geoHandle), &(*chStatus), statusThreshold_, false);
+        ecalGeoAndStatus_->setup(false, statusThreshold_, &(*geoHandle), &(*chStatus_));
     }
-
+    
     //---EB---
     for(auto& recHit : *barrelRecHitsHandle_.product())
-      {
+    {
         //---check channel status
         EBDetId ebHit = EBDetId(recHit.id());
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
         if(!ecalGeoAndStatus_->goodCell_barl[abs(ebHit.ieta())-1][ebHit.iphi()-1][ebHit.ieta()>0 ? 1 : 0])
-	  continue;
-        
+            lumiInfo_->back().SetBadChannel(recHit.id(), (*chStatus_)[ebHit].getStatusCode());
+
         //---compute et + miscalibration
         float* etValues = new float[nMisCalib_+1];
-        float  misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
+        float misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
         for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)
         {
             //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]
@@ -245,7 +269,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             etValues[index] = recHit.energy()/cosh(eta)*(1+misCalibStep*iMis);
             //---set et to zero if out of range [e_thr, et_thr+1]
             if(etValues[index]*cosh(eta) < eCutEB_ || etValues[index] > eCutEB_/cosh(eta)+eThresholdEB_)                
-	      etValues[index] = 0;
+                etValues[index] = 0;
         }
 
         if(etValues[0] > 0)
@@ -256,14 +280,14 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
      
         //---fill the plain tree
         if(makeSpectraTreeEB_)
-	  {
+        {
             outFile_->ebTree.ieta = ebHit.ieta();
             outFile_->ebTree.iphi = ebHit.iphi();
             outFile_->ebTree.et = recHit.energy()/cosh(eta);
             outFile_->ebTree.Fill();
-	  }
-	
-      }
+        }
+	delete[] etValues;
+    }
     //---EE---
     for(auto& recHit : *endcapRecHitsHandle_.product())
     {
@@ -280,10 +304,16 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         int iring=0;
         for(int ring=0; ring<kEndcEtaRings; ring++)
         {
-            if(eta>ecalGeoAndStatus_->etaBoundary_[ring] && eta<ecalGeoAndStatus_->etaBoundary_[ring+1])
+            if(fabs(eta)>ecalGeoAndStatus_->etaBoundary_[ring] && fabs(eta)<ecalGeoAndStatus_->etaBoundary_[ring+1])
             {
                 iring = ring;
-                eCutEE = AP_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*B_;
+                if(eta>0)
+                    eCutEE = ADCcutEE_*(Cplus_ + Bplus_*ring + Aplus_*ring*ring)/1000;
+                else
+                {
+                    eCutEE = ADCcutEE_*(Cminus_ + Bminus_*ring + Aminus_*ring*ring)/1000;
+                    iring = -ring;
+                }
             }
         }
         for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)
@@ -310,9 +340,9 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             outFile_->eeTree.et = recHit.energy()/cosh(eta);
             outFile_->eeTree.Fill();
         }        
-        
+        delete[] etValues;
     }
-
+    
     //---update the beamspot
     lumiInfo_->at(0).Update(recoBeamSpotHandle.product(), totHitsEB, totHitsEE);
 }

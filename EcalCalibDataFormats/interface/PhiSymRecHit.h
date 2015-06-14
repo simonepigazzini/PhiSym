@@ -43,6 +43,7 @@ public:
     void         Reset();
 
     //---operators---
+    PhiSymRecHit&        operator+=(const PhiSymRecHit& rhs);
     friend std::ostream& operator<<(std::ostream& out, const PhiSymRecHit& obj);
 
 private:

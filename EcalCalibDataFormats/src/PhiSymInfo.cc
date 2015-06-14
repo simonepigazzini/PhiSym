@@ -35,12 +35,12 @@ float PhiSymInfo::GetMeanSigma(char k) const
     return -999;
 }
 
-void PhiSymInfo::setStartLumi(edm::LuminosityBlock const& lumi)
+void PhiSymInfo::SetStartLumi(edm::LuminosityBlock const& lumi)
 {
   startLumi_=lumi.luminosityBlockAuxiliary().id();
 }
 
-void PhiSymInfo::setEndLumi(edm::LuminosityBlock const& lumi)
+void PhiSymInfo::SetEndLumi(edm::LuminosityBlock const& lumi)
 {
   endLumi_=lumi.luminosityBlockAuxiliary().id();
 }

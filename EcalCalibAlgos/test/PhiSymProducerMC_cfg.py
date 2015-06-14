@@ -5,7 +5,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 # parse commad line options
 options = VarParsing('analysis')
 options.maxEvents = -1
-options.outputFile = 'phisym.root'
+options.outputFile = 'phisymMC.root'
 options.parseArguments()
 
 process=cms.Process("PHISYM")
@@ -40,20 +40,7 @@ process.options = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-                                'root://eoscms//eos/cms/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/908/00000/9E2FD26B-EF09-E511-87E4-02163E011804.root')
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/04281A56-F509-E511-8C9A-02163E0143C5.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/0657B565-EC09-E511-825B-02163E011DC2.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/18766157-F509-E511-93A8-02163E011DE4.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/1A16BC83-F909-E511-B17C-02163E011B6D.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/2235CE58-F509-E511-804E-02163E013826.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/368DD35A-F509-E511-BAD4-02163E011891.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/3ECCF956-F509-E511-8E13-02163E011DE4.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/66007B5B-F509-E511-A910-02163E014349.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/6ABBFC56-F509-E511-8AF7-02163E01396D.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/AE98FA5A-F509-E511-A205-02163E0142B3.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/F098F257-F509-E511-9270-02163E012124.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/FA57815A-F509-E511-86CD-02163E011B82.root')
-                            #'/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/920/00000/F082B567-DE09-E511-B94D-02163E011D50.root')
+                                '/store/mc/Phys14DR/Neutrino_Pt-2to20_gun/GEN-SIM-RAW/AVE20BX25_tsg_PHYS14_25_V3-v1/00000/00128B2A-C88E-E411-AFB9-0025905A48D6.root')
 )
 
 # Production Info
@@ -63,9 +50,9 @@ process.configurationMetadata = cms.untracked.PSet(
     name = cms.untracked.string('PhiSymProducer')
 )
 
-isStream=True
+isStream=False
 runMultiFit=True
-isBX50ns=True
+isBX50ns=False
 
 if (runMultiFit):
     if (isBX50ns):
@@ -103,7 +90,7 @@ if (not runMultiFit):
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
-# process.PhiSymProducer.applyEtThreshold=cms.bool(False)
+
 process.PhiSymProducer.makeSpectraTreeEB = True
 process.PhiSymProducer.makeSpectraTreeEE = True
 
@@ -119,20 +106,22 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
 )
 
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("phisym_spectra.root"))
+                                   fileName = cms.string("phisymMC_spectra.root"))
 
 # GLOBAL-TAG
-process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_E_V48')
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalChannelStatusRcd"),
-             tag = cms.string("EcalChannelStatus_v1_hlt"),
-             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
-         ),
-    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             tag = cms.string("EcalIntercalibConstants_V1_express"),
-             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
-         )
-)
+# process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_E_V48')
+# process.GlobalTag.toGet = cms.VPSet(
+#     cms.PSet(record = cms.string("EcalChannelStatusRcd"),
+#              tag = cms.string("EcalChannelStatus_v1_hlt"),
+#              connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
+#          ),
+#     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
+#              tag = cms.string("EcalIntercalibConstants_V1_express"),
+#              connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
+#          )
+# )
+
+process.GlobalTag = GlobalTag(process.GlobalTag, 'MCRUN2_74_V4')
 
 # SCHEDULE
 if (not runMultiFit):

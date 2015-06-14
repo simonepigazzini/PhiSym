@@ -23,6 +23,7 @@ import httplib
 import cookielib
 from   optparse import OptionParser
 from   math import log
+from   types import GeneratorType
 
 # define exit codes according to Linux sysexists.h
 EX_OK           = 0  # successful termination
@@ -125,6 +126,11 @@ class DASOptionParser:
         msg = 'List DAS key/attributes, use "all" or specific DAS key value, e.g. site'
         self.parser.add_option("--list-attributes", action="store", type="string",
                                default="", dest="keys_attrs", help=msg)
+
+        msg = 'specify a secondary search key'
+        self.parser.add_option("--secondary-key", action="store", type="string",
+                               default="", dest="sec_key", help=msg)
+
     def get_opt(self):
         """
         Returns parse list of options
@@ -188,38 +194,39 @@ def unique_filter(rows):
         old_row = row
     yield row
 
+def extract_value(row, key):
+    """Generator which extracts row[key] value"""
+    if  isinstance(row, dict) and key in row:
+        if  key == 'creation_time':
+            row = convert_time(row[key])
+        elif  key == 'size':
+            row = size_format(row[key], base)
+        else:
+            row = row[key]
+        yield row
+    if  isinstance(row, list) or isinstance(row, GeneratorType):
+        for item in row:
+            for vvv in extract_value(item, key):
+                yield vvv
+
 def get_value(data, filters, base=10):
     """Filter data from a row for given list of filters"""
     for ftr in filters:
         if  ftr.find('>') != -1 or ftr.find('<') != -1 or ftr.find('=') != -1:
             continue
         row = dict(data)
-        values = set()
-        for key in ftr.split('.'):
-            if  isinstance(row, dict) and key in row:
-                if  key == 'creation_time':
-                    row = convert_time(row[key])
-                elif  key == 'size':
-                    row = size_format(row[key], base)
-                else:
-                    row = row[key]
-            if  isinstance(row, list):
-                for item in row:
-                    if  isinstance(item, dict) and key in item:
-                        if  key == 'creation_time':
-                            row = convert_time(item[key])
-                        elif  key == 'size':
-                            row = size_format(item[key], base)
-                        else:
-                            row = item[key]
-                        values.add(row)
-                    else:
-                        if  isinstance(item, basestring):
-                            values.add(item)
+        values = []
+        keys = ftr.split('.')
+        for key in keys:
+            val = [v for v in extract_value(row, key)]
+            if  key == keys[-1]: # we collect all values at last key
+                values += [json.dumps(i) for i in val]
+            else:
+                row = val
         if  len(values) == 1:
-            yield str(values.pop())
+            yield values[0]
         else:
-            yield str(list(values))
+            yield values
 
 def fullpath(path):
     "Expand path to full path"
@@ -307,6 +314,18 @@ def prim_value(row):
     else:
         return row[key][att]
 
+def key_value(row, sec_key):
+    """Extract user defined key value from DAS record"""
+    if  sec_key == 'summary':
+        return row[sec_key]
+    key, att = sec_key.split('.')
+    if  isinstance(row[key], list):
+        for item in row[key]:
+            if  att in item:
+                return item[att]
+    else:
+        return row[key][att]
+    
 def print_summary(rec):
     "Print summary record information on stdout"
     if  'summary' not in rec:
@@ -379,6 +398,7 @@ def main():
     ckey    = opts.ckey
     cert    = opts.cert
     base    = opts.base
+    sec_key = opts.sec_key
     if  opts.keys_attrs:
         keys_attrs(opts.keys_attrs, opts.format, host, ckey, cert, debug)
         return
@@ -461,15 +481,19 @@ def main():
             if  isinstance(data, list):
                 old = None
                 val = None
+                sec_val = None
                 for row in data:
                     prim_key = row.get('das', {}).get('primary_key', None)
                     if  prim_key == 'summary':
                         print_summary(row)
                         return
                     val = prim_value(row)
-                    if  not opts.limit:
+                    if not sec_key == '':
+                        sec_val = key_value(row, sec_key)
+                    if not opts.limit:
                         if  val != old:
                             print val
+                            print sec_val
                             old = val
                     else:
                         print val
