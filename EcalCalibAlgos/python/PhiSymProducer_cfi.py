@@ -4,7 +4,7 @@ PhiSymProducer = cms.EDProducer(
     "PhiSymProducer",
     barrelHitCollection = cms.InputTag('ecalRecHit', 'EcalRecHitsEB', 'PHISYM'),
     endcapHitCollection = cms.InputTag('ecalRecHit', 'EcalRecHitsEE', 'PHISYM'),
-    eCut_barrel = cms.double(0.0),
+    eCut_barrel = cms.double(0.),
     eThreshold_barrel = cms.double(1000.0), #this is actually summed to eCut in order to define the upper bound
     AP = cms.double(-0.15),
     B = cms.double(0.6),

@@ -26,8 +26,16 @@ labelPhiSymRecHitsEB = ("PhiSymProducer","EB")
 labelPhiSymRecHitsEE = ("PhiSymProducer","EE")
 
 histos={}
+
 histos["EB_OccupancyMap"]=ROOT.TH2F("EB_OccupancyMap","EB_OccupancyMap",360,0.5,360.5,171,-85.5,85.5)
 histos["EB_EtMap"]=ROOT.TH2F("EB_EtMap","EB_EtMap",360,0.5,360.5,171,-85.5,85.5)
+
+histos["EEM_OccupancyMap"]=ROOT.TH2F("EEM_OccupancyMap","EEM_OccupancyMap",100,0.5,100.5,100,0.5,100.5)
+histos["EEM_EtMap"]=ROOT.TH2F("EEM_EtMap","EEM_EtMap",100,0.5,100.5,100,0.5,100.5)
+
+histos["EEP_OccupancyMap"]=ROOT.TH2F("EEP_OccupancyMap","EEP_OccupancyMap",100,0.5,100.5,100,0.5,100.5)
+histos["EEP_EtMap"]=ROOT.TH2F("EEP_EtMap","EEP_EtMap",100,0.5,100.5,100,0.5,100.5)
+
 for i,lumi in enumerate(lumis):
     print "====>"
     lumi.getByLabel (labelPhiSymInfo,handlePhiSymInfo)
@@ -43,8 +51,15 @@ for i,lumi in enumerate(lumis):
     for hit in phiSymRecHitsEB:
         myId=ROOT.EBDetId(hit.GetRawId())
         histos["EB_EtMap"].Fill(myId.iphi(),myId.ieta(),hit.GetSumEt(0))
-        histos["EB_OccupancyMap"].Fill(myId.iphi(),myId.ieta(),hit.GetNhits())
-
+        histos["EB_OccupancyMap"].Fill(myId.iphi(),myId.ieta(),hit.GetNhits()/info.GetNEvents())
+    for hit in phiSymRecHitsEE:
+        myId=ROOT.EEDetId(hit.GetRawId())
+        if (myId.zside()<0):
+            histos["EEM_EtMap"].Fill(myId.ix(),myId.iy(),hit.GetSumEt(0))
+            histos["EEM_OccupancyMap"].Fill(myId.ix(),myId.iy(),hit.GetNhits()/info.GetNEvents())
+        else:
+            histos["EEP_EtMap"].Fill(myId.ix(),myId.iy(),hit.GetSumEt(0))
+            histos["EEP_OccupancyMap"].Fill(myId.ix(),myId.iy(),hit.GetNhits()/info.GetNEvents())
 
 outFile=ROOT.TFile("phiSymStreamCheck.root","RECREATE")
 for histo in histos.keys():
