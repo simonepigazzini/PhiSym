@@ -22,8 +22,8 @@ namespace
         PhiSymFile dummy33;
 
         // RingsTree dummy41;
-        CristalsEBTree dummy42;
-        CristalsEETree dummy43;
+        CrystalsEBTree dummy42;
+        CrystalsEETree dummy43;
         CalibrationFile dummy44;
     };
 

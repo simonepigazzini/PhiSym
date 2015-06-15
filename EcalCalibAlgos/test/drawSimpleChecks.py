@@ -10,6 +10,7 @@ sys.argv = oldargv
 ROOT.gSystem.Load("libFWCoreFWLite.so");
 ROOT.gSystem.Load("libDataFormatsFWLite.so");
 ROOT.gSystem.Load("libDataFormatsEcalDetId.so");
+ROOT.gSystem.Load("libPhiSymEcalCalibDataFormats.so");
 ROOT.AutoLibraryLoader.enable()
 
 # load FWlite python libraries

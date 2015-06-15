@@ -56,7 +56,7 @@ using namespace std;
 //     //---create branches
 //     tree_->Branch("block", &block, "block/I");
 //     tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
-//     tree_->Branch("n_events", &n_events, "n_events/l");
+//     tree_->Branch("n_events", &n_events, "n_events/L");
 //     tree_->Branch("k_graphs", &k_graph);
 //     tree_->Branch("kfactors", &kfactors, "kfactors/F");
 //     tree_->Branch("iring", &iring, "iring/I");
@@ -98,15 +98,15 @@ using namespace std;
 
 //**********IC EB TREE********************************************************************
 
-class CristalsEBTree
+class CrystalsEBTree
 {
 public: 
 
     //---ctors---
-    CristalsEBTree();
-    CristalsEBTree(TTree* tree);
+    CrystalsEBTree();
+    CrystalsEBTree(TTree* tree);
     //---dtor---
-    ~CristalsEBTree() {};
+    ~CrystalsEBTree() {};
     //---wrappers
     inline void Fill() {tree_->Fill();};
     inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
@@ -134,7 +134,7 @@ private:
     int64_t currentEntry_;
 };
 
-CristalsEBTree::CristalsEBTree()
+CrystalsEBTree::CrystalsEBTree()
 {
     tree_ = new TTree();
     //---init
@@ -154,8 +154,8 @@ CristalsEBTree::CristalsEBTree()
     //---create branches
     tree_->Branch("block", &block, "block/I");
     tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
-    tree_->Branch("n_events", &n_events, "n_events/l");
-    tree_->Branch("n_hits", &n_hits, "n_hits/l");
+    tree_->Branch("n_events", &n_events, "n_events/L");
+    tree_->Branch("n_hits", &n_hits, "n_hits/L");
     tree_->Branch("ieta", &ieta, "ieta/I");
     tree_->Branch("iphi", &iphi, "iphi/I");
     tree_->Branch("k_ring", &k_ring, "k_ring/F");
@@ -167,10 +167,10 @@ CristalsEBTree::CristalsEBTree()
 }
 
 
-CristalsEBTree::CristalsEBTree(TTree* tree)
+CrystalsEBTree::CrystalsEBTree(TTree* tree)
 {
     tree_ = tree;
-    currentEntry_ = 0;
+    currentEntry_ = -1;
     //---init
     block=0;
     n_lumis=0;
@@ -200,31 +200,33 @@ CristalsEBTree::CristalsEBTree(TTree* tree)
     tree_->SetBranchAddress("ic_ch", &ic_ch);
 }
 
-bool CristalsEBTree::NextEntry(int64_t entry)
+bool CrystalsEBTree::NextEntry(int64_t entry)
 {
     if(entry > -1)
         currentEntry_ = entry;
 
+    ++currentEntry_;
     if(currentEntry_ < tree_->GetEntriesFast())
     {
         tree_->GetEntry(currentEntry_);
         return true;
     }
-
+    
+    currentEntry_=-1;
     return false;
 }
 
 //**********IC EE TREE********************************************************************
 
-class CristalsEETree
+class CrystalsEETree
 {
 public: 
 
     //---ctors---
-    CristalsEETree();
-    CristalsEETree(TTree* tree);
+    CrystalsEETree();
+    CrystalsEETree(TTree* tree);
     //---dtor---
-    ~CristalsEETree() {};
+    ~CrystalsEETree() {};
     //---wrappers
     inline void Fill() {tree_->Fill();};
     inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
@@ -253,7 +255,7 @@ private:
     int64_t currentEntry_;
 };
 
-CristalsEETree::CristalsEETree()
+CrystalsEETree::CrystalsEETree()
 {
     tree_ = new TTree();    
     //---init
@@ -274,8 +276,8 @@ CristalsEETree::CristalsEETree()
     //---create branches
     tree_->Branch("block", &block, "block/I");
     tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
-    tree_->Branch("n_events", &n_events, "n_events/l");
-    tree_->Branch("n_hits", &n_hits, "n_hits/l");
+    tree_->Branch("n_events", &n_events, "n_events/L");
+    tree_->Branch("n_hits", &n_hits, "n_hits/L");
     tree_->Branch("iring", &iring, "iring/I");
     tree_->Branch("ix", &ix, "ix/I");
     tree_->Branch("iy", &iy, "iy/I");
@@ -287,10 +289,10 @@ CristalsEETree::CristalsEETree()
     tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
 }
 
-CristalsEETree::CristalsEETree(TTree* tree)
+CrystalsEETree::CrystalsEETree(TTree* tree)
 {
     tree_ = tree;
-    currentEntry_ = 0;
+    currentEntry_ = -1;
     //---init
     block=0;
     n_lumis=0;
@@ -322,17 +324,19 @@ CristalsEETree::CristalsEETree(TTree* tree)
     tree_->SetBranchAddress("ic_ch", &ic_ch);
 }
 
-bool CristalsEETree::NextEntry(int64_t entry)
+bool CrystalsEETree::NextEntry(int64_t entry)
 {
     if(entry > -1)
         currentEntry_ = entry;
 
+    ++currentEntry_;
     if(currentEntry_ < tree_->GetEntriesFast())
     {
         tree_->GetEntry(currentEntry_);
         return true;
     }
-
+    
+    currentEntry_=-1;
     return false;
 }
 
@@ -350,8 +354,8 @@ public:
 
     // RingsTree      eb_rings;
     // RingsTree      ee_rings;
-    CristalsEBTree eb_xstals;
-    CristalsEETree ee_xstals;
+    CrystalsEBTree eb_xstals;
+    CrystalsEETree ee_xstals;
     
 private:
     
