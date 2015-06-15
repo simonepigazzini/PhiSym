@@ -11,6 +11,8 @@ sys.argv = oldargv
 # Read command line options
 parser = argparse.ArgumentParser (description = 'options')
 parser.add_argument('-b', '--block' , default=-1, type=int, help='analyze this block')
+parser.add_argument('--plots' , action="store_true", default=False, help='produce .png and .pdf plots')
+parser.add_argument('-d', '--outdir' , default="./", help='store path for .png, .pdf and .root')
 
 opts = parser.parse_args ()
 
@@ -19,7 +21,19 @@ ROOT.gSystem.Load("libPhiSymEcalCalibDataFormats.so");
 ROOT.AutoLibraryLoader.enable()
 
 # Setup the style
-ROOT.gStyle.SetOptStat("e")
+ROOT.gErrorIgnoreLevel=ROOT.kInfo + 1
+ROOT.gStyle.SetOptStat("")
+ROOT.gStyle.SetLabelSize(0.05, "XY");
+ROOT.gStyle.SetTickLength(0.03, "XYZ");
+ROOT.gStyle.SetNdivisions(510, "XYZ");
+ROOT.gStyle.SetTitleColor(1, "XYZ");
+ROOT.gStyle.SetTitleSize(0.07, "XYZ");
+ROOT.gStyle.SetTitleXOffset(0.8);
+ROOT.gStyle.SetTitleYOffset(0.7);
+ROOT.gStyle.SetPadTopMargin(0.12);
+ROOT.gStyle.SetPadBottomMargin(0.13);
+ROOT.gStyle.SetPadLeftMargin(0.1);
+ROOT.gStyle.SetPadRightMargin(0.1);
 
 # Get the crystals trees
 inFile = ROOT.TFile("../phisym_intercalibs_150lumis.root")
@@ -82,18 +96,18 @@ while eeTree.NextEntry():
 ranges={}
 ranges[re.compile("^EB_ic_((?!diff).)*$")]=[0.8, 1.2]
 ranges[re.compile("^EB_ic_diff$")]=[-0.01, 0.01]
-ranges[re.compile("^EB_k_((?!diff).)*$")]=[1, 3]
+ranges[re.compile("^EB_k_((?!diff).)*$")]=[1.5, 2.6]
 ranges[re.compile("^EB_k_diff$")]=[-0.5, 0.6]
 ranges[re.compile("^EE.*_ic_((?!diff).)*$")]=[0.5, 1.5]
 ranges[re.compile("^EE.*_ic_diff$")]=[-0.15, 0.15]
-ranges[re.compile("^EE.*_k_((?!diff).)*$")]=[1, 3]
+ranges[re.compile("^EE.*_k_((?!diff).)*$")]=[1, 2]
 ranges[re.compile("^EE.*_k_diff$")]=[-0.5, 0.7]
 
 axisTitles={}
-axisTitles[re.compile("^EB.*")]=["\eta", "\phi"]
+axisTitles[re.compile("^EB.*")]=["#eta", "#phi"]
 axisTitles[re.compile("^EE.*")]=["ix", "iy"]
 
-outFile=ROOT.TFile("phiSymCalibCheck.root", "RECREATE")
+outFile=ROOT.TFile(opts.outdir+"phiSymCalibCheck.root", "RECREATE")
 for key in histos.keys():
     for title in axisTitles:
         if title.match(key):
@@ -103,4 +117,9 @@ for key in histos.keys():
         if cat.match(key):
             histos[key].SetAxisRange(ranges[cat][0], ranges[cat][1], "Z")
     histos[key].Write()
+    if opts.plots:
+        canvas=ROOT.TCanvas()
+        histos[key].Draw("COLZ")
+        canvas.Print(opts.outdir+key+".png", "png")
+        canvas.Print(opts.outdir+key+".pdf", "pdf")
 outFile.Close()
