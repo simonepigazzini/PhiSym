@@ -6,7 +6,7 @@ import ROOT
 ROOT.gROOT.SetBatch(True)
 sys.argv = oldargv
 
-# load FWLite C++ libraries
+# load FWLite C++ librarie
 ROOT.gSystem.Load("libFWCoreFWLite.so");
 ROOT.gSystem.Load("libDataFormatsFWLite.so");
 ROOT.gSystem.Load("libDataFormatsEcalDetId.so");

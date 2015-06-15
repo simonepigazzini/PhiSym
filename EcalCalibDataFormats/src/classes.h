@@ -21,7 +21,7 @@ namespace
         EETree dummy32;
         PhiSymFile dummy33;
 
-        RingsTree dummy41;
+        // RingsTree dummy41;
         CristalsEBTree dummy42;
         CristalsEETree dummy43;
         CalibrationFile dummy44;
