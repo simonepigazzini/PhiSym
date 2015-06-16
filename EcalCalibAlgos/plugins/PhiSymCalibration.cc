@@ -6,6 +6,8 @@
  *           0->EE+, 1->EE-;
  * **************************************************************************************/
 
+#include <fstream>
+
 #include "TGraphErrors.h"
 #include "TF1.h"
 
@@ -53,6 +55,7 @@ public:
     virtual void analyze(edm::Event const&, edm::EventSetup const&) override {};
 
     //---utils
+    void               Read2012ICs(string name);
     void               ComputeICs();
     void               ComputeKfactors();
     pair<float, float> GetRingKfactor(int& ring, int sub_det);
@@ -66,6 +69,7 @@ private:
     edm::InputTag infoTag_;
     edm::InputTag recHitEBTag_;
     edm::InputTag recHitEETag_;
+    string oldICsFile_;
     int blocksToSum_;
     int nSummedLumis_;
     int nMisCalib_;
@@ -78,6 +82,8 @@ private:
     EcalRingCalibrationTools calibRing_;
     static const short kNRingsEB = EcalRingCalibrationTools::N_RING_BARREL;
     static const short kNRingsEE = EcalRingCalibrationTools::N_RING_ENDCAP;
+    float ebOldICs_[kNRingsEB][360];
+    float eeOldICs_[100][100][2];
     //---ring based
     //---EB
     uint64_t ebOccupancy_[kNRingsEB]={0};
@@ -92,10 +98,12 @@ private:
     double kFactorsEE_[kNRingsEE]={0};
     double kFactorsErrEE_[kNRingsEE]={0};
     //---cristall based
+    //---EB
     PhiSymRecHit ebXstals_[EBDetId::kSizeForDenseIndexing];
     bool goodXstalsEB_[kNRingsEB][360][11];
     double kFactorsChEB_[EBDetId::kSizeForDenseIndexing]={0};
     double kFactorsChErrEB_[EBDetId::kSizeForDenseIndexing]={0};
+    //---EE
     PhiSymRecHit eeXstals_[EEDetId::kSizeForDenseIndexing];
     bool goodXstalsEE_[kNRingsEE][EEDetId::IX_MAX][EEDetId::IY_MAX][11];
     double kFactorsChEE_[EEDetId::kSizeForDenseIndexing]={0};
@@ -107,10 +115,11 @@ private:
     edm::Service<TFileService> fs_;
 };
 
-PhiSymCalibration::PhiSymCalibration(const edm::ParameterSet& pSet):
+PhiSymCalibration::PhiSymCalibration(const edm::ParameterSet& pSet):    
     infoTag_(pSet.getUntrackedParameter<edm::InputTag>("infoTag")),
     recHitEBTag_(pSet.getUntrackedParameter<edm::InputTag>("recHitEBTag")),
     recHitEETag_(pSet.getUntrackedParameter<edm::InputTag>("recHitEETag")),
+    oldICsFile_(pSet.getUntrackedParameter<string>("oldCalibFile")),
     blocksToSum_(pSet.getUntrackedParameter<int>("blocksToSum")),
     nSummedLumis_(1),
     nMisCalib_(-1),
@@ -120,8 +129,11 @@ PhiSymCalibration::PhiSymCalibration(const edm::ParameterSet& pSet):
 {}
 
 void PhiSymCalibration::beginJob()
-{
-    outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(&fs_->file()));
+{    
+    Read2012ICs(oldICsFile_);
+    
+    //---output file
+    outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(&fs_->file()));    
 }
 
 void PhiSymCalibration::endJob()
@@ -132,8 +144,6 @@ void PhiSymCalibration::endJob()
 
     //---finalize outputs
     outFile_->cd();
-    // outFile_->eb_rings.Write("eb_rings");
-    // outFile_->ee_rings.Write("ee_rings");
     outFile_->eb_xstals.Write("eb_xstals");
     outFile_->ee_xstals.Write("ee_xstals");
 }
@@ -232,10 +242,6 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
 void PhiSymCalibration::ComputeICs()
 {
     //---increment block output trees counters
-    // outFile_->eb_rings.block++;
-    // outFile_->eb_rings.n_lumis = nBlocks_*nSummedLumis_;
-    // outFile_->ee_rings.block++;
-    // outFile_->ee_rings.n_lumis = nBlocks_*nSummedLumis_;
     outFile_->eb_xstals.block++;
     outFile_->eb_xstals.n_lumis = nBlocks_*nSummedLumis_;
     outFile_->ee_xstals.block++;
@@ -297,6 +303,7 @@ void PhiSymCalibration::ComputeICs()
                 /outFile_->eb_xstals.k_ring+1;
             outFile_->eb_xstals.ic_ch = (ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
                 /outFile_->eb_xstals.k_ch+1;
+            outFile_->eb_xstals.ic_old = ebOldICs_[currentRing][ebXstal.iphi()];
             outFile_->eb_xstals.Fill();
 
             //---reset channel status and sum
@@ -326,6 +333,7 @@ void PhiSymCalibration::ComputeICs()
                 /outFile_->ee_xstals.k_ring+1;
             outFile_->ee_xstals.ic_ch = (eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
                 /outFile_->ee_xstals.k_ch+1;
+            outFile_->eb_xstals.ic_old = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
             outFile_->ee_xstals.Fill();            
 
             //---reset channel status and sum
@@ -358,6 +366,12 @@ void PhiSymCalibration::ComputeICs()
 }
 
 //---compute the ring-dependent k-factors for both EB and EE
+// + errors for different iMis are assumed to be ugual to the error on the nominal <sumEt>
+// + for the averages the error is the RMS of the channels sumEt distribution inside a ring
+//   (sum over N blocks)
+// + for the single channel k-factor otherwise the error is the RMS of the sumEt distribution
+//   (sum over 1 block)
+// + this implies that the error on the single channel k-factor is larger.
 void PhiSymCalibration::ComputeKfactors()
 {
     TF1* kFactFitFunc = new TF1("kFFF", "[0]*x", -0.5, 0.5);
@@ -466,6 +480,45 @@ pair<float, float> PhiSymCalibration::GetChannelKfactor(uint32_t& index, int sub
         return make_pair(kFactorsChEE_[index], kFactorsChErrEE_[index]);
 }
 
+//---if a file is specified read the old ICs, otherwise set them to -1
+void PhiSymCalibration::Read2012ICs(string name)
+{
+    //---no file specified
+    if(name == "")
+    {
+        //---EB
+        for(int ieta=0; ieta<kNRingsEB; ++ieta)
+            for(int iphi=0; iphi<360; ++iphi)
+                ebOldICs_[ieta][iphi]=-1;
+        //---EE
+        for(int ix=0; ix<100; ++ix)
+        {
+            for(int iy=0; iy<100; ++iy)
+            {
+                eeOldICs_[ix][iy][0]=-1;
+                eeOldICs_[ix][iy][1]=-1;
+            }
+        }
+    }
+    
+    //---help variables
+    int x,y,subdet;
+    float ic;
+        
+    ifstream oldICs(name.c_str(), ios::in);
+    while(oldICs.good())
+    {
+        oldICs >> x >> y >> subdet >> ic;
+        cout << x << " " << y << " " << subdet << " " << ic << endl;
+        if(subdet==0)
+            ebOldICs_[x<0 ? x+85 : x+84][y]=ic;        
+        else
+            eeOldICs_[x][y][subdet<0 ? 0 : 1]=ic;
+    }
+    oldICs.close();
+
+    return;
+}
 
 DEFINE_FWK_MODULE(PhiSymCalibration);
 

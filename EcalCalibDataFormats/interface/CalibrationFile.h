@@ -10,92 +10,6 @@
 
 using namespace std;
 
-// //**********RINGS TREE********************************************************************
-
-// class RingsTree
-// {
-// public: 
-
-//     //---ctors---
-//     RingsTree();
-//     RingsTree(TTree* tree);
-//     //---dtor---
-//     ~RingsTree() {};
-//     //---wrappers
-//     inline void Fill() {tree_->Fill();};
-//     inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
-//     inline void Write(const char* name) {tree_->Write(name);};
-//     inline void Write(string name) {tree_->Write(name.c_str());};
-//     bool        NextEntry(int64_t entry=-1);
-    
-//     //---branches variables---
-//     int           block;
-//     int           n_lumis;
-//     uint64_t      n_events;
-//     TGraphErrors* k_graph;
-//     float         kfactors;
-//     int           iring;
-    
-// private:
-
-//     TTree* tree_;
-//     int64_t currentEntry_;
-// };
-
-// RingsTree::RingsTree()
-// {
-//     tree_ = new TTree();
-//     //---init
-//     block=0;
-//     n_lumis=0;
-//     n_events=0;
-//     k_graph = new TGraphErrors();
-//     kfactors=0;
-//     iring=0;
-    
-//     //---create branches
-//     tree_->Branch("block", &block, "block/I");
-//     tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
-//     tree_->Branch("n_events", &n_events, "n_events/L");
-//     tree_->Branch("k_graphs", &k_graph);
-//     tree_->Branch("kfactors", &kfactors, "kfactors/F");
-//     tree_->Branch("iring", &iring, "iring/I");
-// }
-
-// RingsTree::RingsTree(TTree* tree)
-// {
-//     tree_ = tree;
-//     currentEntry_ = 0;
-//     //---init
-//     n_lumis=0;
-//     n_events=0;    
-//     k_graph = new TGraphErrors();
-//     kfactors=0;
-//     iring=0;
-    
-//     //---create branches
-//     tree_->SetBranchAddress("block", &block);
-//     tree_->SetBranchAddress("n_lumis", &n_lumis);
-//     tree_->SetBranchAddress("n_events", &n_events);
-//     tree_->SetBranchAddress("k_graphs", &k_graph);
-//     tree_->SetBranchAddress("kfactors", &kfactors);
-//     tree_->SetBranchAddress("iring", &iring);
-// }
-
-// bool RingsTree::NextEntry(int64_t entry)
-// {
-//     if(entry > -1)
-//         currentEntry_ = entry;
-
-//     if(currentEntry_ < tree_->GetEntriesFast())
-//     {
-//         tree_->GetEntry(currentEntry_);
-//         return true;
-//     }
-
-//     return false;
-// }
-
 //**********IC EB TREE********************************************************************
 
 class CrystalsEBTree
@@ -117,8 +31,8 @@ public:
     //---branches variables---
     int      block;
     int      n_lumis;
-    uint64_t n_events;
-    uint64_t n_hits;
+    Long64_t n_events;
+    Long64_t n_hits;
     int      ieta;
     int      iphi;
     float    k_ring;
@@ -127,6 +41,7 @@ public:
     float    k_ch_err;
     float    ic_ring;
     float    ic_ch;
+    float    ic_old;
     
 private:
     
@@ -150,6 +65,7 @@ CrystalsEBTree::CrystalsEBTree()
     k_ch_err=0;
     ic_ring=0;
     ic_ch=0;
+    ic_old=0;
     
     //---create branches
     tree_->Branch("block", &block, "block/I");
@@ -164,6 +80,7 @@ CrystalsEBTree::CrystalsEBTree()
     tree_->Branch("k_ch_err", &k_ch_err, "k_ch_err/F");
     tree_->Branch("ic_ring", &ic_ring, "ic_ring/F");
     tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
+    tree_->Branch("ic_old", &ic_old, "ic_old/F");
 }
 
 
@@ -184,6 +101,7 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     k_ch_err=0;
     ic_ring=0;
     ic_ch=0;
+    ic_old=0;
     
     //---create branches
     tree_->SetBranchAddress("block", &block);
@@ -198,6 +116,7 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     tree_->SetBranchAddress("k_ch_err", &k_ch_err);
     tree_->SetBranchAddress("ic_ring", &ic_ring);
     tree_->SetBranchAddress("ic_ch", &ic_ch);
+    tree_->SetBranchAddress("ic_old", &ic_old);
 }
 
 bool CrystalsEBTree::NextEntry(int64_t entry)
@@ -237,8 +156,8 @@ public:
     //---branches variables---
     int      block;
     int      n_lumis;
-    uint64_t n_events;
-    uint64_t n_hits;
+    Long64_t n_events;
+    Long64_t n_hits;
     int      iring;
     int      ix;
     int      iy;
@@ -248,6 +167,7 @@ public:
     float    k_ch_err;
     float    ic_ring;
     float    ic_ch;
+    float    ic_old;
     
 private:
 
@@ -272,6 +192,7 @@ CrystalsEETree::CrystalsEETree()
     k_ch_err=0;
     ic_ring=0;
     ic_ch=0;
+    ic_old=0;
     
     //---create branches
     tree_->Branch("block", &block, "block/I");
@@ -287,6 +208,7 @@ CrystalsEETree::CrystalsEETree()
     tree_->Branch("k_ch_err", &k_ch_err, "k_ch_err/F");
     tree_->Branch("ic_ring", &ic_ring, "ic_ring/F");
     tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
+    tree_->Branch("ic_old", &ic_old, "ic_old/F");
 }
 
 CrystalsEETree::CrystalsEETree(TTree* tree)
@@ -307,6 +229,7 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     k_ch_err=0;
     ic_ring=0;
     ic_ch=0;
+    ic_old=0;
     
     //---create branches
     tree_->SetBranchAddress("block", &block);
@@ -322,6 +245,7 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     tree_->SetBranchAddress("k_ch_err", &k_ch_err);
     tree_->SetBranchAddress("ic_ring", &ic_ring);
     tree_->SetBranchAddress("ic_ch", &ic_ch);
+    tree_->SetBranchAddress("ic_old", &ic_old);
 }
 
 bool CrystalsEETree::NextEntry(int64_t entry)
@@ -352,8 +276,6 @@ public:
     inline void Close() {file_->Close();};
     inline void cd() {file_->cd();};
 
-    // RingsTree      eb_rings;
-    // RingsTree      ee_rings;
     CrystalsEBTree eb_xstals;
     CrystalsEETree ee_xstals;
     
@@ -369,8 +291,6 @@ CalibrationFile::CalibrationFile(TFile* file)
 {
     file_ = file;
     file_->cd();
-    // eb_rings.SetMaxVirtualSize(50);
-    // ee_rings.SetMaxVirtualSize(50);
     eb_xstals.SetMaxVirtualSize(50);
     ee_xstals.SetMaxVirtualSize(50);
 }

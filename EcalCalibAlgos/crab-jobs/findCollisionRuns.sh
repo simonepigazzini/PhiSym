@@ -33,6 +33,6 @@ done
 BAD_RUNS=`echo $BAD_RUNS | sed 's:,$:]:g'`
 echo removing: $BAD_RUNS
 
-./filterJSON.py $INPUT_JSON --output="$OUTPUT_JSON" --runs="$BAD_RUNS"
+#./filterJSON.py $INPUT_JSON --output="$OUTPUT_JSON" --runs="$BAD_RUNS"
 
 unset IFS

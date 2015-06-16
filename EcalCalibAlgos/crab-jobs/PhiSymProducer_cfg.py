@@ -5,7 +5,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 # parse commad line options
 options = VarParsing('analysis')
 options.maxEvents = -1
-options.outputFile = 'PHISYM_Run2015A_v1_1lumi.root'
+options.outputFile = 'phisym.root'
 options.parseArguments()
 
 process=cms.Process("PHISYM")
@@ -34,25 +34,33 @@ process.maxEvents = cms.untracked.PSet(
 
 # skip bad events
 process.options = cms.untracked.PSet(
-    SkipEvent = cms.untracked.vstring('ProductNotFound')
+    SkipEvent = cms.untracked.vstring('ProductNotFound'),
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
+                            inputCommands = cms.untracked.vstring(
+                                'keep *',
+                                'drop *_hltEcalDigis_*_*',
+                                'drop *_hltTriggerSummaryAOD_*_*'
+                            ),
                             fileNames = cms.untracked.vstring(
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/04281A56-F509-E511-8C9A-02163E0143C5.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/0657B565-EC09-E511-825B-02163E011DC2.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/18766157-F509-E511-93A8-02163E011DE4.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/1A16BC83-F909-E511-B17C-02163E011B6D.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/2235CE58-F509-E511-804E-02163E013826.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/368DD35A-F509-E511-BAD4-02163E011891.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/3ECCF956-F509-E511-8E13-02163E011DE4.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/66007B5B-F509-E511-A910-02163E014349.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/6ABBFC56-F509-E511-8AF7-02163E01396D.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/AE98FA5A-F509-E511-A205-02163E0142B3.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/F098F257-F509-E511-9270-02163E012124.root',
-                                '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/FA57815A-F509-E511-86CD-02163E011B82.root')
-                                #'/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/920/00000/F082B567-DE09-E511-B94D-02163E011D50.root')
+                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root",
+                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/795/00000/E001FA5B-D510-E511-A5B8-02163E0135FD.root")
+                            #'/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/908/00000/7E213B41-2F0A-E511-9261-02163E011D69.root')
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/04281A56-F509-E511-8C9A-02163E0143C5.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/0657B565-EC09-E511-825B-02163E011DC2.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/18766157-F509-E511-93A8-02163E011DE4.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/1A16BC83-F909-E511-B17C-02163E011B6D.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/2235CE58-F509-E511-804E-02163E013826.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/368DD35A-F509-E511-BAD4-02163E011891.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/3ECCF956-F509-E511-8E13-02163E011DE4.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/66007B5B-F509-E511-A910-02163E014349.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/6ABBFC56-F509-E511-8AF7-02163E01396D.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/AE98FA5A-F509-E511-A205-02163E0142B3.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/F098F257-F509-E511-9270-02163E012124.root',
+                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/FA57815A-F509-E511-86CD-02163E011B82.root')
+                            #'/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/920/00000/F082B567-DE09-E511-B94D-02163E011D50.root')
 )
 
 # Production Info
@@ -121,17 +129,7 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("phisym_spectra.root"))
 
 # GLOBAL-TAG
-process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_E_V48')
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalChannelStatusRcd"),
-             tag = cms.string("EcalChannelStatus_v1_hlt"),
-             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
-         ),
-    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             tag = cms.string("EcalIntercalibConstants_V1_express"),
-             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
-         )
-)
+process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
 
 # SCHEDULE
 if (not runMultiFit):
