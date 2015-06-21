@@ -20,10 +20,11 @@ config.Data.inputDataset       = '/AlCaPhiSym/Run2015A-v1/RAW'
 #config.Data.useParent = True
 config.Data.inputDBS           = 'global'
 config.Data.splitting          = 'LumiBased'
-#config.Data.lumiMask           = 'Run2015A_v0_filtered.json'
-config.Data.unitsPerJob        = 500
+config.Data.lumiMask           = 'Run2015A_v0_filtered.json'
+config.Data.unitsPerJob        = 50
 config.Data.totalUnits         = -1
 config.Data.publication        = True
+config.Data.isbchecksum        = 'aa6d0f694fbde2c60e6338a92e82f36e'
 #config.Data.ignoreLocality     = True
 
 # This string is used to construct the output dataset name
