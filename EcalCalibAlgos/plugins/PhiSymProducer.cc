@@ -66,13 +66,8 @@ private:
     edm::InputTag eeTag_;
     float          eCutEB_;
     float          eThresholdEB_;
-    float          Aplus_;
-    float          Bplus_;
-    float          Cplus_;
-    float          Aminus_;
-    float          Bminus_;
-    float          Cminus_;
-    int            ADCcutEE_;
+    float          ap_;
+    float          b_;
     int            nMisCalib_;
     vector<double> misCalibRangeEB_;
     vector<double> misCalibRangeEE_;
@@ -103,13 +98,8 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     eeTag_(pSet.getParameter<edm::InputTag>("endcapHitCollection")),
     eCutEB_(pSet.getParameter<double>("eCut_barrel")),
     eThresholdEB_(pSet.getParameter<double>("eThreshold_barrel")),
-    Aplus_(pSet.getParameter<double>("Aplus")),
-    Bplus_(pSet.getParameter<double>("Bplus")),
-    Cplus_(pSet.getParameter<double>("Cplus")),
-    Aminus_(pSet.getParameter<double>("Aminus")),
-    Bminus_(pSet.getParameter<double>("Bminus")),
-    Cminus_(pSet.getParameter<double>("Cminus")),
-    ADCcutEE_(pSet.getParameter<int>("ADCcutEE")),
+    ap_(pSet.getParameter<double>("ap")),
+    b_(pSet.getParameter<double>("b")),
     nMisCalib_(pSet.getParameter<int>("nMisCalib")),
     misCalibRangeEB_(pSet.getParameter<vector<double> >("misCalibRangeEB")),
     misCalibRangeEE_(pSet.getParameter<vector<double> >("misCalibRangeEE")),
@@ -308,10 +298,10 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             {
                 iring = ring;
                 if(eta>0)
-                    eCutEE = ADCcutEE_*(Cplus_ + Bplus_*ring + Aplus_*ring*ring)/1000;
+                    eCutEE = ap_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*b_;
                 else
                 {
-                    eCutEE = ADCcutEE_*(Cminus_ + Bminus_*ring + Aminus_*ring*ring)/1000;
+                    eCutEE = ap_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*b_;
                     iring = -ring;
                 }
             }
