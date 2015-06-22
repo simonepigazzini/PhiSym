@@ -9,6 +9,10 @@ import ROOT
 ROOT.gROOT.SetBatch(True)
 sys.argv = oldargv
 
+from PhiSym.EcalCalibAlgos.EcalCalibAnalysis import *
+from pluginCondDBPyInterface import *
+from pluginEcalPyUtils import *
+
 # Read command line options
 parser = argparse.ArgumentParser (description = 'Draw PhiSym intercalibration plots: channels maps --- Eta,Phi / X,Y profiles')
 parser.add_argument('inputfile' , default="phisym_intercalibs.root", help='analyze this file')
@@ -50,9 +54,8 @@ profiles={}
 maps={}
 ## 1D histo
 # EB
-histos["EB_ic_ring"]=ROOT.TH1F("EB_ic_ring", "EB ICs with ring based k-factors --- INCLUSIVE", 1000, 0.5, 1.5)
-histos["EB_ic_ch"]=ROOT.TH1F("EB_ic_ch", "EB ICs with channel based k-factors --- INCLUSIVE", 1000, 0.5, 1.5)
-histos["EB_ic_diff"]=ROOT.TH1F("EB_ic_diff", "EB ICs relative difference (ch-ring)/ring --- INCLUSIVE", 1000, -0.01, 0.01)
+histos["EB_ratio_ic_ch"]=ROOT.TH1F("histo_EB_ratio_ic_ch", "IC_{ch}-2015 / IC-2012D EB --- INCLUSIVE", 1000, 0.5, 1.5)
+histos["EB_ratio_ic_ch_corr"]=ROOT.TH1F("histo_EB_ratio_ic_ch_corr", "IC_{ch_corr}-2015 / IC-2012D EB --- INCLUSIVE", 1000, 0.5, 1.5)
 
 ## Profiles
 # EB
@@ -68,13 +71,15 @@ profiles["prPhi_EB_err_ic_ch"]=ROOT.TH1F("prPhi_EB_err_ic_ch", "EB ICs statistic
                                          360, -0.5, 359.5)
 profiles["prEta_EB_err_ic_ch"]=ROOT.TH1F("prEta_EB_err_ic_ch", "EB ICs statistical error --- PROFILE #eta;i#eta",
                                          171, -85.5, 85.5)
-profiles["prEEE_EE_err_ic_ch"]=ROOT.TH1F("prEta_EE_err_ic_ch", "EE ICs statistical error --- PROFILE #eta;i#eta",
+profiles["prEta_EE_err_ic_ch"]=ROOT.TH1F("prEta_EE_err_ic_ch", "EE ICs statistical error --- PROFILE #eta;i#eta",
                                          81, -40.5, 40.5)
 
 ## maps
 # EB
 maps["EB_ic_ring"]=ROOT.TH2F("map_EB_ic_ring", "EB ICs with ring-based k-factors --- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_ic_ch"]=ROOT.TH2F("map_EB_ic_ch", "EB ICs with channel-based k-factors --- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
+maps["EB_ic_ch_corr"]=ROOT.TH2F("map_EB_ic_ch_corr", "EB ICs with channel-based k-factors and geo corrections --- MAP",
+                                360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_ic_diff"]=ROOT.TH2F("map_EB_ic_diff", "EB ICs relative difference (ch-ring)/ring--- MAP",
                                    360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_k_ring"]=ROOT.TH2F("map_EB_k_ring", "EB ring-based k-factors --- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
@@ -84,6 +89,8 @@ maps["EB_k_diff"]=ROOT.TH2F("map_EB_k_diff", "EB k-factors relative difference (
 maps["EB_n_hits"]=ROOT.TH2F("map_EB_n_hits", "Number of hits/lumi EB--- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_ratio_ic_ring"]=ROOT.TH2F("map_EB_ratio_ic_ring", "IC_{ring}-2015 / IC-2012D EB--- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_ratio_ic_ch"]=ROOT.TH2F("map_EB_ratio_ic_ch", "IC_{ch}-2015 / IC-2012D EB--- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
+maps["EB_ratio_ic_ch_corr"]=ROOT.TH2F("map_EB_ratio_ic_ch_corr", "IC_{ch_corr}-2015 / IC-2012D EB--- MAP",
+                                      360, -0.5, 359.5, 171, -85.5, 85.5)
 # EE plus
 maps["EEp_ic_ring"]=ROOT.TH2F("map_EEp_ic_ring", "EE plus ICs with ring-based k-factors --- MAP",
                                     100, 0.5, 100.5, 100, 0.5, 100.5)
@@ -119,8 +126,19 @@ maps["EEm_ratio_ic_ch"]=ROOT.TH2F("map_EEm_ratio_ic_ch", "IC_{ch}-2015 / IC-2012
 
 ## VARIABLES map
 varReMap={}
-varReMap["err_ic_ch"]="ic_err*sqrt(n_lumis)/ic_ch"
-varReMap["err_ic_ring"]="ic_err*sqrt(n_lumis)/ic_ring"
+varReMap["err_ic_ch"]="ic_err/ic_ch"
+varReMap["err_ic_ring"]="ic_err/ic_ring"
+
+## geometrical corr
+ones = [1 for i in range (61200)]
+ebUnCorrIC= [0 for i in range (61200)]
+while ebTree.NextEntry():
+    if opts.block != -1 and ebTree.block != opts.block:
+        continue
+    ebUnCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]=(ebTree.ic_ch)
+
+diffp,rmsp,diffm,rmsm= calculatedifferences(ebUnCorrIC, ones)
+geoCorrIC = applycorrections(ebUnCorrIC, diffp, diffm)
 
 ## FILL THE HISTOS ##
 ## EB
@@ -135,8 +153,12 @@ while ebTree.NextEntry():
     maps["EB_k_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.k_ch)
     maps["EB_k_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.k_ch-ebTree.k_ring)/ebTree.k_ring)
     maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.n_hits/ebTree.n_lumis)
-    maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ring*ebTree.ic_abs/ebTree.ic_old)
-    maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ch*ebTree.ic_abs/ebTree.ic_old)
+    maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
+    maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old)
+    maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
+    maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])#*ebTree.ic_abs)
+    histos["EB_ratio_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old)
+    histos["EB_ratio_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
 
 # profiles
 tmpHisto=ROOT.TH1F("tmp", "tmp", 1000, -100, 100)
@@ -147,9 +169,9 @@ for key in profiles:
     if "Eta" in key:
         varRange = range(-85, 85)
         cutBase = "ieta=="
-    if "EEE" in key:
+    if "EE" in key:
         varRange = range(-40, 40)
-        cutBase = "ieta=="
+        cutBase = "iring=="
     for prVar in varRange:
         var = key[9:]+">>tmp"
         if key[9:] in varReMap.keys():
@@ -157,7 +179,7 @@ for key in profiles:
         cut = cutBase+str(prVar)
         if opts.block != -1:
             cut += " && block=="+str(opts.block)
-        if "EEE" in key:
+        if "EE" in key:
             eeTree.Draw(var, cut, "goff")
         else:
             ebTree.Draw(var, cut, "goff")
@@ -179,6 +201,8 @@ while eeTree.NextEntry():
         subdet = "EEp_"
     else:
         subdet = "EEm_"
+    print eeTree.iring
+    print eeTree.ic_err
     maps[subdet+"ic_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_ring)
     maps[subdet+"ic_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_ch)
     maps[subdet+"ic_diff"].Fill(eeTree.ix, eeTree.iy, (eeTree.ic_ch-eeTree.ic_ring)/eeTree.ic_ring)
@@ -187,20 +211,20 @@ while eeTree.NextEntry():
     maps[subdet+"k_diff"].Fill(eeTree.ix, eeTree.iy, (eeTree.k_ch-eeTree.k_ring)/eeTree.k_ring)
     maps[subdet+"n_hits"].Fill(eeTree.ix, eeTree.iy, eeTree.n_hits/eeTree.n_lumis)
     if eeTree.ic_old>0 :
-        maps[subdet+"ratio_ic_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_ring*eeTree.ic_abs/eeTree.ic_old)
-        maps[subdet+"ratio_ic_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_ch*eeTree.ic_abs/eeTree.ic_old)
+        maps[subdet+"ratio_ic_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs/eeTree.ic_ring/eeTree.ic_old)
+        maps[subdet+"ratio_ic_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs/eeTree.ic_ch/eeTree.ic_old)
 
 ## DRAW PLOTS ##    
 # Define z-axis ranges: with regexp matching ;)
 ranges={}
-ranges[re.compile(".*EB_ic_((?!diff).)*$")]=[0.9, 1.1]
-ranges[re.compile(".*EB_ic_diff$")]=[-0.001, 0.001]
+ranges[re.compile("^EB_ic_((?!diff).)*$")]=[0.9, 1.1]
+ranges[re.compile("^EB_ic_diff$")]=[-0.001, 0.001]
 ranges[re.compile(".*EB_ratio.*")]=[0.8, 1.2]
-ranges[re.compile(".*EB_err.*")]=[0, 0.01]
+ranges[re.compile("prEta.*_err.*")]=[0, 0.002]
 ranges[re.compile(".*EB_k_((?!diff).)*$")]=[1.5, 2.6]
 ranges[re.compile(".*EB_k_diff$")]=[-0.05, 0.05]
-ranges[re.compile(".*EE.*_ic_((?!diff).)*$")]=[0.5, 1.5]
-ranges[re.compile(".*EE.*_ic_diff$")]=[-0.01, 0.01]
+ranges[re.compile("^EE.*_ic_((?!diff).)*$")]=[0.5, 1.5]
+ranges[re.compile("^EE.*_ic_diff$")]=[-0.01, 0.01]
 ranges[re.compile(".*EE.*_k_((?!diff).)*$")]=[1, 1.7]
 ranges[re.compile(".*EE.*_k_diff$")]=[-0.05, 0.05]
 ranges[re.compile(".*_n_hits$")]=[0, 50]
@@ -229,8 +253,8 @@ for key in maps.keys():
         else:
             canvas=ROOT.TCanvas(key, key, 900, 800)
         maps[key].Draw("COLZ")
-        canvas.Print(opts.outdir+key+".png", "png")
-        canvas.Print(opts.outdir+key+".pdf", "pdf")
+        canvas.Print(opts.outdir+maps[key].GetName()+".png", "png")
+        canvas.Print(opts.outdir+maps[key].GetName()+".pdf", "pdf")
 
 # draw PROFILES
 for key in profiles.keys():    
@@ -247,7 +271,29 @@ for key in profiles.keys():
         canvas=ROOT.TCanvas(key, key, 800, 400)
         canvas.SetRightMargin(0.07)
         profiles[key].Draw()
-        canvas.Print(opts.outdir+key+".png", "png")
-        canvas.Print(opts.outdir+key+".pdf", "pdf")
-    
+        canvas.Print(opts.outdir+profiles[key].GetName()+".png", "png")
+        canvas.Print(opts.outdir+profiles[key].GetName()+".pdf", "pdf")
+
+# draw histos
+for key in histos.keys():    
+    # histos[key].GetYaxis().SetTitle(key[9:])
+    # for title in axisTitles:
+    #     if title.match(key):
+    #         histos[key].GetYaxis().SetTitle(axisTitles[title])
+    # for cat in ranges.keys():
+    #     if cat.match(key):
+    #         histos[key].SetAxisRange(ranges[cat][0], ranges[cat][1], "Y")
+    histos[key].Write()
+    # png. pdf
+    if opts.plots:
+        canvas=ROOT.TCanvas(key, key, 800, 400)
+        canvas.SetRightMargin(0.07)
+        ROOT.gStyle.SetOptStat("mr")
+        ROOT.gStyle.SetOptFit(111)
+        ROOT.gROOT.ForceStyle()
+        histos[key].Fit("gaus")
+        histos[key].Draw()
+        canvas.Print(opts.outdir+histos[key].GetName()+".png", "png")
+        canvas.Print(opts.outdir+histos[key].GetName()+".pdf", "pdf")
+        
 outFile.Close()

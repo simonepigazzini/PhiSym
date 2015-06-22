@@ -13,7 +13,6 @@ import sys
 
 from ROOT import gStyle 
 
-
 options= optparse.OptionParser(description='Phisym analysis script')
 
 
@@ -62,9 +61,7 @@ if xml1 is None or basedir1 is None:
     options.print_help()
     sys.exit(1)
 
-from EcalCalibAnalysis import *
-from EcalPyUtils import *
-from ROOT import TGraph,TGraphErrors,TCanvas,TH1F,TH2D,TFile,TPad,gROOT
+from PhiSym.EcalCalibAlgos.EcalCalibAnalysis import *
 from pluginCondDBPyInterface import *
 from pluginEcalPyUtils import *
 

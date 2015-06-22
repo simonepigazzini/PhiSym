@@ -8,7 +8,7 @@
 # $Id$
 
 
-from EcalPyUtils import *
+from PhiSym.EcalCalibAlgos.EcalPyUtils import *
 from array import array
 from math import *
 from ROOT import TGraph,TGraphErrors,TCanvas,TH1F,TH2D,TFile,TDirectory,TF1

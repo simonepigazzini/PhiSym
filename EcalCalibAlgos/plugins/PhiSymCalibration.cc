@@ -344,7 +344,7 @@ void PhiSymCalibration::ComputeICs()
             outFile_->ee_xstals.ic_ch = (eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
                 /outFile_->ee_xstals.k_ch+1;
             outFile_->ee_xstals.ic_old = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
-            outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
+            outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];            
             outFile_->ee_xstals.ic_err = eeICErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
             outFile_->ee_xstals.Fill();            
 
@@ -414,7 +414,6 @@ void PhiSymCalibration::ComputeKfactors()
         if(ebXstals_[index].GetNhits() == 0)
             continue;
         ebICErr_[index]=sqrt(ebXstals_[index].GetSumEt2()-pow(ebXstals_[index].GetSumEt(), 2)/ebXstals_[index].GetNhits());
-        ebICErr_[index]=ebICErr_[index]/sqrt(ebXstals_[index].GetNhits());
         float error = ebICErr_[index]/ebXstals_[index].GetSumEt(0);        
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
@@ -450,8 +449,6 @@ void PhiSymCalibration::ComputeKfactors()
     {
         if(eeXstals_[index].GetNhits() == 0)
             continue;
-        eeICErr_[index]=sqrt(eeXstals_[index].GetSumEt2()-pow(eeXstals_[index].GetSumEt(), 2)/eeXstals_[index].GetNhits());
-        eeICErr_[index]=eeICErr_[index]/sqrt(eeXstals_[index].GetNhits());
         eeICErr_[index]=sqrt(eeXstals_[index].GetSumEt2()-pow(eeXstals_[index].GetSumEt(), 2)/eeXstals_[index].GetNhits());
         float error = eeICErr_[index]/eeXstals_[index].GetSumEt(0);        
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
@@ -524,7 +521,6 @@ void PhiSymCalibration::Read2012ICs(string name)
     while(oldICs.good())
     {
         oldICs >> x >> y >> subdet >> ic >> fake;
-        cout << x << " " << y << " " << subdet << " " << ic << endl;
         if(subdet==0)
             ebOldICs_[x<0 ? x+85 : x+84][y]=ic;        
         else
@@ -564,7 +560,6 @@ void PhiSymCalibration::ReadAbsICs(string name)
     while(absICs.good())
     {
         absICs >> x >> y >> subdet >> ic;
-        cout << x << " " << y << " " << subdet << " " << ic << endl;
         if(subdet==0)
             ebAbsICs_[x<0 ? x+85 : x+84][y]=ic;        
         else
