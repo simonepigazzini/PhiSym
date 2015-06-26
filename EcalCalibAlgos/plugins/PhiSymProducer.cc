@@ -20,6 +20,7 @@
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
 #include "DataFormats/EcalDetId/interface/EEDetId.h"
 
+#include "Calibration/Tools/interface/EcalRingCalibrationTools.h"
 #include "CalibCalorimetry/EcalLaserCorrection/interface/EcalLaserDbService.h"
 #include "CalibCalorimetry/EcalLaserCorrection/interface/EcalLaserDbRecord.h"
 
@@ -60,30 +61,36 @@ private:
 
     //---input 
     edm::ESHandle<EcalChannelStatus> chStatus_;
-    edm::Handle<EBRecHitCollection> barrelRecHitsHandle_;
-    edm::Handle<EERecHitCollection> endcapRecHitsHandle_;
-    edm::InputTag ebTag_;
-    edm::InputTag eeTag_;
-    float          eCutEB_;
+    edm::Handle<EBRecHitCollection>  barrelRecHitsHandle_;
+    edm::Handle<EERecHitCollection>  endcapRecHitsHandle_;
+    edm::InputTag  ebTag_;
+    edm::InputTag  eeTag_;
+    float          etCutEB_;
     float          eThresholdEB_;
-    float          ap_;
-    float          b_;
+    float          etCutEE_;
+    float          A_;
+    float          B_;
     int            nMisCalib_;
     vector<double> misCalibRangeEB_;
+    float          misCalibStepsEB_[11];    
     vector<double> misCalibRangeEE_;
+    float          misCalibStepsEE_[11];
     int            lumisToSum_;
     int            statusThreshold_;
     int            nLumis_;
     bool           applyEtThreshold_;
     //---geometry
-    EcalGeomPhiSymHelper* ecalGeoAndStatus_;
+    EcalRingCalibrationTools       calibRing_;
+    static const short             kNRingsEB = EcalRingCalibrationTools::N_RING_BARREL;
+    static const short             kNRingsEE = EcalRingCalibrationTools::N_RING_ENDCAP;
+    float                          etCutsEB_[kNRingsEB];
+    float                          etCutsEE_[kNRingsEE];
+    float                          eThresholdsEE_[kNRingsEE];
 
     //---output edm
-    auto_ptr<PhiSymInfoCollection> lumiInfo_;
+    auto_ptr<PhiSymInfoCollection>   lumiInfo_;
     auto_ptr<PhiSymRecHitCollection> recHitCollEB_;
     auto_ptr<PhiSymRecHitCollection> recHitCollEE_;
-    vector<float> detIdKeyEB_;
-    vector<float> detIdKeyEE_;
     //---output plain tree
     bool makeSpectraTreeEB_;
     bool makeSpectraTreeEE_;
@@ -96,18 +103,18 @@ private:
 PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     ebTag_(pSet.getParameter<edm::InputTag>("barrelHitCollection")),
     eeTag_(pSet.getParameter<edm::InputTag>("endcapHitCollection")),
-    eCutEB_(pSet.getParameter<double>("eCut_barrel")),
+    etCutEB_(pSet.getParameter<double>("etCut_barrel")),
     eThresholdEB_(pSet.getParameter<double>("eThreshold_barrel")),
-    ap_(pSet.getParameter<double>("ap")),
-    b_(pSet.getParameter<double>("b")),
-    nMisCalib_(pSet.getParameter<int>("nMisCalib")),
+    etCutEE_(pSet.getParameter<double>("etCut_endcap")),
+    A_(pSet.getParameter<double>("A")),
+    B_(pSet.getParameter<double>("B")),
+    nMisCalib_(pSet.getParameter<int>("nMisCalib")/2),
     misCalibRangeEB_(pSet.getParameter<vector<double> >("misCalibRangeEB")),
     misCalibRangeEE_(pSet.getParameter<vector<double> >("misCalibRangeEE")),
     lumisToSum_(pSet.getParameter<int>("lumisToSum")),
     statusThreshold_(pSet.getParameter<int>("statusThreshold")),
     nLumis_(0),
     applyEtThreshold_(pSet.getParameter<bool>("applyEtThreshold")),
-    ecalGeoAndStatus_(NULL),
     makeSpectraTreeEB_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEB")),
     makeSpectraTreeEE_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEE"))
 {    
@@ -118,12 +125,39 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
 }
 
 PhiSymProducer::~PhiSymProducer()
-{
-    delete ecalGeoAndStatus_;
-}
+{}
 
 void PhiSymProducer::beginJob()
 {
+    //---set E thresholds, Et cuts and miscalib steps
+    //---spectrum window: E > thr && Et < cut
+    //---NOTE: etCutsEE need the geometry, so it is set later in beginLumi
+    for(int iRing=0; iRing<kNRingsEB; ++iRing)
+    {
+        float ring_eta = (iRing > 85 ? iRing - 85 : iRing - 84)*0.0175;        
+        etCutsEB_[iRing] =  eThresholdEB_/cosh(ring_eta) + etCutEB_;
+    }
+    int ringsInOneEE = kNRingsEE/2;
+    for(int iRing=0; iRing<ringsInOneEE; ++iRing)
+    {
+        eThresholdsEE_[iRing] = -1;
+        eThresholdsEE_[iRing+ringsInOneEE] = -1;
+        etCutsEE_[iRing] = -1;
+        etCutsEE_[iRing+ringsInOneEE] = -1;
+    }
+
+    //---misCalib value init
+    float misCalibStepEB = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
+    float misCalibStepEE = fabs(misCalibRangeEE_[1]-misCalibRangeEE_[0])/nMisCalib_;
+    for(int iMis=-nMisCalib_; iMis<=nMisCalib_; ++iMis)
+    {
+        //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]
+        int index = iMis > 0 ? iMis+nMisCalib_ : iMis == 0 ? 0 : iMis+nMisCalib_+1;
+        misCalibStepsEB_[index] = iMis*misCalibStepEB;
+        misCalibStepsEE_[index] = iMis*misCalibStepEE;
+    }
+    
+    //---create spectra output file
     if(makeSpectraTreeEB_ || makeSpectraTreeEE_)
         outFile_ = auto_ptr<PhiSymFile>(new PhiSymFile(&fs_->file()));
 }
@@ -161,12 +195,13 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
         recHitCollEB_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
         recHitCollEE_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
 	//---get the ecal geometry
-	edm::ESHandle<CaloGeometry> geoHandle;
-	setup.get<CaloGeometryRecord>().get(geoHandle);
-	const CaloSubdetectorGeometry* barrelGeometry = 
-	  geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-	const CaloSubdetectorGeometry* endcapGeometry = 
-	  geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+        edm::ESHandle<CaloGeometry> geoHandle;
+        setup.get<CaloGeometryRecord>().get(geoHandle);
+        const CaloSubdetectorGeometry* barrelGeometry =
+            geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);;
+        const CaloSubdetectorGeometry* endcapGeometry =
+            geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);;
+        calibRing_.setCaloGeometry(&(*geoHandle));
 	
 	std::vector<DetId> barrelDetIds=barrelGeometry->getValidDetIds(DetId::Ecal, EcalBarrel);
 	std::vector<DetId> endcapDetIds=endcapGeometry->getValidDetIds(DetId::Ecal, EcalEndcap);
@@ -180,14 +215,25 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
 	for(auto& eeDetId : endcapDetIds)
         {
 	    EEDetId myId(eeDetId);
+            int ring = calibRing_.getRingIndex(myId) - kNRingsEB;
 	    recHitCollEE_->at(myId.denseIndex())=PhiSymRecHit(eeDetId.rawId(), 0);
+            //---set eCutEE if first lumi
+            if(etCutsEE_[ring] == -1 && ring < kNRingsEE/2 && myId.ix() == 50)
+            {
+                int ringsInOneEE = kNRingsEE/2;
+                const CaloCellGeometry *cellGeometry = endcapGeometry->getGeometry(myId);
+                float eta=cellGeometry->getPosition().eta();
+                eThresholdsEE_[ring] = A_ + B_*eta;
+                etCutsEE_[ring] = eThresholdsEE_[ring]/cosh(eta) + etCutEE_;
+                eThresholdsEE_[ring+ringsInOneEE] = eThresholdsEE_[ring];
+                etCutsEE_[ring+ringsInOneEE] = etCutsEE_[ring];
+            }
         }
     }
-    
     ++nLumis_;
 }
 
-void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::EventSetup const& setup)
+void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::EventSetup const& setup)    
 {
     //---put the collection in the LuminosityBlocks tree
     if(nLumis_ == lumisToSum_)
@@ -197,23 +243,28 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
         lumi.put(recHitCollEB_, "EB");
         lumi.put(recHitCollEE_, "EE");
         nLumis_ = 0;
-    }       
+    }
 }
 
 void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
 {
-    //---get recHits collections - check for errors
-    event.getByLabel(ebTag_, barrelRecHitsHandle_);
-    if(!barrelRecHitsHandle_.isValid())
-        edm::LogError("") << "[PhiSymmetryCalibration] Error! Can't get EB RecHits!" << endl;
-  
-    event.getByLabel(eeTag_, endcapRecHitsHandle_);
-    if(!endcapRecHitsHandle_.isValid())
-        edm::LogError("") << "[PhiSymmetryCalibration] Error! Can't get EE RecHits!" << endl;
-
-    //---get the beamspot
     uint64_t totHitsEB=0;
     uint64_t totHitsEE=0;
+
+    //---get recHits collections 
+    event.getByLabel(ebTag_, barrelRecHitsHandle_);  
+    event.getByLabel(eeTag_, endcapRecHitsHandle_);
+
+    //---get the ecal geometry
+    edm::ESHandle<CaloGeometry> geoHandle;
+    setup.get<CaloGeometryRecord>().get(geoHandle);
+    const CaloSubdetectorGeometry* barrelGeometry =
+        geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);;
+    const CaloSubdetectorGeometry* endcapGeometry =
+        geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);;
+    setup.get<EcalChannelStatusRcd>().get(chStatus_);
+    
+    //---get the beamspot
     edm::Handle<reco::BeamSpot> recoBeamSpotHandle;
     event.getByLabel("offlineBeamSpot", recoBeamSpotHandle);
     
@@ -221,52 +272,54 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     edm::Timestamp evtTimeStamp(event.time().value());
     edm::ESHandle<EcalLaserDbService> laser;
     setup.get<EcalLaserDbRecord>().get(laser);
-    if(!laser.isValid())
-        edm::LogError("") << "[PhiSymmetryCalibration] Error! Can't get the laser corrections!" << endl;
-    
-    //---get the ecal geometry
-    edm::ESHandle<CaloGeometry> geoHandle;
-    setup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry* barrelGeometry = 
-        geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    const CaloSubdetectorGeometry* endcapGeometry = 
-        geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-    
-    //---get the channel status only once
-    if(!ecalGeoAndStatus_)
-    {
-        setup.get<EcalChannelStatusRcd>().get(chStatus_);
-        ecalGeoAndStatus_ = new EcalGeomPhiSymHelper();
-        ecalGeoAndStatus_->setup(false, statusThreshold_, &(*geoHandle), &(*chStatus_));
-    }
-    
+
     //---EB---
     for(auto& recHit : *barrelRecHitsHandle_.product())
     {
+        float energy = recHit.energy();
+        //---if recHit energy is below thr even with the highest miscalib skip this recHit
+        if(energy*misCalibRangeEB_[1] < eThresholdEB_)
+            continue;
+
         //---check channel status
         EBDetId ebHit = EBDetId(recHit.id());
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
-        if(!ecalGeoAndStatus_->goodCell_barl[abs(ebHit.ieta())-1][ebHit.iphi()-1][ebHit.ieta()>0 ? 1 : 0])
+
+        if((*chStatus_)[ebHit].getStatusCode() > statusThreshold_)
             lumiInfo_->back().SetBadChannel(recHit.id(), (*chStatus_)[ebHit].getStatusCode());
 
         //---compute et + miscalibration
-        float* etValues = new float[nMisCalib_+1];
-        float misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
-        for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)
+        float etValues[11];
+        //---one can do this in one for loop from -nMis to +nMis but in this way the
+        //---program is faster
+        //---NOTE: nMisCalib is half on the value set in the cfg python
+        etValues[0] = recHit.energy()/cosh(eta);
+        for(int iMis=-nMisCalib_; iMis<0; ++iMis)
         {
             //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]
-            int index = iMis > 0 ? iMis+nMisCalib_/2 : iMis == 0 ? 0 : iMis+nMisCalib_/2+1; 
-            etValues[index] = recHit.energy()/cosh(eta)*(1+misCalibStep*iMis);
+            int index = iMis + nMisCalib_ + 1; 
+            etValues[index] = etValues[0]*(1+misCalibStepsEB_[index]);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[index]*cosh(eta) < eCutEB_ || etValues[index] > eCutEB_/cosh(eta)+eThresholdEB_)                
+            if(etValues[index]*cosh(eta) < eThresholdEB_ || etValues[index] > etCutsEB_[ebHit.ieta()])
                 etValues[index] = 0;
         }
-
-        if(etValues[0] > 0)
-            ++totHitsEB;   
-
-	recHitCollEB_->at(ebHit.denseIndex()).AddHit(etValues,
-						     laser.product()->getLaserCorrection(recHit.id(), evtTimeStamp));
+        for(int iMis=1; iMis<=nMisCalib_; ++iMis)
+        {
+            //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]
+            int index = iMis + nMisCalib_; 
+            etValues[index] = etValues[0]*(1+misCalibStepsEB_[index]);
+            //---set et to zero if out of range [e_thr, et_thr+1]
+            if(etValues[index]*cosh(eta) < eThresholdEB_ || etValues[index] > etCutsEB_[ebHit.ieta()])
+                etValues[index] = 0;
+        }
+        //---set et to zero if out of range [e_thr, et_thr+1]
+        if(energy < eThresholdEB_ || etValues[0] > etCutsEB_[ebHit.ieta()])
+            etValues[0] = 0;
+        else
+            ++totHitsEB;
+        //---update the rechHit sumEt
+        recHitCollEB_->at(ebHit.denseIndex()).AddHit(etValues,
+        					     laser.product()->getLaserCorrection(recHit.id(), evtTimeStamp));
      
         //---fill the plain tree
         if(makeSpectraTreeEB_)
@@ -276,65 +329,69 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             outFile_->ebTree.et = recHit.energy()/cosh(eta);
             outFile_->ebTree.Fill();
         }
-	delete[] etValues;
     }
+
     //---EE---
     for(auto& recHit : *endcapRecHitsHandle_.product())
     {
-        //---check channel status
         EEDetId eeHit = EEDetId(recHit.id());
-        float eta=endcapGeometry->getGeometry(eeHit)->getPosition().eta();
-        if(!ecalGeoAndStatus_->goodCell_endc[eeHit.ix()-1][eeHit.iy()-1][eeHit.zside()>0 ? 1 : 0])
+        int ring = calibRing_.getRingIndex(eeHit) - kNRingsEB;
+        float energy = recHit.energy();
+        //---if recHit energy is below thr even with the highest miscalib skip this recHit
+        if(energy*misCalibRangeEE_[1] < eThresholdsEE_[ring])
             continue;
-       
+
+        //---check channel status
+        float eta=endcapGeometry->getGeometry(eeHit)->getPosition().eta();
+        if((*chStatus_)[eeHit].getStatusCode() > statusThreshold_)
+            lumiInfo_->back().SetBadChannel(recHit.id(), (*chStatus_)[eeHit].getStatusCode());
+
         //---compute et + miscalibration
-        float* etValues = new float[nMisCalib_+1];
-        float  misCalibStep = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
-        float eCutEE=0;
-        int iring=0;
-        for(int ring=0; ring<kEndcEtaRings; ring++)
-        {
-            if(fabs(eta)>ecalGeoAndStatus_->etaBoundary_[ring] && fabs(eta)<ecalGeoAndStatus_->etaBoundary_[ring+1])
-            {
-                iring = ring;
-                if(eta>0)
-                    eCutEE = ap_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*b_;
-                else
-                {
-                    eCutEE = ap_ + abs(ecalGeoAndStatus_->cellPos_[ring][50].eta())*b_;
-                    iring = -ring;
-                }
-            }
-        }
-        for(int iMis=-nMisCalib_/2; iMis<=nMisCalib_/2; ++iMis)
+        float etValues[11];
+        //---one can do this in one for loop from -nMis to +nMis but in this way the
+        //---program is faster
+        //---NOTE: nMisCalib is half on the value set in the cfg python
+        etValues[0] = recHit.energy()/cosh(eta);
+        for(int iMis=-nMisCalib_; iMis<0; ++iMis)
         {
             //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]
-            int index = iMis > 0 ? iMis+nMisCalib_/2 : iMis == 0 ? 0 : iMis+nMisCalib_/2+1; 
-            etValues[index] = recHit.energy()/cosh(eta)*(1+misCalibStep*iMis);
+            int index = iMis + nMisCalib_ + 1; 
+            etValues[index] = etValues[0]*(1+misCalibStepsEE_[index]);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(applyEtThreshold_ && (etValues[index]*cosh(eta) < eCutEE || etValues[index] > eCutEE/cosh(eta)+1))                
+            if(etValues[index]*cosh(eta) < eThresholdsEE_[ring] || etValues[index] > etCutsEE_[ring])
                 etValues[index] = 0;
         }
-        if(etValues[0] > 0)
+        for(int iMis=1; iMis<=nMisCalib_; ++iMis)
+        {
+            //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]
+            int index = iMis + nMisCalib_;
+            etValues[index] = etValues[0]*(1+misCalibStepsEE_[index]);
+            //---set et to zero if out of range [e_thr, et_thr+1]
+            if(etValues[index]*cosh(eta) < eThresholdsEE_[ring] || etValues[index] > etCutsEE_[ring])
+                etValues[index] = 0;
+        }
+        //---set et to zero if out of range [e_thr, et_thr+1]
+        if(energy < eThresholdsEE_[ring] || etValues[0] > etCutsEE_[ring])
+            etValues[0] = 0;
+        else
             ++totHitsEE;
-
-	recHitCollEE_->at(eeHit.denseIndex()).AddHit(etValues,
-						     laser.product()->getLaserCorrection(recHit.id(), evtTimeStamp));
-
+        //---update the rechHit sumEt
+        recHitCollEE_->at(eeHit.denseIndex()).AddHit(etValues,
+        					     laser.product()->getLaserCorrection(recHit.id(), evtTimeStamp));
+     
         //---fill the plain tree
         if(makeSpectraTreeEE_)
         {
-            outFile_->eeTree.iring = iring;
+            outFile_->eeTree.iring = ring;
             outFile_->eeTree.ix = eeHit.ix();
             outFile_->eeTree.iy = eeHit.iy();
             outFile_->eeTree.et = recHit.energy()/cosh(eta);
             outFile_->eeTree.Fill();
-        }        
-        delete[] etValues;
+        }
     }
-    
-    //---update the beamspot
-    lumiInfo_->at(0).Update(recoBeamSpotHandle.product(), totHitsEB, totHitsEE);
+
+    //---update the beamspot    
+    lumiInfo_->back().Update(recoBeamSpotHandle.product(), totHitsEB, totHitsEE);
 }
 
 DEFINE_FWK_MODULE(PhiSymProducer);

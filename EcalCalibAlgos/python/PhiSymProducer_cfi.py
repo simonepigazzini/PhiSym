@@ -4,10 +4,11 @@ PhiSymProducer = cms.EDProducer(
     "PhiSymProducer",
     barrelHitCollection = cms.InputTag('ecalRecHit', 'EcalRecHitsEB', 'PHISYM'),
     endcapHitCollection = cms.InputTag('ecalRecHit', 'EcalRecHitsEE', 'PHISYM'),
-    eCut_barrel = cms.double(0.550),
-    eThreshold_barrel = cms.double(1), #this is actually summed to eCut in order to define the upper bound    
-    ap = cms.double( -0.150),
-    b = cms.double( 0.600),
+    etCut_barrel = cms.double(1), #this is actually summed to eThr in order to define the upper bound
+    eThreshold_barrel = cms.double(0.550), 
+    etCut_endcap = cms.double(1), #this is actually summed to eThr in order to define the upper bound
+    A = cms.double( -0.150),
+    B = cms.double( 0.600),
     nMisCalib = cms.int32(10), # <= 10; even; central value does not count 
     misCalibRangeEB = cms.vdouble(0.95, 1.05),
     misCalibRangeEE = cms.vdouble(0.90, 1.10),
