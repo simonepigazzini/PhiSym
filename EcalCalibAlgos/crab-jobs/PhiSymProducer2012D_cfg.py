@@ -5,7 +5,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 # parse commad line options
 options = VarParsing('analysis')
 options.maxEvents = -1
-options.outputFile = 'phisym_producer_1lumis.root'
+options.outputFile = 'phisym_weights_1lumis.root'
 options.parseArguments()
 
 process=cms.Process("PHISYM")
@@ -14,9 +14,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.load('Configuration.Geometry.GeometryExtended2015Reco_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
-process.load('RecoLocalCalo.EcalRecProducers.ecalMultiFitUncalibRecHit_cfi')
-process.load('RecoLocalCalo.EcalRecProducers.ecalUncalibRecHit_cfi')
-process.load('RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi')
+process.load('RecoLocalCalo.EcalRecProducers.ecalRecalibRecHit_cfi')
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
@@ -45,7 +43,7 @@ process.source = cms.Source("PoolSource",
                                 'drop *_hltTriggerSummaryAOD_*_*'
                             ),
                             fileNames = cms.untracked.vstring(
-                                "/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/203/774/B492587E-FF08-E211-953F-BCAEC53296FB.root")
+                                "/store/data/Run2012A/AlCaPhiSym/RAW/v1/000/190/482/D08E58E5-4B7F-E111-8BBD-003048D2C0F4.root")
 )
 
 # Production Info
@@ -55,13 +53,23 @@ process.configurationMetadata = cms.untracked.PSet(
     name = cms.untracked.string('PhiSymProducer')
 )
 
+#ecalRecHit (no ricovery)
+process.ecalRecHit.doEnergyScale = cms.bool(True)
+process.ecalRecHit.doIntercalib = cms.bool(True)
+process.ecalRecHit.doLaserCorrections = cms.bool(True)
+process.ecalRecHit.EBRecalibRecHitCollection = cms.string('recalibEcalRecHitsEB')
+process.ecalRecHit.EERecalibRecHitCollection = cms.string('recalibEcalRecHitsEE')
+process.ecalRecHit.EBRecHitCollection = cms.InputTag('hltAlCaPhiSymUncalibrator', 'phiSymEcalRecHitsEB', 'HLT')
+process.ecalRecHit.EERecHitCollection = cms.InputTag('hltAlCaPhiSymUncalibrator', 'phiSymEcalRecHitsEE', 'HLT')
+
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 # process.PhiSymProducer.applyEtThreshold=cms.bool(False)
 process.PhiSymProducer.makeSpectraTreeEB = False
 process.PhiSymProducer.makeSpectraTreeEE = False
-process.PhiSymProducer.barrelHitCollection = cms.InputTag('hltAlCaPhiSymUncalibrator', 'phiSymEcalRecHitsEB', 'HLT')
-process.PhiSymProducer.endcapHitCollection = cms.InputTag('hltAlCaPhiSymUncalibrator', 'phiSymEcalRecHitsEE', 'HLT')
+process.PhiSymProducer.barrelHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEB', 'PHISYM')
+process.PhiSymProducer.endcapHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEE', 'PHISYM')
+
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
@@ -78,12 +86,29 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("phisym_spectra.root"))
 
 # GLOBAL-TAG
-process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_R_74_V12A')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
+process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(record = cms.string("EcalLaserAPDPNRatiosRcd"),
+             tag = cms.string("EcalLaserAPDPNRatios_20130130_447_p1_v2"),
+             connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_42X_ECAL_LAS")
+         ),
+    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
+             tag = cms.string("EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies"),
+             connect = cms.untracked.string("frontier://FrontierInt/CMS_COND_ECAL")
+         ),
+    cms.PSet(record = cms.string("EcalChannelStatusRcd"),
+             tag = cms.string("EcalChannelStatus_v1_prompt"),
+             connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL")
+         )
+
+)
 
 # SCHEDULE
-process.path = cms.Path(process.offlineBeamSpot)
-process.path *= process.PhiSymProducer
+process.reconstruction_step = cms.Sequence(process.ecalRecHit)
+
+process.p = cms.Path(process.reconstruction_step)
+process.p *= process.offlineBeamSpot
+process.p *= process.PhiSymProducer
 
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
-
-process.schedule = cms.Schedule(process.path, process.RECOSIMoutput_step)
+process.schedule = cms.Schedule(process.p, process.RECOSIMoutput_step)
