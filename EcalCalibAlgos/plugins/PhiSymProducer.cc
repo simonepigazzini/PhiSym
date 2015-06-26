@@ -85,6 +85,7 @@ private:
     EcalRingCalibrationTools       calibRing_;
     static const short             kNRingsEB = EcalRingCalibrationTools::N_RING_BARREL;
     static const short             kNRingsEE = EcalRingCalibrationTools::N_RING_ENDCAP;
+    static const short             ringsInOneEE = kNRingsEE/2;
     float                          etCutsEB_[kNRingsEB];
     float                          etCutsEE_[kNRingsEE];
     float                          eThresholdsEE_[kNRingsEE];
@@ -141,12 +142,12 @@ void PhiSymProducer::beginJob()
         float ring_eta = (iRing > 85 ? iRing - 85 : iRing - 84)*0.0175;        
         etCutsEB_[iRing] =  eThresholdEB_/cosh(ring_eta) + etCutEB_;
     }
-    int ringsInOneEE = kNRingsEE/2;
     for(int iRing=0; iRing<ringsInOneEE; ++iRing)
     {
         eThresholdsEE_[iRing] = ADCthrEE_*(C_ + B_*iRing + A_*iRing*iRing)/1000;
         eThresholdsEE_[iRing+ringsInOneEE] = eThresholdsEE_[iRing];
         etCutsEE_[iRing] = -1;
+        etCutsEE_[iRing+ringsInOneEE] = -1;
     }
 
     //---misCalib value init
@@ -225,6 +226,7 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
             {
                 const CaloCellGeometry *cellGeometry = endcapGeometry->getGeometry(myId);
                 etCutsEE_[ring] = eThresholdsEE_[ring]/cosh(cellGeometry->getPosition().eta()) + etCutEE_;
+                etCutsEE_[ring+ringsInOneEE] = etCutsEE_[ring];                
             }
         }
     }
