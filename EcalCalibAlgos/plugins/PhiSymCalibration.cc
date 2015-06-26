@@ -37,7 +37,6 @@
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
 #include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
-#include "PhiSym/EcalCalibAlgos/interface/EcalGeomPhiSymHelper.h"
 
 using namespace std;
 
@@ -413,7 +412,8 @@ void PhiSymCalibration::ComputeKfactors()
     {
         if(ebXstals_[index].GetNhits() == 0)
             continue;
-        ebICErr_[index]=sqrt(ebXstals_[index].GetSumEt2()-pow(ebXstals_[index].GetSumEt(), 2)/ebXstals_[index].GetNhits());
+        ebICErr_[index]=sqrt(ebXstals_[index].GetSumEt2()/ebXstals_[index].GetNhits()-
+                             pow(ebXstals_[index].GetSumEt()/ebXstals_[index].GetNhits(), 2));
         float error = ebICErr_[index]/ebXstals_[index].GetSumEt(0);        
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
@@ -449,7 +449,8 @@ void PhiSymCalibration::ComputeKfactors()
     {
         if(eeXstals_[index].GetNhits() == 0)
             continue;
-        eeICErr_[index]=sqrt(eeXstals_[index].GetSumEt2()-pow(eeXstals_[index].GetSumEt(), 2)/eeXstals_[index].GetNhits());
+        eeICErr_[index]=sqrt(eeXstals_[index].GetSumEt2()/eeXstals_[index].GetNhits()-
+                             pow(eeXstals_[index].GetSumEt()/eeXstals_[index].GetNhits(), 2));
         float error = eeICErr_[index]/eeXstals_[index].GetSumEt(0);        
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {

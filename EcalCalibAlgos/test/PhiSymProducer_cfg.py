@@ -39,13 +39,13 @@ process.options = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            inputCommands = cms.untracked.vstring(
-                                'keep *',
-                                'drop *_hltEcalDigis_*_*',
-                                'drop *_hltTriggerSummaryAOD_*_*'
-                            ),
+                            # inputCommands = cms.untracked.vstring(
+                            #     'keep *',
+                            #     'drop *_hltEcalDigis_*_*',
+                            #     'drop *_hltTriggerSummaryAOD_*_*'
+                            # ),
                             fileNames = cms.untracked.vstring(
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root",
+                                #"root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root",
                                 "root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/795/00000/E001FA5B-D510-E511-A5B8-02163E0135FD.root")
                             #'/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/908/00000/7E213B41-2F0A-E511-9261-02163E011D69.root')
                             # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/04281A56-F509-E511-8C9A-02163E0143C5.root',

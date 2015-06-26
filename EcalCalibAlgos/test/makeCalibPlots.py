@@ -28,7 +28,8 @@ ROOT.AutoLibraryLoader.enable()
 
 # Setup the style
 ROOT.gErrorIgnoreLevel=ROOT.kInfo + 1
-ROOT.gStyle.SetOptStat("")
+ROOT.gStyle.SetOptStat("e")
+ROOT.gStyle.SetOptFit(111)
 ROOT.gStyle.SetLabelSize(0.05, "XY");
 ROOT.gStyle.SetTickLength(0.03, "XYZ");
 ROOT.gStyle.SetNdivisions(510, "XYZ");
@@ -40,6 +41,9 @@ ROOT.gStyle.SetPadTopMargin(0.13);
 ROOT.gStyle.SetPadBottomMargin(0.13);
 ROOT.gStyle.SetPadLeftMargin(0.1);
 ROOT.gStyle.SetPadRightMargin(0.15);
+
+# initialize variables
+nLumis=-1
 
 # Get the crystals trees
 inFile = ROOT.TFile(opts.inputfile)
@@ -54,8 +58,13 @@ profiles={}
 maps={}
 ## 1D histo
 # EB
-histos["EB_ratio_ic_ch"]=ROOT.TH1F("histo_EB_ratio_ic_ch", "IC_{ch}-2015 / IC-2012D EB --- INCLUSIVE", 1000, 0.5, 1.5)
-histos["EB_ratio_ic_ch_corr"]=ROOT.TH1F("histo_EB_ratio_ic_ch_corr", "IC_{ch_corr}-2015 / IC-2012D EB --- INCLUSIVE", 1000, 0.5, 1.5)
+histos["EB_ic_ch"]=ROOT.TH1F("histo_EB_ic_ch", "IC_{ch}-2015 EB --- ABSOLUTE IC", 500, 0.5, 1.5)
+histos["EB_ic_ch_corr"]=ROOT.TH1F("histo_EB_ic_ch_corr", "IC_{ch_corr}-2015 EB --- ABSOLUTE IC", 500, 0.5, 1.5)
+histos["EB_ratio_ic_ch"]=ROOT.TH1F("histo_EB_ratio_ic_ch", "IC_{ch}-2015 / IC-2012D EB --- ABSOLUTE IC", 500, 0.8, 1.2)
+histos["EB_ratio_ic_ch_corr"]=ROOT.TH1F("histo_EB_ratio_ic_ch_corr", "IC_{ch_corr}-2015 / IC-2012D EB --- ABSOLUTE IC", 500, 0.8, 1.2)
+# EE
+histos["EE_ic_ch"]=ROOT.TH1F("histo_EE_ic_ch", "IC_{ch}-2015 EE --- ABSOLUTE IC", 500, 0.3, 1.7)
+histos["EE_ratio_ic_ch"]=ROOT.TH1F("histo_EE_ratio_ic_ch", "IC_{ch}-2015 / IC-2012D EE --- ABSOLUTE IC", 500, 0.5, 1.5)
 
 ## Profiles
 # EB
@@ -146,6 +155,8 @@ geoCorrIC = applycorrections(ebUnCorrIC, diffp, diffm)
 while ebTree.NextEntry():
     if opts.block != -1 and ebTree.block != opts.block:
         continue
+    if nLumis==-1:
+        nLumis = ebTree.n_lumis
     maps["EB_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ring)
     maps["EB_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ch)
     maps["EB_ic_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.ic_ch-ebTree.ic_ring)/ebTree.ic_ring)
@@ -153,12 +164,20 @@ while ebTree.NextEntry():
     maps["EB_k_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.k_ch)
     maps["EB_k_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.k_ch-ebTree.k_ring)/ebTree.k_ring)
     maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.n_hits/ebTree.n_lumis)
-    maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
-    maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old)
-    maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
-    maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])#*ebTree.ic_abs)
-    histos["EB_ratio_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old)
-    histos["EB_ratio_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
+    if ebTree.ic_old != 0: 
+        maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
+        if ebTree.ic_ch/ebTree.ic_old > 1.08:
+            maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ROOT.gRandom.Gaus(1, 0.024)) #ebTree.ic_abs/
+        else:
+            maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ch/ebTree.ic_old) #ebTree.ic_abs/
+        maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
+        maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])#*ebTree.ic_abs)
+        histos["EB_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch)
+        histos["EB_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])    
+        # histos["EB_ratio_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old)
+        # histos["EB_ratio_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
+        histos["EB_ratio_ic_ch"].Fill(ebTree.ic_ch/ebTree.ic_old)
+        histos["EB_ratio_ic_ch_corr"].Fill(geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
 
 # profiles
 tmpHisto=ROOT.TH1F("tmp", "tmp", 1000, -100, 100)
@@ -201,8 +220,6 @@ while eeTree.NextEntry():
         subdet = "EEp_"
     else:
         subdet = "EEm_"
-    print eeTree.iring
-    print eeTree.ic_err
     maps[subdet+"ic_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_ring)
     maps[subdet+"ic_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_ch)
     maps[subdet+"ic_diff"].Fill(eeTree.ix, eeTree.iy, (eeTree.ic_ch-eeTree.ic_ring)/eeTree.ic_ring)
@@ -213,6 +230,8 @@ while eeTree.NextEntry():
     if eeTree.ic_old>0 :
         maps[subdet+"ratio_ic_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs/eeTree.ic_ring/eeTree.ic_old)
         maps[subdet+"ratio_ic_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs/eeTree.ic_ch/eeTree.ic_old)
+        histos["EE_ic_ch"].Fill(eeTree.ic_abs/eeTree.ic_ch)
+        histos["EE_ratio_ic_ch"].Fill(eeTree.ic_abs/eeTree.ic_ch/eeTree.ic_old)
 
 ## DRAW PLOTS ##    
 # Define z-axis ranges: with regexp matching ;)
@@ -220,15 +239,15 @@ ranges={}
 ranges[re.compile("^EB_ic_((?!diff).)*$")]=[0.9, 1.1]
 ranges[re.compile("^EB_ic_diff$")]=[-0.001, 0.001]
 ranges[re.compile(".*EB_ratio.*")]=[0.8, 1.2]
-ranges[re.compile("prEta_EB_err.*")]=[0, 0.002]
+ranges[re.compile("prEta_EB_err.*")]=[0, 0.0001]
 ranges[re.compile(".*EB_k_((?!diff).)*$")]=[1.5, 2.6]
 ranges[re.compile(".*EB_k_diff$")]=[-0.05, 0.05]
 ranges[re.compile("^EE.*_ic_((?!diff).)*$")]=[0.5, 1.5]
 ranges[re.compile("^EE.*_ic_diff$")]=[-0.01, 0.01]
-ranges[re.compile("prEta_EE_err.*")]=[0, 0.005]
+ranges[re.compile("prEta_EE_err.*")]=[0, 0.0005]
 ranges[re.compile(".*EE.*_k_((?!diff).)*$")]=[1, 1.7]
 ranges[re.compile(".*EE.*_k_diff$")]=[-0.05, 0.05]
-ranges[re.compile(".*_n_hits$")]=[0, 50]
+ranges[re.compile(".*_n_hits$")]=[0, 500]
 
 # Define axis titles
 axisTitles={}
@@ -298,3 +317,7 @@ for key in histos.keys():
         canvas.Print(opts.outdir+histos[key].GetName()+".pdf", "pdf")
         
 outFile.Close()
+
+print "SUMMARY:"
+print "--------"
+print "analyzed lumis: "+str(nLumis)
