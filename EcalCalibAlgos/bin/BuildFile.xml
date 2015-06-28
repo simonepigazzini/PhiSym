@@ -1,0 +1,14 @@
+<use name="root"/>
+<use name="rootgraphics"/>
+<use name="FWCore/FWLite"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/PythonParameterSet"/>
+<use name="DataFormats/EcalDetId"/>
+<use name="PhiSym/EcalCalibDataFormats"/>
+<flags EDM_PLUGIN="1"/>
+<environment>
+  <bin
+      name="PhiSymCalibrationLite"
+      file="PhiSymCalibrationLite.cc">
+  </bin>
+</environment>
