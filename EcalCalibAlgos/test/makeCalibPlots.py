@@ -163,7 +163,7 @@ while ebTree.NextEntry():
     maps["EB_k_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.k_ring)
     maps["EB_k_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.k_ch)
     maps["EB_k_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.k_ch-ebTree.k_ring)/ebTree.k_ring)
-    maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.n_hits/ebTree.n_lumis)
+    maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.rec_hit.GetNhits()/ebTree.n_lumis)
     if ebTree.ic_old != 0: 
         maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
         if ebTree.ic_ch/ebTree.ic_old > 1.08:
@@ -226,7 +226,7 @@ while eeTree.NextEntry():
     maps[subdet+"k_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.k_ring)
     maps[subdet+"k_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.k_ch)
     maps[subdet+"k_diff"].Fill(eeTree.ix, eeTree.iy, (eeTree.k_ch-eeTree.k_ring)/eeTree.k_ring)
-    maps[subdet+"n_hits"].Fill(eeTree.ix, eeTree.iy, eeTree.n_hits/eeTree.n_lumis)
+    maps[subdet+"n_hits"].Fill(eeTree.ix, eeTree.iy, eeTree.rec_hit.GetNhits()/eeTree.n_lumis)
     if eeTree.ic_old>0 :
         maps[subdet+"ratio_ic_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs/eeTree.ic_ring/eeTree.ic_old)
         maps[subdet+"ratio_ic_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs/eeTree.ic_ch/eeTree.ic_old)

@@ -58,6 +58,7 @@ public:
     void               ReadAbsICs(string name);
     void               ComputeICs();
     void               ComputeKfactors();
+    void               FillOutput();
     pair<float, float> GetRingKfactor(int& ring, int sub_det);
     pair<float, float> GetChannelKfactor(uint32_t& index, int sub_det);
     
@@ -71,13 +72,14 @@ private:
     edm::InputTag recHitEETag_;
     string oldICsFile_;
     string absICsFile_;
-    int blocksToSum_;
-    int nSummedLumis_;
-    int nMisCalib_;
-    int nEvents_;
-    int nBlocks_;
-    vector<double> misCalibValuesEB_;
-    vector<double> misCalibValuesEE_;
+    int    blocksToSum_;
+    bool   computeICs_;
+    int    nSummedLumis_;
+    int    nMisCalib_;
+    int    nEvents_;
+    int    nBlocks_;
+    vector<float> misCalibValuesEB_;
+    vector<float> misCalibValuesEE_;
 
     //---calibration---
     EcalRingCalibrationTools calibRing_;
@@ -89,13 +91,11 @@ private:
     float eeAbsICs_[100][100][2];
     //---ring based
     //---EB
-    uint64_t ebOccupancy_[kNRingsEB]={0};
     double ebRingsSumEt_[kNRingsEB][11];
     double ebRingsSumEt2_[kNRingsEB]={0};
     double kFactorsEB_[kNRingsEB]={0};
     double kFactorsErrEB_[kNRingsEB]={0};
     //---EE
-    uint64_t eeOccupancy_[kNRingsEE]={0};
     double eeRingsSumEt_[kNRingsEE][11];
     double eeRingsSumEt2_[kNRingsEE]={0};
     double kFactorsEE_[kNRingsEE]={0};
@@ -127,6 +127,7 @@ PhiSymCalibration::PhiSymCalibration(const edm::ParameterSet& pSet):
     oldICsFile_(pSet.getUntrackedParameter<string>("oldCalibFile")),
     absICsFile_(pSet.getUntrackedParameter<string>("absCalibFile")),
     blocksToSum_(pSet.getUntrackedParameter<int>("blocksToSum")),
+    computeICs_(pSet.getUntrackedParameter<bool>("computeICs")),
     nSummedLumis_(1),
     nMisCalib_(-1),
     nEvents_(0),
@@ -147,7 +148,18 @@ void PhiSymCalibration::endJob()
 {
     //---collect spare lumis
     if(nBlocks_!=0)
-        ComputeICs();
+    {
+        //---increment block output trees counters
+        outFile_->eb_xstals.block++;
+        outFile_->eb_xstals.n_lumis = nBlocks_*nSummedLumis_;
+        outFile_->ee_xstals.block++;
+        outFile_->ee_xstals.n_lumis = nBlocks_*nSummedLumis_;
+
+        if(computeICs_)
+            ComputeICs();
+        else
+            FillOutput();
+    }
 
     //---finalize outputs
     outFile_->cd();
@@ -196,6 +208,7 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
             misCalibValuesEB_[index] = 1+misCalibStepEB*iMis;
             misCalibValuesEE_[index] = 1+misCalibStepEE*iMis;
         }
+        outFile_->StoreMisCalibs(misCalibValuesEB_, misCalibValuesEE_);
     }
 
     const map<uint32_t, short>* badChMap = infoHandle_.product()->back().GetBadChannels();
@@ -204,12 +217,11 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
     for(auto& recHit : *recHitEBHandle_.product())
     {
         if(badChMap->find(recHit.GetRawId()) != badChMap->end())
-           continue;
+            continue;
         EBDetId ebXstal(recHit.GetRawId());
         int currentRing=calibRing_.getRingIndex(ebXstal);
         ebXstals_[ebXstal.denseIndex()] += recHit;
-        ebOccupancy_[currentRing] += recHit.GetNhits();
-        ebRingsSumEt2_[currentRing] += recHit.GetSumEt2();            
+        ebRingsSumEt2_[currentRing] += recHit.GetSumEt2();
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             if(recHit.GetSumEt(iMis) > 0)
@@ -219,18 +231,16 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
             }
         }
     }
-        
     //---EE---
     //---fill the rings Et sum
     for(auto& recHit : *recHitEEHandle_.product())
     {
         if(badChMap->find(recHit.GetRawId()) != badChMap->end())
-           continue;
+            continue;
         EEDetId eeXstal(recHit.GetRawId());
         int currentRing=calibRing_.getRingIndex(eeXstal)-kNRingsEB;
         eeXstals_[eeXstal.denseIndex()] += recHit;
-        eeOccupancy_[currentRing] += recHit.GetNhits();
-        eeRingsSumEt2_[currentRing] += recHit.GetSumEt2();            
+        eeRingsSumEt2_[currentRing] += recHit.GetSumEt2();
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             if(recHit.GetSumEt(iMis) > 0)
@@ -240,20 +250,26 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
             }
         }
     }
+    
     //---call the calibration computer 
     if(nBlocks_ == blocksToSum_)
-        ComputeICs();
+    {
+        //---increment block output trees counters
+        outFile_->eb_xstals.block++;
+        outFile_->eb_xstals.n_lumis = nBlocks_*nSummedLumis_;
+        outFile_->ee_xstals.block++;
+        outFile_->ee_xstals.n_lumis = nBlocks_*nSummedLumis_;
+
+        if(computeICs_)
+            ComputeICs();
+        else
+            FillOutput();
+    }
 }
 
 //---calibration loop method
 void PhiSymCalibration::ComputeICs()
-{
-    //---increment block output trees counters
-    outFile_->eb_xstals.block++;
-    outFile_->eb_xstals.n_lumis = nBlocks_*nSummedLumis_;
-    outFile_->ee_xstals.block++;
-    outFile_->ee_xstals.n_lumis = nBlocks_*nSummedLumis_;
-    
+{    
     int nGoodThisRing=0;
     //---compute EB rings averages
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
@@ -299,7 +315,7 @@ void PhiSymCalibration::ComputeICs()
         {
             //---fill the output tree
             outFile_->eb_xstals.n_events = nEvents_;
-            outFile_->eb_xstals.n_hits = ebXstals_[index].GetNhits();
+            outFile_->eb_xstals.rec_hit = &ebXstals_[index];
             outFile_->eb_xstals.ieta = ebXstal.ieta();
             outFile_->eb_xstals.iphi = ebXstal.iphi();
             outFile_->eb_xstals.k_ring = GetRingKfactor(currentRing, 0).first;
@@ -330,7 +346,7 @@ void PhiSymCalibration::ComputeICs()
         {
             //---fill the output tree
             outFile_->ee_xstals.n_events = nEvents_;
-            outFile_->ee_xstals.n_hits = eeXstals_[index].GetNhits();
+            outFile_->ee_xstals.rec_hit = &eeXstals_[index];
             outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
             outFile_->ee_xstals.ix = eeXstal.ix();
             outFile_->ee_xstals.iy = eeXstal.iy();
@@ -357,7 +373,6 @@ void PhiSymCalibration::ComputeICs()
     //---reset EB rings
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
     {
-        ebOccupancy_[iRing]=0;
         ebRingsSumEt2_[iRing]=0;
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
             ebRingsSumEt_[iRing][iMis]=0;
@@ -365,7 +380,6 @@ void PhiSymCalibration::ComputeICs()
     //---reset EE
     for(int iRing=0; iRing<kNRingsEE; ++iRing)
     {
-        eeOccupancy_[iRing]=0;
         eeRingsSumEt2_[iRing]=0;
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
             eeRingsSumEt_[iRing][iMis]=0;
@@ -491,6 +505,56 @@ pair<float, float> PhiSymCalibration::GetChannelKfactor(uint32_t& index, int sub
         return make_pair(kFactorsChEB_[index], kFactorsChErrEB_[index]);
     else
         return make_pair(kFactorsChEE_[index], kFactorsChErrEE_[index]);
+}
+
+//---do not compute k-factors and IC, just add up lumis
+void PhiSymCalibration::FillOutput()
+{
+    //---loop over the EB channels and store summed rechits
+    for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
+    {
+        EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
+        int currentRing=calibRing_.getRingIndex(ebXstal);            
+        if(goodXstalsEB_[currentRing][ebXstal.iphi()][0])
+        {
+            //---fill the output tree
+            outFile_->eb_xstals.n_events = nEvents_;
+            outFile_->eb_xstals.rec_hit = &ebXstals_[index];
+            outFile_->eb_xstals.ieta = ebXstal.ieta();
+            outFile_->eb_xstals.iphi = ebXstal.iphi();
+            outFile_->eb_xstals.Fill();
+
+            //---reset channel status and sum
+            ebXstals_[index].Reset();
+            for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+                goodXstalsEB_[currentRing][ebXstal.iphi()][iMis]=0;
+        }
+    }
+    //---loop over the EE channels and store summed rechits
+    for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
+    {
+        EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
+        int currentRing=calibRing_.getRingIndex(eeXstal)-kNRingsEB;            
+        if(goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][0])
+        {
+            //---fill the output tree
+            outFile_->ee_xstals.n_events = nEvents_;
+            outFile_->ee_xstals.rec_hit = &eeXstals_[index];
+            outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
+            outFile_->ee_xstals.ix = eeXstal.ix();
+            outFile_->ee_xstals.iy = eeXstal.iy();
+            outFile_->ee_xstals.Fill();            
+
+            //---reset channel status and sum
+            eeXstals_[index].Reset();
+            for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+                goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][iMis]=0;
+        }
+    }
+    
+    //---reset counters and kFactor flag
+    nEvents_=0;
+    nBlocks_=0;
 }
 
 //---if a file is specified read the old ICs, otherwise set them to -1
