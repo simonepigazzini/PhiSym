@@ -6,7 +6,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
-#include "TGraphErrors.h"
+#include "TH1F.h"
 
 using namespace std;
 
@@ -30,21 +30,21 @@ public:
     bool        NextEntry(int64_t entry=-1);
     
     //---branches variables---
-    int      block;
-    int      n_lumis;
-    Long64_t n_events;
-    Long64_t n_hits;
-    int      ieta;
-    int      iphi;
-    float    k_ring;
-    float    k_ring_err;
-    float    k_ch;
-    float    k_ch_err;
-    float    ic_ring;
-    float    ic_ch;
-    float    ic_old;
-    float    ic_abs; 
-    float    ic_err;
+    int           block;
+    int           n_lumis;
+    Long64_t      n_events;
+    PhiSymRecHit* rec_hit;
+    int           ieta;
+    int           iphi;
+    float         k_ring;
+    float         k_ring_err;
+    float         k_ch;
+    float         k_ch_err;
+    float         ic_ring;
+    float         ic_ch;
+    float         ic_old;
+    float         ic_abs; 
+    float         ic_err;
     
 private:
     
@@ -59,7 +59,7 @@ CrystalsEBTree::CrystalsEBTree()
     block=0;
     n_lumis=0;
     n_events=0;
-    n_hits=0;
+    rec_hit=new PhiSymRecHit();
     ieta=0;
     iphi=0;
     k_ring=0;
@@ -76,7 +76,7 @@ CrystalsEBTree::CrystalsEBTree()
     tree_->Branch("block", &block, "block/I");
     tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
     tree_->Branch("n_events", &n_events, "n_events/L");
-    tree_->Branch("n_hits", &n_hits, "n_hits/L");
+    tree_->Branch("rec_hit", &rec_hit);
     tree_->Branch("ieta", &ieta, "ieta/I");
     tree_->Branch("iphi", &iphi, "iphi/I");
     tree_->Branch("k_ring", &k_ring, "k_ring/F");
@@ -99,7 +99,7 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     block=0;
     n_lumis=0;
     n_events=0;
-    n_hits=0;
+    rec_hit=new PhiSymRecHit();
     ieta=0;
     iphi=0;
     k_ring=0;
@@ -116,7 +116,7 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     tree_->SetBranchAddress("block", &block);
     tree_->SetBranchAddress("n_lumis", &n_lumis);
     tree_->SetBranchAddress("n_events", &n_events);
-    tree_->SetBranchAddress("n_hits", &n_hits);
+    tree_->SetBranchAddress("rec_hit", &rec_hit);
     tree_->SetBranchAddress("ieta", &ieta);
     tree_->SetBranchAddress("iphi", &iphi);
     tree_->SetBranchAddress("k_ring", &k_ring);
@@ -166,22 +166,22 @@ public:
     bool        NextEntry(int64_t entry=-1);
     
     //---branches variables---
-    int      block;
-    int      n_lumis;
-    Long64_t n_events;
-    Long64_t n_hits;
-    int      iring;
-    int      ix;
-    int      iy;
-    float    k_ring;
-    float    k_ring_err;
-    float    k_ch;
-    float    k_ch_err;
-    float    ic_ring;
-    float    ic_ch;
-    float    ic_old;
-    float    ic_abs;
-    float    ic_err;
+    int           block;
+    int           n_lumis;
+    Long64_t      n_events;
+    PhiSymRecHit* rec_hit;
+    int           iring;
+    int           ix;
+    int           iy;
+    float         k_ring;
+    float         k_ring_err;
+    float         k_ch;
+    float         k_ch_err;
+    float         ic_ring;
+    float         ic_ch;
+    float         ic_old;
+    float         ic_abs;
+    float         ic_err;
     
 private:
 
@@ -196,7 +196,7 @@ CrystalsEETree::CrystalsEETree()
     block=0;
     n_lumis=0;
     n_events=0;
-    n_hits=0;
+    rec_hit=new PhiSymRecHit();
     iring=0;
     ix=0;
     iy=0;
@@ -214,7 +214,7 @@ CrystalsEETree::CrystalsEETree()
     tree_->Branch("block", &block, "block/I");
     tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
     tree_->Branch("n_events", &n_events, "n_events/L");
-    tree_->Branch("n_hits", &n_hits, "n_hits/L");
+    tree_->Branch("rec_hit", &rec_hit);
     tree_->Branch("iring", &iring, "iring/I");
     tree_->Branch("ix", &ix, "ix/I");
     tree_->Branch("iy", &iy, "iy/I");
@@ -237,7 +237,7 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     block=0;
     n_lumis=0;
     n_events=0;
-    n_hits=0;
+    rec_hit=new PhiSymRecHit();
     iring=0;
     ix=0;
     iy=0;
@@ -255,7 +255,7 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     tree_->SetBranchAddress("block", &block);
     tree_->SetBranchAddress("n_lumis", &n_lumis);
     tree_->SetBranchAddress("n_events", &n_events);
-    tree_->SetBranchAddress("n_hits", &n_hits);
+    tree_->SetBranchAddress("rec_hit", &rec_hit);
     tree_->SetBranchAddress("iring", &iring);
     tree_->SetBranchAddress("ix", &ix);
     tree_->SetBranchAddress("iy", &iy);
@@ -294,12 +294,15 @@ public:
     
     CalibrationFile();
     CalibrationFile(TFile* file);
-
+    
     inline void Close() {file_->Close();};
     inline void cd() {file_->cd();};
-
+    bool        StoreMisCalibs(vector<float>& eb, vector<float>& ee);
+    
     CrystalsEBTree eb_xstals;
     CrystalsEETree ee_xstals;
+    TH1F*          eb_miscalib;
+    TH1F*          ee_miscalib;
     
 private:
     
@@ -315,6 +318,29 @@ CalibrationFile::CalibrationFile(TFile* file)
     file_->cd();
     eb_xstals.SetMaxVirtualSize(50);
     ee_xstals.SetMaxVirtualSize(50);
+}
+
+bool CalibrationFile::StoreMisCalibs(vector<float>& eb, vector<float>& ee)
+{
+    if(!file_)
+        return false;
+    
+    file_->cd();
+    int n=eb.size();
+    eb_miscalib = new TH1F("eb_miscalib", "", n, -0.5, n-0.5);
+    ee_miscalib = new TH1F("eb_miscalib", "", n, -0.5, n-0.5);
+    for(int i=0; i<n; ++i)
+    {
+        eb_miscalib->SetBinContent(i+1, eb[i]);
+        ee_miscalib->SetBinContent(i+1, ee[i]);
+    }
+    eb_miscalib->Write("eb_miscalib");
+    ee_miscalib->Write("ee_miscalib");
+
+    eb_miscalib->Delete();
+    ee_miscalib->Delete();
+    
+    return true;
 }
 
 #endif 

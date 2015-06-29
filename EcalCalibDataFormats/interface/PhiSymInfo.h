@@ -26,9 +26,9 @@ public:
     void            SetEndLumi(edm::LuminosityBlock const& lumi);
 
     //---getters---
-    inline uint64_t GetTotHitsEB()  const {return totHitsEB_;};
-    inline uint64_t GetTotHitsEE()  const {return totHitsEE_;};
-    inline uint32_t GetNEvents()    const {return nEvents_;};
+    inline uint64_t GetTotHitsEB()       const {return totHitsEB_;};
+    inline uint64_t GetTotHitsEE()       const {return totHitsEE_;};
+    inline uint32_t GetNEvents()         const {return nEvents_;};
     float           GetMean(char k)      const;
     float           GetMeanSigma(char k) const;
     inline edm::LuminosityBlockID getStartLumi() const {return startLumi_;};
@@ -50,12 +50,12 @@ private:
     uint64_t totHitsEE_;
     uint32_t nEvents_;
     
-    float    meanX_;
-    float    meanSigmaX_;
-    float    meanY_;
-    float    meanSigmaY_;
-    float    meanZ_;
-    float    meanSigmaZ_;
+    float    sumX_;
+    float    sumSigmaX_;
+    float    sumY_;
+    float    sumSigmaY_;
+    float    sumZ_;
+    float    sumSigmaZ_;
 };
 
 typedef std::vector<PhiSymInfo> PhiSymInfoCollection;

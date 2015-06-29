@@ -3,7 +3,7 @@
 //**********constructors******************************************************************
 PhiSymInfo::PhiSymInfo():
     totHitsEB_(0), totHitsEE_(0), nEvents_(0),
-    meanX_(0), meanSigmaX_(0), meanY_(0), meanSigmaY_(0), meanZ_(0), meanSigmaZ_(0)
+    sumX_(0), sumSigmaX_(0), sumY_(0), sumSigmaY_(0), sumZ_(0), sumSigmaZ_(0)
 {}
 
 //**********destructor********************************************************************
@@ -14,11 +14,11 @@ PhiSymInfo::~PhiSymInfo()
 float PhiSymInfo::GetMean(char k) const
 {
     if(k == 'X')
-        return meanX_;
+        return sumX_/nEvents_;
     if(k == 'Y')
-        return meanY_;
+        return sumY_/nEvents_;
     if(k == 'Z')
-        return meanZ_;
+        return sumZ_/nEvents_;
 
     return -999;
 }
@@ -26,11 +26,11 @@ float PhiSymInfo::GetMean(char k) const
 float PhiSymInfo::GetMeanSigma(char k) const
 {
     if(k == 'X')
-        return meanSigmaX_;
+        return sumSigmaX_/nEvents_;
     if(k == 'Y')
-        return meanSigmaY_;
+        return sumSigmaY_/nEvents_;
     if(k == 'Z')
-        return meanSigmaZ_;
+        return sumSigmaZ_/nEvents_;
 
     return -999;
 }
@@ -44,21 +44,22 @@ void PhiSymInfo::SetEndLumi(edm::LuminosityBlock const& lumi)
 {
   endLumi_=lumi.luminosityBlockAuxiliary().id();
 }
+
 //**********utils*************************************************************************
 void PhiSymInfo::Update(const reco::BeamSpot* bs, uint64_t& nEB, uint64_t& nEE)
 {
-    meanX_ = (meanX_*nEvents_ + bs->x0())/(nEvents_+1);
-    meanY_ = (meanY_*nEvents_ + bs->y0())/(nEvents_+1);
-    meanZ_ = (meanZ_*nEvents_ + bs->z0())/(nEvents_+1);
+    sumX_ += bs->x0();
+    sumY_ += bs->y0();
+    sumZ_ += bs->z0();
 
-    meanSigmaX_ = (meanSigmaX_*nEvents_ + bs->BeamWidthX())/(nEvents_+1);
-    meanSigmaY_ = (meanSigmaY_*nEvents_ + bs->BeamWidthY())/(nEvents_+1);
-    meanSigmaZ_ = (meanSigmaZ_*nEvents_ + bs->sigmaZ())/(nEvents_+1);
-
+    sumSigmaX_ += bs->BeamWidthX();
+    sumSigmaY_ += bs->BeamWidthY();
+    sumSigmaZ_ += bs->sigmaZ();
+    
     totHitsEB_ += nEB;
     totHitsEE_ += nEE;
 
-    nEvents_++;
+    ++nEvents_;
 }
 
 //**********operators*********************************************************************

@@ -300,7 +300,7 @@ void PhiSymCalibration::ComputeICs()
         {
             //---fill the output tree
             outFile_->eb_xstals.n_events = nEvents_;
-            outFile_->eb_xstals.n_hits = ebXstals_[index].GetNhits();
+            outFile_->eb_xstals.rec_hit = &ebXstals_[index];
             outFile_->eb_xstals.ieta = ebXstal.ieta();
             outFile_->eb_xstals.iphi = ebXstal.iphi();
             outFile_->eb_xstals.k_ring = GetRingKfactor(currentRing, 0).first;
@@ -331,7 +331,7 @@ void PhiSymCalibration::ComputeICs()
         {
             //---fill the output tree
             outFile_->ee_xstals.n_events = nEvents_;
-            outFile_->ee_xstals.n_hits = eeXstals_[index].GetNhits();
+            outFile_->ee_xstals.rec_hit = &eeXstals_[index];
             outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
             outFile_->ee_xstals.ix = eeXstal.ix();
             outFile_->ee_xstals.iy = eeXstal.iy();

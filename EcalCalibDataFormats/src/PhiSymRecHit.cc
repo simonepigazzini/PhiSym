@@ -52,6 +52,8 @@ void PhiSymRecHit::Reset()
 
 PhiSymRecHit& PhiSymRecHit::operator+=(const PhiSymRecHit& rhs)
 {
+    if(id_ == 0)
+        id_ = rhs.GetRawId();
     nHits_ += rhs.GetNhits();
     et2Sum_ += rhs.GetSumEt2();
     lcSum_ += rhs.GetLCSum();
