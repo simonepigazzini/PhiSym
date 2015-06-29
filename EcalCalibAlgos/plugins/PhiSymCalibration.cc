@@ -514,7 +514,7 @@ void PhiSymCalibration::FillOutput()
     for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
         EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
-        int currentRing=calibRing_.getRingIndex(ebXstal);            
+        int currentRing=calibRing_.getRingIndex(ebXstal);
         if(goodXstalsEB_[currentRing][ebXstal.iphi()][0])
         {
             //---fill the output tree

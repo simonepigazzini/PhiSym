@@ -100,7 +100,6 @@ process.GlobalTag.toGet = cms.VPSet(
              tag = cms.string("EcalChannelStatus_v1_prompt"),
              connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL")
          )
-
 )
 
 # SCHEDULE

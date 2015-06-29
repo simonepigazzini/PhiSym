@@ -106,7 +106,7 @@ void ComputeKfactors()
         ebICErr_[index]=sqrt(ebXstals_[index].GetSumEt2()/ebXstals_[index].GetNhits()-
                              pow(ebXstals_[index].GetSumEt()/ebXstals_[index].GetNhits(), 2));
         float error = ebICErr_[index]/ebXstals_[index].GetSumEt(0);
-        for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+        for(int iMis=0; iMis<nMisCalib_; ++iMis)
         {
             float point = ebXstals_[index].GetSumEt(iMis)/ebXstals_[index].GetSumEt(0) - 1;
             float p_error = error*sqrt(pow(point, 2)+1);
@@ -331,6 +331,7 @@ int main( int argc, char *argv[] )
             for(int i=1; i<=nMisCalib_; ++i)
             {
                 misCalibValuesEB_.push_back(eb->GetBinContent(i));
+                cout << misCalibValuesEB_.back() << endl;
                 misCalibValuesEE_.push_back(ee->GetBinContent(i));
             }
         }
@@ -368,7 +369,7 @@ int main( int argc, char *argv[] )
         while(eeTree.NextEntry())
         {
             int currentRing = eeTree.iring;
-            currentRing = currentRing<0 ? currentRing+kNRingsEE/2 : currentRing-1+kNRingsEE;
+            currentRing = currentRing<0 ? currentRing+kNRingsEE/2 : currentRing-1+kNRingsEE/2;
             int index = EEDetId(eeTree.ix, eeTree.iy, eeTree.iring>0?1:-1).denseIndex();
             eeXstals_[index] += *eeTree.rec_hit;
             eeRingsSumEt2_[currentRing] += eeTree.rec_hit->GetSumEt2();
