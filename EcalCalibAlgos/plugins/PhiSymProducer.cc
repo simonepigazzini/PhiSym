@@ -284,7 +284,8 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         //---check channel status
         EBDetId ebHit = EBDetId(recHit.id());
         float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
-
+        int ring = calibRing_.getRingIndex(ebHit);
+        
         if((*chStatus_)[ebHit].getStatusCode() > statusThreshold_)
             lumiInfo_->back().SetBadChannel(recHit.id(), (*chStatus_)[ebHit].getStatusCode());
 
@@ -300,7 +301,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             int index = iMis + nMisCalib_ + 1; 
             etValues[index] = etValues[0]*(1+misCalibStepsEB_[index]);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[index]*cosh(eta) < eThresholdEB_ || etValues[index] > etCutsEB_[ebHit.ieta()])
+            if(etValues[index]*cosh(eta) < eThresholdEB_ || etValues[index] > etCutsEB_[ring])
                 etValues[index] = 0;
         }
         for(int iMis=1; iMis<=nMisCalib_; ++iMis)
@@ -309,11 +310,11 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             int index = iMis + nMisCalib_; 
             etValues[index] = etValues[0]*(1+misCalibStepsEB_[index]);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[index]*cosh(eta) < eThresholdEB_ || etValues[index] > etCutsEB_[ebHit.ieta()])
+            if(etValues[index]*cosh(eta) < eThresholdEB_ || etValues[index] > etCutsEB_[ring])
                 etValues[index] = 0;
         }
         //---set et to zero if out of range [e_thr, et_thr+1]
-        if(energy < eThresholdEB_ || etValues[0] > etCutsEB_[ebHit.ieta()])
+        if(energy < eThresholdEB_ || etValues[0] > etCutsEB_[ring])
             etValues[0] = 0;
         else
             ++totHitsEB;
