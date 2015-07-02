@@ -152,55 +152,53 @@ geoCorrIC = applycorrections(ebUnCorrIC, diffp, diffm)
 ## FILL THE HISTOS ##
 ## EB
 # 1D & 2D
-# while ebTree.NextEntry():
-#     if opts.block != -1 and ebTree.block != opts.block:
-#         continue
-#     if nLumis==-1:
-#         nLumis = ebTree.n_lumis
-#     maps["EB_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ring)
-#     maps["EB_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ch)
-#     maps["EB_ic_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.ic_ch-ebTree.ic_ring)/ebTree.ic_ring)
-#     maps["EB_k_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.k_ring)
-#     maps["EB_k_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.k_ch)
-#     maps["EB_k_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.k_ch-ebTree.k_ring)/ebTree.k_ring)
-#     maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.rec_hit.GetNhits())#/ebTree.n_lumis)
-#     if ebTree.ic_old != 0: 
-#         maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
-#         maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ch/ebTree.ic_old) #ebTree.ic_abs/
-#         maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
-#         maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])#*ebTree.ic_abs)
-#         histos["EB_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch)
-#         histos["EB_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])    
-#         # histos["EB_ratio_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old)
-#         # histos["EB_ratio_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
-#         histos["EB_ratio_ic_ch"].Fill(ebTree.ic_ch/ebTree.ic_old)
-#         histos["EB_ratio_ic_ch_corr"].Fill(geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
+while ebTree.NextEntry():
+    if opts.block != -1 and ebTree.block != opts.block:
+        continue
+    if nLumis==-1:
+        nLumis = ebTree.n_lumis
+    maps["EB_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ring)
+    maps["EB_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ch)
+    maps["EB_ic_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.ic_ch-ebTree.ic_ring)/ebTree.ic_ring)
+    maps["EB_k_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.k_ring)
+    maps["EB_k_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.k_ch)
+    maps["EB_k_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.k_ch-ebTree.k_ring)/ebTree.k_ring)
+    maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.rec_hit.GetNhits()/ebTree.n_lumis)
+    if ebTree.ic_old != 0 and ebTree.ic_ch != 0:
+        maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
+        maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old) #
+        maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
+        maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])
+        histos["EB_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch)
+        histos["EB_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])    
+        histos["EB_ratio_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old)
+        histos["EB_ratio_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
 
-# # profiles
-# tmpHisto=ROOT.TH1F("tmp", "tmp", 1000, -100, 100)
-# for key in profiles:
-#     if "Phi" in key:
-#         varRange = range(0, 360)
-#         cutBase = "iphi=="
-#     if "Eta" in key:
-#         varRange = range(-85, 85)
-#         cutBase = "ieta=="
-#     if "EE" in key:
-#         varRange = range(-40, 40)
-#         cutBase = "iring=="
-#     for prVar in varRange:
-#         var = key[9:]+">>tmp"
-#         if key[9:] in varReMap.keys():
-#             var = varReMap[key[9:]]+">>tmp"
-#         cut = cutBase+str(prVar)
-#         if opts.block != -1:
-#             cut += " && block=="+str(opts.block)
-#         if "EE" in key:
-#             eeTree.Draw(var, cut, "goff")
-#         else:
-#             ebTree.Draw(var, cut, "goff")
-#         profiles[key].SetBinContent(profiles[key].FindBin(prVar), tmpHisto.GetMean())
-#         profiles[key].SetBinError(profiles[key].FindBin(prVar), tmpHisto.GetRMS())
+# profiles
+tmpHisto=ROOT.TH1F("tmp", "tmp", 1000, -100, 100)
+for key in profiles:
+    if "Phi" in key:
+        varRange = range(0, 360)
+        cutBase = "iphi=="
+    if "Eta" in key:
+        varRange = range(-85, 85)
+        cutBase = "ieta=="
+    if "EE" in key:
+        varRange = range(-40, 40)
+        cutBase = "iring=="
+    for prVar in varRange:
+        var = key[9:]+">>tmp"
+        if key[9:] in varReMap.keys():
+            var = varReMap[key[9:]]+">>tmp"
+        cut = cutBase+str(prVar)
+        if opts.block != -1:
+            cut += " && block=="+str(opts.block)
+        if "EE" in key:
+            eeTree.Draw(var, cut, "goff")
+        else:
+            ebTree.Draw(var, cut, "goff")
+        profiles[key].SetBinContent(profiles[key].FindBin(prVar), tmpHisto.GetMean())
+        profiles[key].SetBinError(profiles[key].FindBin(prVar), tmpHisto.GetRMS())
 
 # ugly workaround to get white bins for non existing channels
 for xbin in range(0, 101):

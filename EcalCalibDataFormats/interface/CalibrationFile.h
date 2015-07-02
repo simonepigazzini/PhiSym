@@ -93,6 +93,9 @@ CrystalsEBTree::CrystalsEBTree()
 
 CrystalsEBTree::CrystalsEBTree(TTree* tree)
 {
+    if(!tree)
+        return;
+    
     tree_ = tree;
     currentEntry_ = -1;
     //---init
@@ -231,6 +234,9 @@ CrystalsEETree::CrystalsEETree()
 
 CrystalsEETree::CrystalsEETree(TTree* tree)
 {
+    if(!tree)
+        return;
+    
     tree_ = tree;
     currentEntry_ = -1;
     //---init
