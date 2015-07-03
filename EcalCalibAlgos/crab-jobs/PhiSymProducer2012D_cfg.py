@@ -65,8 +65,8 @@ process.ecalRecHit.EERecHitCollection = cms.InputTag('hltAlCaPhiSymUncalibrator'
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 # process.PhiSymProducer.applyEtThreshold=cms.bool(False)
-process.PhiSymProducer.makeSpectraTreeEB = False
-process.PhiSymProducer.makeSpectraTreeEE = False
+process.PhiSymProducer.makeSpectraTreeEB = True
+process.PhiSymProducer.makeSpectraTreeEE = True
 process.PhiSymProducer.barrelHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEB', 'PHISYM')
 process.PhiSymProducer.endcapHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEE', 'PHISYM')
 
@@ -89,12 +89,16 @@ process.TFileService = cms.Service("TFileService",
 process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
 process.GlobalTag.toGet = cms.VPSet(
     cms.PSet(record = cms.string("EcalLaserAPDPNRatiosRcd"),
-             tag = cms.string("EcalLaserAPDPNRatios_20130130_447_p1_v2"),
-             connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_42X_ECAL_LAS")
+             tag = cms.string("EcalLaserAPDPNRatios_prompt"),
+             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_42X_ECAL_LAS")
+         ),
+    cms.PSet(record = cms.string("EcalLaserAlphasRcd"),
+             tag = cms.string("EcalLaserAlphas_v2_prompt"),
+             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_43X_ECAL")
          ),
     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             tag = cms.string("EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies"),
-             connect = cms.untracked.string("frontier://FrontierInt/CMS_COND_ECAL")
+             tag = cms.string("EcalIntercalibConstants_V1_express"),
+             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
          ),
     cms.PSet(record = cms.string("EcalChannelStatusRcd"),
              tag = cms.string("EcalChannelStatus_v1_prompt"),

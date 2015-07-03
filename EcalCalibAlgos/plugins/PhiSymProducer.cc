@@ -133,7 +133,7 @@ void PhiSymProducer::beginJob()
     //---spectrum window: E > thr && Et < cut
     //---NOTE: etCutsEE need the geometry, so it is set later in beginLumi
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
-        etCutEB_[ring] = -1;
+        etCutsEB_[iRing] = -1;
     int ringsInOneEE = kNRingsEE/2;
     for(int iRing=0; iRing<ringsInOneEE; ++iRing)
     {
@@ -210,12 +210,12 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
 	    recHitCollEB_->at(myId.denseIndex())=PhiSymRecHit(ebDetId.rawId(), 0);
             int ring = calibRing_.getRingIndex(myId);
             //---set etCut if first lumi
-            if(etCutsEB_[ring] == -1)
+            if(etCutsEB_[ring] == -1 && myId.iphi()==1)
             {
                 const CaloCellGeometry *cellGeometry = barrelGeometry->getGeometry(myId);
                 float eta=cellGeometry->getPosition().eta();
                 cout << eta << endl;
-                etCutsEB_[iRing] =  -1 eThresholdEB_/cosh(eta) + etCutEB_;
+                etCutsEB_[ring] = eThresholdEB_/cosh(eta) + etCutEB_;
             }
         }
 	for(auto& eeDetId : endcapDetIds)
