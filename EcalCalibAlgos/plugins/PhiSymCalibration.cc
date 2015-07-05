@@ -85,9 +85,9 @@ private:
     EcalRingCalibrationTools calibRing_;
     static const short kNRingsEB = EcalRingCalibrationTools::N_RING_BARREL;
     static const short kNRingsEE = EcalRingCalibrationTools::N_RING_ENDCAP;
-    float ebOldICs_[kNRingsEB][360];
+    float ebOldICs_[kNRingsEB][361];
     float eeOldICs_[100][100][2];
-    float ebAbsICs_[kNRingsEB][360];
+    float ebAbsICs_[kNRingsEB][361];
     float eeAbsICs_[100][100][2];
     //---ring based
     //---EB
@@ -103,13 +103,13 @@ private:
     //---cristall based
     //---EB
     PhiSymRecHit ebXstals_[EBDetId::kSizeForDenseIndexing];
-    bool goodXstalsEB_[kNRingsEB][360][11];
+    bool goodXstalsEB_[kNRingsEB][361][11];
     double kFactorsChEB_[EBDetId::kSizeForDenseIndexing]={0};
     double kFactorsChErrEB_[EBDetId::kSizeForDenseIndexing]={0};
     float ebICErr_[EBDetId::kSizeForDenseIndexing]={0};
     //---EE
     PhiSymRecHit eeXstals_[EEDetId::kSizeForDenseIndexing];
-    bool goodXstalsEE_[kNRingsEE][EEDetId::IX_MAX][EEDetId::IY_MAX][11];
+    bool goodXstalsEE_[kNRingsEE][EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][11];
     double kFactorsChEE_[EEDetId::kSizeForDenseIndexing]={0};
     double kFactorsChErrEE_[EEDetId::kSizeForDenseIndexing]={0};
     float eeICErr_[EEDetId::kSizeForDenseIndexing]={0};
@@ -276,7 +276,7 @@ void PhiSymCalibration::ComputeICs()
     {
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
-            for(int iPhi=0; iPhi<360; ++iPhi)
+            for(int iPhi=0; iPhi<=360; ++iPhi)
                 nGoodThisRing += goodXstalsEB_[iRing][iPhi][iMis];
             if(nGoodThisRing > 0)
             {
@@ -565,12 +565,12 @@ void PhiSymCalibration::Read2012ICs(string name)
     {
         //---EB
         for(int ieta=0; ieta<kNRingsEB; ++ieta)
-            for(int iphi=0; iphi<360; ++iphi)
+            for(int iphi=0; iphi<=360; ++iphi)
                 ebOldICs_[ieta][iphi]=-1;
         //---EE
-        for(int ix=0; ix<100; ++ix)
+        for(int ix=0; ix<=100; ++ix)
         {
-            for(int iy=0; iy<100; ++iy)
+            for(int iy=0; iy<=100; ++iy)
             {
                 eeOldICs_[ix][iy][0]=-1;
                 eeOldICs_[ix][iy][1]=-1;
@@ -604,12 +604,12 @@ void PhiSymCalibration::ReadAbsICs(string name)
     {
         //---EB
         for(int ieta=0; ieta<kNRingsEB; ++ieta)
-            for(int iphi=0; iphi<360; ++iphi)
+            for(int iphi=0; iphi<=360; ++iphi)
                 ebAbsICs_[ieta][iphi]=-1;
         //---EE
-        for(int ix=0; ix<100; ++ix)
+        for(int ix=0; ix<=100; ++ix)
         {
-            for(int iy=0; iy<100; ++iy)
+            for(int iy=0; iy<=100; ++iy)
             {
                 eeAbsICs_[ix][iy][0]=-1;
                 eeAbsICs_[ix][iy][1]=-1;

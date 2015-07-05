@@ -155,6 +155,8 @@ geoCorrIC = applycorrections(ebUnCorrIC, diffp, diffm)
 while ebTree.NextEntry():
     if opts.block != -1 and ebTree.block != opts.block:
         continue
+    if ebTree.rec_hit.GetSumEt() == 0:
+        continue    
     if nLumis==-1:
         nLumis = ebTree.n_lumis
     maps["EB_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_ring)
@@ -166,8 +168,9 @@ while ebTree.NextEntry():
     maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.rec_hit.GetNhits()/ebTree.n_lumis)
     if ebTree.ic_old != 0 and ebTree.ic_ch != 0:
         maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
-        maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old) #
-        maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
+        maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old) 
+        maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/
+                                         ebTree.ic_old)
         maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])
         histos["EB_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch)
         histos["EB_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])    
@@ -233,7 +236,7 @@ while eeTree.NextEntry():
 ranges={}
 ranges[re.compile("^EB_ic_((?!diff).)*$")]=[0.9, 1.1]
 ranges[re.compile("^EB_ic_diff$")]=[-0.001, 0.001]
-ranges[re.compile(".*EB_ratio.*")]=[0.8, 1.2]
+ranges[re.compile(".*EB_ratio.*")]=[0.9, 1.1]
 ranges[re.compile("prEta_EB_err.*")]=[0, 0.0001]
 ranges[re.compile(".*EB_k_((?!diff).)*$")]=[1.5, 2.6]
 ranges[re.compile(".*EB_k_diff$")]=[-0.05, 0.05]
