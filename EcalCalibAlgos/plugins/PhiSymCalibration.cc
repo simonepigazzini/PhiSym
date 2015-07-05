@@ -86,9 +86,9 @@ private:
     static const short kNRingsEB = EcalRingCalibrationTools::N_RING_BARREL;
     static const short kNRingsEE = EcalRingCalibrationTools::N_RING_ENDCAP;
     float ebOldICs_[kNRingsEB][361];
-    float eeOldICs_[100][100][2];
+    float eeOldICs_[101][101][2];
     float ebAbsICs_[kNRingsEB][361];
-    float eeAbsICs_[100][100][2];
+    float eeAbsICs_[101][101][2];
     //---ring based
     //---EB
     double ebRingsSumEt_[kNRingsEB][11];
@@ -183,7 +183,11 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
     lumi.getByLabel(recHitEETag_, recHitEEHandle_);
     if(!infoHandle_.isValid())
         return;
-    //---if good block count it
+    //---if good block count it and record first run
+    outFile_->eb_xstals.begin[0] = lumi.luminosityBlockAuxiliary().run();
+    outFile_->eb_xstals.begin[1] = lumi.luminosityBlockAuxiliary().luminosityBlock();
+    outFile_->ee_xstals.begin[0] = lumi.luminosityBlockAuxiliary().run();
+    outFile_->ee_xstals.begin[1] = lumi.luminosityBlockAuxiliary().luminosityBlock();
     nEvents_ += infoHandle_.product()->back().GetNEvents();
     ++nBlocks_;
 
@@ -250,11 +254,15 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
             }
         }
     }
-    
+
+    outFile_->eb_xstals.end[0] = lumi.luminosityBlockAuxiliary().run();
+    outFile_->eb_xstals.end[1] = lumi.luminosityBlockAuxiliary().luminosityBlock();
+    outFile_->ee_xstals.end[0] = lumi.luminosityBlockAuxiliary().run();
+    outFile_->ee_xstals.end[1] = lumi.luminosityBlockAuxiliary().luminosityBlock();
     //---call the calibration computer 
     if(nBlocks_ == blocksToSum_)
     {
-        //---increment block output trees counters
+        //---increment output trees counters and set end run/lumi infos
         outFile_->eb_xstals.block++;
         outFile_->eb_xstals.n_lumis = nBlocks_*nSummedLumis_;
         outFile_->ee_xstals.block++;

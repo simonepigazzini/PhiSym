@@ -30,6 +30,8 @@ public:
     bool        NextEntry(int64_t entry=-1);
     
     //---branches variables---
+    int           begin[2]={0};
+    int           end[2]={0};
     int           block;
     int           n_lumis;
     Long64_t      n_events;
@@ -73,6 +75,8 @@ CrystalsEBTree::CrystalsEBTree()
     ic_err=0;
     
     //---create branches
+    tree_->Branch("begin", &begin, "begin[2]/I");
+    tree_->Branch("end", &end, "end[2]/I");
     tree_->Branch("block", &block, "block/I");
     tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
     tree_->Branch("n_events", &n_events, "n_events/L");
@@ -116,6 +120,8 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     ic_err=0;
     
     //---create branches
+    tree_->SetBranchAddress("begin", &begin);
+    tree_->SetBranchAddress("end", &end);
     tree_->SetBranchAddress("block", &block);
     tree_->SetBranchAddress("n_lumis", &n_lumis);
     tree_->SetBranchAddress("n_events", &n_events);
@@ -169,6 +175,8 @@ public:
     bool        NextEntry(int64_t entry=-1);
     
     //---branches variables---
+    int           begin[2];
+    int           end[2];
     int           block;
     int           n_lumis;
     Long64_t      n_events;
@@ -214,6 +222,8 @@ CrystalsEETree::CrystalsEETree()
     ic_err=0;
     
     //---create branches
+    tree_->Branch("begin", &begin, "begin[2]/I");
+    tree_->Branch("end", &end, "end[2]/I");
     tree_->Branch("block", &block, "block/I");
     tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
     tree_->Branch("n_events", &n_events, "n_events/L");
@@ -258,6 +268,8 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     ic_err=0;
     
     //---create branches
+    tree_->SetBranchAddress("begin", &begin);
+    tree_->SetBranchAddress("end", &end);
     tree_->SetBranchAddress("block", &block);
     tree_->SetBranchAddress("n_lumis", &n_lumis);
     tree_->SetBranchAddress("n_events", &n_events);
