@@ -97,7 +97,7 @@ process.GlobalTag.toGet = cms.VPSet(
              connect = cms.untracked.string("frontier://PromptProd/CMS_COND_43X_ECAL")
          ),
     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             tag = cms.string("EcalIntercalibConstants_V1_express"),
+             tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
              connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
          ),
     cms.PSet(record = cms.string("EcalChannelStatusRcd"),
