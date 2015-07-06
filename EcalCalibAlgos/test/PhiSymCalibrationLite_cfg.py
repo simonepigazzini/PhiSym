@@ -17,11 +17,11 @@ process.IOVBounds = cms.PSet(
     # end = cms.vint32(205085, -1),
     # begin = cms.vint32(205086, -1),
     # end = cms.vint32(205310, -1),
-    begin = cms.vint32(205111, -1),
-    end = cms.vint32(205217, -1),
+    # begin = cms.vint32(205111, -1),
+    # end = cms.vint32(205217, -1),
     # begin = cms.vint32(205233, -1),
     # end = cms.vint32(205311, -1),
-    # begin = cms.vint32(205311, -1),
+    # begin = cms.vint32(205312, -1),
     # end = cms.vint32(205617, -1),
     # begin = cms.vint32(205339, -1),
     # end = cms.vint32(205627, -1),
@@ -55,8 +55,8 @@ process.IOVBounds = cms.PSet(
     # end = cms.vint32(208357, -1),
     # begin = cms.vint32(208390, -1),
     # end = cms.vint32(208487, -1),
-    # begin = cms.vint32(208538, -1),
-    # end = cms.vint32(208686, -1)
+    begin = cms.vint32(208538, -1),
+    end = cms.vint32(208686, -1)
 )
 
 process.ioFilesOpt = cms.PSet(    
