@@ -65,8 +65,8 @@ process.ecalRecHit.EERecHitCollection = cms.InputTag('hltAlCaPhiSymUncalibrator'
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 # process.PhiSymProducer.applyEtThreshold=cms.bool(False)
-process.PhiSymProducer.makeSpectraTreeEB = True
-process.PhiSymProducer.makeSpectraTreeEE = True
+# process.PhiSymProducer.makeSpectraTreeEB = True
+# process.PhiSymProducer.makeSpectraTreeEE = True
 process.PhiSymProducer.barrelHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEB', 'PHISYM')
 process.PhiSymProducer.endcapHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEE', 'PHISYM')
 
@@ -97,6 +97,8 @@ process.GlobalTag.toGet = cms.VPSet(
              connect = cms.untracked.string("frontier://PromptProd/CMS_COND_43X_ECAL")
          ),
     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
+             # tag = cms.string("EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies"),
+             # connect = cms.untracked.string("frontier://PromptProd/CMS_COND_ECAL")
              tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
              connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
          ),
