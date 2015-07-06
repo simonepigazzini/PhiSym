@@ -143,9 +143,8 @@ bool CrystalsEBTree::NextEntry(int64_t entry)
 {
     if(entry > -1)
         currentEntry_ = entry;
-    else
-        ++currentEntry_;
-    
+
+    ++currentEntry_;    
     if(currentEntry_ < tree_->GetEntriesFast())
     {
         tree_->GetEntry(currentEntry_);
@@ -293,9 +292,8 @@ bool CrystalsEETree::NextEntry(int64_t entry)
 {
     if(entry > -1)
         currentEntry_ = entry;
-    else
-        ++currentEntry_;
-
+   
+    ++currentEntry_;
     if(currentEntry_ < tree_->GetEntriesFast())
     {
         tree_->GetEntry(currentEntry_);
