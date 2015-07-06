@@ -120,8 +120,8 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     ic_err=0;
     
     //---create branches
-    tree_->SetBranchAddress("begin", &begin);
-    tree_->SetBranchAddress("end", &end);
+    tree_->SetBranchAddress("begin", &begin[0]);
+    tree_->SetBranchAddress("end", &end[0]);
     tree_->SetBranchAddress("block", &block);
     tree_->SetBranchAddress("n_lumis", &n_lumis);
     tree_->SetBranchAddress("n_events", &n_events);
@@ -143,8 +143,9 @@ bool CrystalsEBTree::NextEntry(int64_t entry)
 {
     if(entry > -1)
         currentEntry_ = entry;
-
-    ++currentEntry_;
+    else
+        ++currentEntry_;
+    
     if(currentEntry_ < tree_->GetEntriesFast())
     {
         tree_->GetEntry(currentEntry_);
@@ -268,8 +269,8 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     ic_err=0;
     
     //---create branches
-    tree_->SetBranchAddress("begin", &begin);
-    tree_->SetBranchAddress("end", &end);
+    tree_->SetBranchAddress("begin", &begin[0]);
+    tree_->SetBranchAddress("end", &end[0]);
     tree_->SetBranchAddress("block", &block);
     tree_->SetBranchAddress("n_lumis", &n_lumis);
     tree_->SetBranchAddress("n_events", &n_events);
@@ -292,8 +293,9 @@ bool CrystalsEETree::NextEntry(int64_t entry)
 {
     if(entry > -1)
         currentEntry_ = entry;
+    else
+        ++currentEntry_;
 
-    ++currentEntry_;
     if(currentEntry_ < tree_->GetEntriesFast())
     {
         tree_->GetEntry(currentEntry_);

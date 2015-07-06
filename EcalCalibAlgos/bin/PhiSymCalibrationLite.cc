@@ -393,21 +393,6 @@ void ReadAbsICs(string name)
         }
     }
     
-    // //---help variables
-    // int x,y,subdet;
-    // float ic, fake;
-        
-    // ifstream oldICs(name.c_str(), ios::in);
-    // while(oldICs.good())
-    // {
-    //     oldICs >> x >> y >> subdet >> ic >> fake;
-    //     if(subdet==0)
-    //         ebAbsICs_[x<0 ? x+85 : x+84][y]=ic;        
-    //     else
-    //         eeAbsICs_[x][y][subdet<0 ? 0 : 1]=ic;
-    // }
-    // oldICs.close();
-
     //---help variables
     int x,y,subdet;
     float ic;
@@ -454,6 +439,11 @@ int main( int argc, char *argv[] )
     //-----get the python configuration-----
     const edm::ParameterSet &process = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
     const edm::ParameterSet &filesOpt = process.getParameter<edm::ParameterSet>("ioFilesOpt");
+    const edm::ParameterSet &IOVBounds = process.getParameter<edm::ParameterSet>("IOVBounds");
+
+    //---get IOV boundaries
+    vector<int> IOVBegin = IOVBounds.getParameter<vector<int> >("begin");
+    vector<int> IOVEnd = IOVBounds.getParameter<vector<int> >("end");
     
     //---get input files
     inputFiles=filesOpt.getParameter<vector<string> >("inputFiles");
@@ -472,11 +462,28 @@ int main( int argc, char *argv[] )
     
     for(auto& fileName : inputFiles)
     {
-        cout << "Reading file: " << fileName.c_str() << "..." << endl;
+        //---open the next file
         TFile* file = TFile::Open(fileName.c_str());
         CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
         CrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
 
+        //---skip out of bounds runs
+        ebTree.NextEntry();
+        if(ebTree.begin[0] < IOVBegin[0] ||
+           (ebTree.begin[0] == IOVBegin[0] && IOVBegin[1] != -1 && ebTree.begin[1] < IOVBegin[1]))
+        {
+            file->Close();
+            continue;
+        }
+        if(ebTree.end[0] > IOVEnd[0] ||
+           (ebTree.end[0] == IOVEnd[0] && IOVEnd[1] != -1 && ebTree.end[1] < IOVEnd[1]))
+        {
+            file->Close();
+            continue;
+        }
+        ebTree.NextEntry(EBDetId::kSizeForDenseIndexing+1);
+        cout << "Reading file: " << fileName.c_str() << "..." << endl;
+        
         //---get miscalib values
         if(nMisCalib_ == -1)
         {
