@@ -69,7 +69,8 @@ process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 # process.PhiSymProducer.makeSpectraTreeEE = True
 process.PhiSymProducer.barrelHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEB', 'PHISYM')
 process.PhiSymProducer.endcapHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEE', 'PHISYM')
-
+#process.PhiSymProducer.eThreshold_barrel = 0.400
+process.PhiSymProducer.eThreshold_barrel = 0.300
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
@@ -97,10 +98,10 @@ process.GlobalTag.toGet = cms.VPSet(
              connect = cms.untracked.string("frontier://PromptProd/CMS_COND_43X_ECAL")
          ),
     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             # tag = cms.string("EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies"),
-             # connect = cms.untracked.string("frontier://PromptProd/CMS_COND_ECAL")
-             tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
-             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
+             tag = cms.string("EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies"),
+             connect = cms.untracked.string("frontier://FrontierInt/CMS_COND_ECAL")
+             # tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
+             # connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
          ),
     cms.PSet(record = cms.string("EcalChannelStatusRcd"),
              tag = cms.string("EcalChannelStatus_v1_prompt"),
