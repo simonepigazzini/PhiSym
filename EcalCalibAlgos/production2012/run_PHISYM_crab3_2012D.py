@@ -2,7 +2,7 @@ from WMCore.Configuration import Configuration
 
 config = Configuration()
 config.section_('General')
-config.General.requestName = 'PHISYM-CMSSW_741_newTHR-GR_P_V56-Run2012D_v1'
+config.General.requestName = 'PHISYM-CMSSW_741_newTHR-GR_P_V56-Run2012D_v2'
 config.General.transferLogs = True
 config.General.transferOutputs = True
 config.section_('JobType')

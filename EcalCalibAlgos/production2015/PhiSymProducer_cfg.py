@@ -110,8 +110,8 @@ if (not runMultiFit):
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
-process.PhiSymProducer.makeSpectraTreeEB = False
-process.PhiSymProducer.makeSpectraTreeEE = False
+process.PhiSymProducer.makeSpectraTreeEB = True
+process.PhiSymProducer.makeSpectraTreeEE = True
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
