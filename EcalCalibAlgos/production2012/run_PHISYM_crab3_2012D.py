@@ -2,7 +2,7 @@ from WMCore.Configuration import Configuration
 
 config = Configuration()
 config.section_('General')
-config.General.requestName = 'PHISYM-CMSSW_741_FAST-GR_P_V56-Run2012D_v2'
+config.General.requestName = 'PHISYM-CMSSW_741_newTHR-GR_P_V56-Run2012D_v1'
 config.General.transferLogs = True
 config.General.transferOutputs = True
 config.section_('JobType')
@@ -11,7 +11,7 @@ config.JobType.pluginName = 'Analysis'
 # Name of the CMSSW configuration file
 config.JobType.psetName = 'PhiSymProducer2012D_cfg.py'
 config.JobType.priority = 20
-config.JobType.maxJobRuntimeMin= 3000
+config.JobType.maxJobRuntimeMin= 2800
 config.section_('Data')
 
 # This string determines the primary dataset of the newly-produced outputs.
@@ -20,7 +20,7 @@ config.Data.inputDataset = '/AlCaPhiSym/Run2012D-v1/RAW'
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
 config.Data.lumiMask = 'json_Golden.txt'
-config.Data.unitsPerJob = 200
+config.Data.unitsPerJob = 100
 config.Data.totalUnits = -1
 config.Data.publication = True
 #config.Data.isbchecksum = 'aa6d0f694fbde2c60e6338a92e82f36e'
