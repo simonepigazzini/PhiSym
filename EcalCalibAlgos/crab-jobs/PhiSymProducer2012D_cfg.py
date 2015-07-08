@@ -69,8 +69,8 @@ process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 # process.PhiSymProducer.makeSpectraTreeEE = True
 process.PhiSymProducer.barrelHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEB', 'PHISYM')
 process.PhiSymProducer.endcapHitCollection = cms.InputTag('ecalRecHit', 'recalibEcalRecHitsEE', 'PHISYM')
-#process.PhiSymProducer.eThreshold_barrel = 0.400
-process.PhiSymProducer.eThreshold_barrel = 0.300
+process.PhiSymProducer.eThreshold_barrel = 0.400
+#process.PhiSymProducer.eThreshold_barrel = 0.300
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
