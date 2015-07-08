@@ -110,7 +110,6 @@ if (not runMultiFit):
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
-# process.PhiSymProducer.applyEtThreshold=cms.bool(False)
 process.PhiSymProducer.makeSpectraTreeEB = False
 process.PhiSymProducer.makeSpectraTreeEE = False
 

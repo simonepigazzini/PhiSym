@@ -226,7 +226,7 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
             int ring = calibRing_.getRingIndex(myId) - kNRingsEB;
 	    recHitCollEE_->at(myId.denseIndex())=PhiSymRecHit(eeDetId.rawId(), 0);
             //---set eCutEE if first lumi
-            if(etCutsEE_[ring] == -1 && myId.ix() == 50)
+            if(ring < ringsInOneEE && etCutsEE_[ring] == -1 && myId.ix() == 50)
             {
                 const CaloCellGeometry *cellGeometry = endcapGeometry->getGeometry(myId);
                 etCutsEE_[ring] = eThresholdsEE_[ring]/cosh(cellGeometry->getPosition().eta()) + etCutEE_;

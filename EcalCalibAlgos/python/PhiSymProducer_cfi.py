@@ -8,8 +8,8 @@ PhiSymProducer = cms.EDProducer(
     etCut_barrel = cms.double(1), #this is actually summed to eCut in order to define the upper bound    
     etCut_endcap = cms.double(1), #this is actually summed to eCut in order to define the upper bound    
     A = cms.double(0.2442), # C + B*ring + A*ring*ring
-    B = cms.double(-4.148),
-    C = cms.double(79.29),
+    B = cms.double(-15.38),
+    C = cms.double(304),
     ADCthrEE = cms.int32(20),
     nMisCalib = cms.int32(10), # <= 10; even; central value does not count
     misCalibRangeEB = cms.vdouble(0.95, 1.05),

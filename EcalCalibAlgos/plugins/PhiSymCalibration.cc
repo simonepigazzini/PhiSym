@@ -86,34 +86,47 @@ private:
     static const short kNRingsEB = EcalRingCalibrationTools::N_RING_BARREL;
     static const short kNRingsEE = EcalRingCalibrationTools::N_RING_ENDCAP;
     float ebOldICs_[kNRingsEB][361];
-    float eeOldICs_[101][101][2];
+    float eeOldICs_[EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][2];
     float ebAbsICs_[kNRingsEB][361];
-    float eeAbsICs_[101][101][2];
+    float eeAbsICs_[EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][2];
     //---ring based
     //---EB
+    uint64_t ebOccupancy_[kNRingsEB]={0};
     double ebRingsSumEt_[kNRingsEB][11];
     double ebRingsSumEt2_[kNRingsEB]={0};
     double kFactorsEB_[kNRingsEB]={0};
     double kFactorsErrEB_[kNRingsEB]={0};
+    float icRMeanEB_[kNRingsEB];
+    float ebICRingErr_[EBDetId::kSizeForDenseIndexing]={0};
+    float ebQuantilesCuts_[kNRingsEB][2];
     //---EE
+    uint64_t eeOccupancy_[kNRingsEE]={0};
     double eeRingsSumEt_[kNRingsEE][11];
     double eeRingsSumEt2_[kNRingsEE]={0};
     double kFactorsEE_[kNRingsEE]={0};
     double kFactorsErrEE_[kNRingsEE]={0};
-    //---cristall based
+    float icRMeanEE_[kNRingsEE];
+    float eeICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
+    float eeQuantilesCuts_[kNRingsEE][2];
+    //---crystal based
     //---EB
     PhiSymRecHit ebXstals_[EBDetId::kSizeForDenseIndexing];
     bool goodXstalsEB_[kNRingsEB][361][11];
+    float nGoodInRingEB_[kNRingsEB][11];
     double kFactorsChEB_[EBDetId::kSizeForDenseIndexing]={0};
     double kFactorsChErrEB_[EBDetId::kSizeForDenseIndexing]={0};
-    float ebICErr_[EBDetId::kSizeForDenseIndexing]={0};
+    float ebICChErr_[EBDetId::kSizeForDenseIndexing]={0};
+    float icChMeanEB_[kNRingsEB];
     //---EE
     PhiSymRecHit eeXstals_[EEDetId::kSizeForDenseIndexing];
     bool goodXstalsEE_[kNRingsEE][EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][11];
+    float nGoodInRingEE_[kNRingsEE][11];
     double kFactorsChEE_[EEDetId::kSizeForDenseIndexing]={0};
     double kFactorsChErrEE_[EEDetId::kSizeForDenseIndexing]={0};
-    float eeICErr_[EEDetId::kSizeForDenseIndexing]={0};
-    bool kFactorComputed_;
+    float eeICChErr_[EEDetId::kSizeForDenseIndexing]={0};
+    float icChMeanEE_[kNRingsEE];
+
+    bool kFactorsComputed_;
 
     //---outputs
     auto_ptr<CalibrationFile> outFile_;
@@ -132,7 +145,7 @@ PhiSymCalibration::PhiSymCalibration(const edm::ParameterSet& pSet):
     nMisCalib_(-1),
     nEvents_(0),
     nBlocks_(0),
-    kFactorComputed_(false)
+    kFactorsComputed_(false)
 {}
 
 void PhiSymCalibration::beginJob()
@@ -278,20 +291,18 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
 //---calibration loop method
 void PhiSymCalibration::ComputeICs()
 {    
-    int nGoodThisRing=0;
     //---compute EB rings averages
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
-    {
+    {        
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             for(int iPhi=0; iPhi<=360; ++iPhi)
-                nGoodThisRing += goodXstalsEB_[iRing][iPhi][iMis];
-            if(nGoodThisRing > 0)
+                nGoodInRingEB_[iRing][iMis] += goodXstalsEB_[iRing][iPhi][iMis];
+            if(nGoodInRingEB_[iRing][iMis] > 0)
             {
                 if(iMis==0)
-                    ebRingsSumEt2_[iRing] = ebRingsSumEt2_[iRing] / nGoodThisRing;
-                ebRingsSumEt_[iRing][iMis] = ebRingsSumEt_[iRing][iMis] / nGoodThisRing;
-                nGoodThisRing=0;
+                    ebRingsSumEt2_[iRing] = ebRingsSumEt2_[iRing] / nGoodInRingEB_[iRing][iMis];
+                ebRingsSumEt_[iRing][iMis] = ebRingsSumEt_[iRing][iMis] / nGoodInRingEB_[iRing][iMis];
             }
         }
     }
@@ -300,26 +311,64 @@ void PhiSymCalibration::ComputeICs()
     {
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
-            for(int iX=0; iX<EEDetId::IX_MAX; ++iX)                
+            for(int iX=0; iX<EEDetId::IX_MAX; ++iX)
                 for(int iY=0; iY<EEDetId::IY_MAX; ++iY)
-                    nGoodThisRing += goodXstalsEE_[iRing][iX][iY][iMis];
-            if(nGoodThisRing > 0)
+                    nGoodInRingEE_[iRing][iMis] += goodXstalsEE_[iRing][iX][iY][iMis];
+            if(nGoodInRingEE_[iRing][iMis] > 0)
             {
                 if(iMis==0)
-                    eeRingsSumEt2_[iRing] = eeRingsSumEt2_[iRing] / nGoodThisRing;
-                eeRingsSumEt_[iRing][iMis] = eeRingsSumEt_[iRing][iMis] / nGoodThisRing;
-                nGoodThisRing=0;
+                    eeRingsSumEt2_[iRing] = eeRingsSumEt2_[iRing] / nGoodInRingEE_[iRing][iMis];
+                eeRingsSumEt_[iRing][iMis] = eeRingsSumEt_[iRing][iMis] / nGoodInRingEE_[iRing][iMis];
             }
         }
     }
     ComputeKfactors();
-    
+
+    //---normalize ICs ring by ring---
+    //---compute averages
+    for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
+    {
+        EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
+        int currentRing = calibRing_.getRingIndex(ebXstal);
+        if(goodXstalsEB_[currentRing][ebXstal.iphi()][0])
+        {
+            icChMeanEB_[currentRing] += (ebXstals_[index].GetSumEt(0)/
+                                         ebRingsSumEt_[currentRing][0]-1)/GetChannelKfactor(index, 0).first+1;
+            icRMeanEB_[currentRing] += (ebXstals_[index].GetSumEt(0)/
+                                        ebRingsSumEt_[currentRing][0]-1)/GetRingKfactor(currentRing, 0).first+1;
+        }
+    }
+    //---compute normalization EB 
+    for(int iRing=0; iRing<kNRingsEB; ++iRing)
+    {
+        icChMeanEB_[iRing] = icChMeanEB_[iRing]/nGoodInRingEB_[iRing][0];
+        icRMeanEB_[iRing] = icRMeanEB_[iRing]/nGoodInRingEB_[iRing][0];            
+    }    
+    //---compute averages EE
+    for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
+    {
+        EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
+        int currentRing = calibRing_.getRingIndex(eeXstal)-kNRingsEB;
+        if(goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][0])
+        {
+            icChMeanEE_[currentRing] += (eeXstals_[index].GetSumEt(0)/
+                                         eeRingsSumEt_[currentRing][0]-1)/GetChannelKfactor(index, 1).first+1;
+            icRMeanEE_[currentRing] += (eeXstals_[index].GetSumEt(0)/
+                                        eeRingsSumEt_[currentRing][0]-1)/GetRingKfactor(currentRing, 1).first+1;
+        }
+    }    
+    //---compute normalization EE
+    for(int iRing=0; iRing<kNRingsEE; ++iRing)
+    {
+        icChMeanEE_[iRing] = icChMeanEE_[iRing]/nGoodInRingEE_[iRing][0];
+        icRMeanEE_[iRing] = icRMeanEE_[iRing]/nGoodInRingEE_[iRing][0];            
+    }    
+
     //---loop over the EB channels and compute the IC
     for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
         EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
-        int currentRing=calibRing_.getRingIndex(ebXstal);            
-        if(goodXstalsEB_[currentRing][ebXstal.iphi()][0])
+        int currentRing = calibRing_.getRingIndex(ebXstal);
         {
             //---fill the output tree
             outFile_->eb_xstals.n_events = nEvents_;
@@ -330,27 +379,22 @@ void PhiSymCalibration::ComputeICs()
             outFile_->eb_xstals.k_ring_err = GetRingKfactor(currentRing, 0).second;
             outFile_->eb_xstals.k_ch = GetChannelKfactor(index, 0).first;
             outFile_->eb_xstals.k_ch_err = GetChannelKfactor(index, 0).second;
-            outFile_->eb_xstals.ic_ring = (ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                /outFile_->eb_xstals.k_ring+1;
-            outFile_->eb_xstals.ic_ch = (ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                /outFile_->eb_xstals.k_ch+1;
+            outFile_->eb_xstals.ic_ring = ((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
+                                           /outFile_->eb_xstals.k_ring+1)/icRMeanEB_[currentRing];
+            outFile_->eb_xstals.ic_ch = ((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
+                                         /outFile_->eb_xstals.k_ch+1)/icChMeanEB_[currentRing];
             outFile_->eb_xstals.ic_old = ebOldICs_[currentRing][ebXstal.iphi()];
             outFile_->eb_xstals.ic_abs = ebAbsICs_[currentRing][ebXstal.iphi()];
-            outFile_->eb_xstals.ic_err = ebICErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
+            outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
+            outFile_->eb_xstals.ic_ring_err = ebICRingErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ring);
             outFile_->eb_xstals.Fill();
-
-            //---reset channel status and sum
-            ebXstals_[index].Reset();
-            for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-                goodXstalsEB_[currentRing][ebXstal.iphi()][iMis]=0;
         }
     }
     //---loop over the EE channels and compute the IC
     for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
     {
         EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
-        int currentRing=calibRing_.getRingIndex(eeXstal)-kNRingsEB;            
-        if(goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][0])
+        int currentRing = calibRing_.getRingIndex(eeXstal)-kNRingsEB;
         {
             //---fill the output tree
             outFile_->ee_xstals.n_events = nEvents_;
@@ -362,40 +406,42 @@ void PhiSymCalibration::ComputeICs()
             outFile_->ee_xstals.k_ring_err = GetRingKfactor(currentRing, 1).second;
             outFile_->ee_xstals.k_ch = GetChannelKfactor(index, 1).first;
             outFile_->ee_xstals.k_ch_err = GetChannelKfactor(index, 1).second;
-            outFile_->ee_xstals.ic_ring = (eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                /outFile_->ee_xstals.k_ring+1;
-            outFile_->ee_xstals.ic_ch = (eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                /outFile_->ee_xstals.k_ch+1;
+            outFile_->ee_xstals.ic_ring = ((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
+                                           /outFile_->ee_xstals.k_ring+1)/icRMeanEE_[currentRing];
+            outFile_->ee_xstals.ic_ch = ((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
+                                         /outFile_->ee_xstals.k_ch+1)/icChMeanEE_[currentRing];
             outFile_->ee_xstals.ic_old = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
             outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];            
-            outFile_->ee_xstals.ic_err = eeICErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
-            outFile_->ee_xstals.Fill();            
-
-            //---reset channel status and sum
-            eeXstals_[index].Reset();
-            for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-                goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][iMis]=0;
+            outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
+            outFile_->ee_xstals.ic_ring_err = eeICRingErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ring);
+            outFile_->ee_xstals.Fill();
         }
     }
-    
+
     //---reset EB rings
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
     {
         ebRingsSumEt2_[iRing]=0;
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+        {
             ebRingsSumEt_[iRing][iMis]=0;
+            nGoodInRingEB_[iRing][iMis]=0;
+        }
     }
     //---reset EE
     for(int iRing=0; iRing<kNRingsEE; ++iRing)
     {
         eeRingsSumEt2_[iRing]=0;
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+        {
             eeRingsSumEt_[iRing][iMis]=0;
+            nGoodInRingEE_[iRing][iMis]=0;
+        }
     }
     //---reset counters and kFactor flag
     nEvents_=0;
     nBlocks_=0;
-    kFactorComputed_=false;
+    kFactorsComputed_=false;
 }
 
 //---compute the ring-dependent k-factors for both EB and EE
@@ -409,15 +455,16 @@ void PhiSymCalibration::ComputeKfactors()
 {
     TF1* kFactFitFunc = new TF1("kFFF", "[0]*x", -0.5, 0.5);
     kFactFitFunc->SetParameter(0, 1);
-    TGraphErrors* kFactorGraph = new TGraphErrors();    
-
+    TGraphErrors* kFactorGraph = new TGraphErrors();
     //---EB---
     //---ring-averaged k-factors
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
     {
         if(ebRingsSumEt_[iRing][0] == 0)
             continue;
-        float error = sqrt(ebRingsSumEt2_[iRing]-pow(ebRingsSumEt_[iRing][0], 2))/ebRingsSumEt_[iRing][0];
+        ebICRingErr_[iRing] = sqrt(ebRingsSumEt2_[iRing]/nGoodInRingEB_[iRing][0]-
+                                   pow(ebRingsSumEt_[iRing][0]/nGoodInRingEB_[iRing][0], 2));
+        float error = ebICRingErr_[iRing]/ebRingsSumEt_[iRing][0];
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             float point = ebRingsSumEt_[iRing][iMis]/ebRingsSumEt_[iRing][0]-1;
@@ -434,10 +481,10 @@ void PhiSymCalibration::ComputeKfactors()
     {
         if(ebXstals_[index].GetNhits() == 0)
             continue;
-        ebICErr_[index]=sqrt(ebXstals_[index].GetSumEt2()/ebXstals_[index].GetNhits()-
+        ebICChErr_[index]=sqrt(ebXstals_[index].GetSumEt2()/ebXstals_[index].GetNhits()-
                              pow(ebXstals_[index].GetSumEt()/ebXstals_[index].GetNhits(), 2));
-        float error = ebICErr_[index]/ebXstals_[index].GetSumEt(0);        
-        for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+        float error = ebICChErr_[index]/ebXstals_[index].GetSumEt(0);
+        for(int iMis=0; iMis<nMisCalib_; ++iMis)
         {
             float point = ebXstals_[index].GetSumEt(iMis)/ebXstals_[index].GetSumEt(0) - 1;
             float p_error = error*sqrt(pow(point, 2)+1);
@@ -454,7 +501,9 @@ void PhiSymCalibration::ComputeKfactors()
     {
         if(eeRingsSumEt_[iRing][0] == 0)
             continue;
-        float error = sqrt(eeRingsSumEt2_[iRing]-pow(eeRingsSumEt_[iRing][0], 2))/eeRingsSumEt_[iRing][0];        
+        eeICRingErr_[iRing] = sqrt(eeRingsSumEt2_[iRing]/nGoodInRingEE_[iRing][0]-
+                                   pow(eeRingsSumEt_[iRing][0]/nGoodInRingEE_[iRing][0], 2));
+        float error = eeICRingErr_[iRing]/eeRingsSumEt_[iRing][0];
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             float point = eeRingsSumEt_[iRing][iMis]/eeRingsSumEt_[iRing][0]-1;
@@ -471,9 +520,9 @@ void PhiSymCalibration::ComputeKfactors()
     {
         if(eeXstals_[index].GetNhits() == 0)
             continue;
-        eeICErr_[index]=sqrt(eeXstals_[index].GetSumEt2()/eeXstals_[index].GetNhits()-
+        eeICChErr_[index]=sqrt(eeXstals_[index].GetSumEt2()/eeXstals_[index].GetNhits()-
                              pow(eeXstals_[index].GetSumEt()/eeXstals_[index].GetNhits(), 2));
-        float error = eeICErr_[index]/eeXstals_[index].GetSumEt(0);        
+        float error = eeICChErr_[index]/eeXstals_[index].GetSumEt(0);
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             float point = eeXstals_[index].GetSumEt(iMis)/eeXstals_[index].GetSumEt(0) - 1;
@@ -485,16 +534,16 @@ void PhiSymCalibration::ComputeKfactors()
         kFactorsChEE_[index]=kFactorGraph->GetFunction("kFFF")->GetParameter(0);
         kFactorsChErrEE_[index]=kFactorGraph->GetFunction("kFFF")->GetParError(0);
     }
-    
+
     kFactFitFunc->Delete();
     kFactorGraph->Delete();
-    kFactorComputed_=true;
+    kFactorsComputed_=true;
 }
 
 //---return the ring-based k-factor --- sub_det: 0->EB, 1->EE
 pair<float, float> PhiSymCalibration::GetRingKfactor(int& ring, int sub_det)
 {
-    if(!kFactorComputed_)
+    if(!kFactorsComputed_)
         ComputeKfactors();
 
     if(sub_det == 0)
@@ -506,7 +555,7 @@ pair<float, float> PhiSymCalibration::GetRingKfactor(int& ring, int sub_det)
 //---return the channel-based k-factor --- sub_det: 0->EB, 1->EE
 pair<float, float> PhiSymCalibration::GetChannelKfactor(uint32_t& index, int sub_det)
 {
-    if(!kFactorComputed_)
+    if(!kFactorsComputed_)
         ComputeKfactors();
 
     if(sub_det == 0)

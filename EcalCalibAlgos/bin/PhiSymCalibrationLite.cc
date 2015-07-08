@@ -49,6 +49,7 @@ double ebRingsSumEt2_[kNRingsEB]={0};
 double kFactorsEB_[kNRingsEB]={0};
 double kFactorsErrEB_[kNRingsEB]={0};
 float icRMeanEB_[kNRingsEB];
+float ebICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
 float ebQuantilesCuts_[kNRingsEB][2];
 //---EE
 uint64_t eeOccupancy_[kNRingsEE]={0};
@@ -57,6 +58,7 @@ double eeRingsSumEt2_[kNRingsEE]={0};
 double kFactorsEE_[kNRingsEE]={0};
 double kFactorsErrEE_[kNRingsEE]={0};
 float icRMeanEE_[kNRingsEE];
+float eeICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
 float eeQuantilesCuts_[kNRingsEE][2];
 //---crystal based
 //---EB
@@ -66,7 +68,7 @@ bool goodXstalsEB_[kNRingsEB][361][11];
 float nGoodInRingEB_[kNRingsEB][11];
 double kFactorsChEB_[EBDetId::kSizeForDenseIndexing]={0};
 double kFactorsChErrEB_[EBDetId::kSizeForDenseIndexing]={0};
-float ebICErr_[EBDetId::kSizeForDenseIndexing]={0};
+float ebICChErr_[EBDetId::kSizeForDenseIndexing]={0};
 float icChMeanEB_[kNRingsEB];
 //---EE
 map<int, int> eeRingsMap_;
@@ -75,7 +77,7 @@ bool goodXstalsEE_[kNRingsEE][EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][11];
 float nGoodInRingEE_[kNRingsEE][11];
 double kFactorsChEE_[EEDetId::kSizeForDenseIndexing]={0};
 double kFactorsChErrEE_[EEDetId::kSizeForDenseIndexing]={0};
-float eeICErr_[EEDetId::kSizeForDenseIndexing]={0};
+float eeICChErr_[EEDetId::kSizeForDenseIndexing]={0};
 float icChMeanEE_[kNRingsEE];
 
 bool kFactorsComputed_;
@@ -102,7 +104,9 @@ void ComputeKfactors()
     {
         if(ebRingsSumEt_[iRing][0] == 0)
             continue;
-        float error = sqrt(ebRingsSumEt2_[iRing]-pow(ebRingsSumEt_[iRing][0], 2))/ebRingsSumEt_[iRing][0];
+        ebICRingErr_[iRing] = sqrt(ebRingsSumEt2_[iRing]/nGoodInRingEB_[iRing][0]-
+                                   pow(ebRingsSumEt_[iRing][0]/nGoodInRingEB_[iRing][0], 2));
+        float error = ebICRingErr_[iRing]/ebRingsSumEt_[iRing][0];
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             float point = ebRingsSumEt_[iRing][iMis]/ebRingsSumEt_[iRing][0]-1;
@@ -119,9 +123,9 @@ void ComputeKfactors()
     {
         if(ebXstals_[index].GetNhits() == 0)
             continue;
-        ebICErr_[index]=sqrt(ebXstals_[index].GetSumEt2()/ebXstals_[index].GetNhits()-
+        ebICChErr_[index]=sqrt(ebXstals_[index].GetSumEt2()/ebXstals_[index].GetNhits()-
                              pow(ebXstals_[index].GetSumEt()/ebXstals_[index].GetNhits(), 2));
-        float error = ebICErr_[index]/ebXstals_[index].GetSumEt(0);
+        float error = ebICChErr_[index]/ebXstals_[index].GetSumEt(0);
         for(int iMis=0; iMis<nMisCalib_; ++iMis)
         {
             float point = ebXstals_[index].GetSumEt(iMis)/ebXstals_[index].GetSumEt(0) - 1;
@@ -138,7 +142,9 @@ void ComputeKfactors()
     {
         if(eeRingsSumEt_[iRing][0] == 0)
             continue;
-        float error = sqrt(eeRingsSumEt2_[iRing]-pow(eeRingsSumEt_[iRing][0], 2))/eeRingsSumEt_[iRing][0];
+        eeICRingErr_[iRing] = sqrt(eeRingsSumEt2_[iRing]/nGoodInRingEE_[iRing][0]-
+                                   pow(eeRingsSumEt_[iRing][0]/nGoodInRingEE_[iRing][0], 2));
+        float error = eeICRingErr_[iRing]/eeRingsSumEt_[iRing][0];
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             float point = eeRingsSumEt_[iRing][iMis]/eeRingsSumEt_[iRing][0]-1;
@@ -155,9 +161,9 @@ void ComputeKfactors()
     {
         if(eeXstals_[index].GetNhits() == 0)
             continue;
-        eeICErr_[index]=sqrt(eeXstals_[index].GetSumEt2()/eeXstals_[index].GetNhits()-
+        eeICChErr_[index]=sqrt(eeXstals_[index].GetSumEt2()/eeXstals_[index].GetNhits()-
                              pow(eeXstals_[index].GetSumEt()/eeXstals_[index].GetNhits(), 2));
-        float error = eeICErr_[index]/eeXstals_[index].GetSumEt(0);
+        float error = eeICChErr_[index]/eeXstals_[index].GetSumEt(0);
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             float point = eeXstals_[index].GetSumEt(iMis)/eeXstals_[index].GetSumEt(0) - 1;
@@ -300,7 +306,8 @@ void ComputeICs()
                                          /outFile_->eb_xstals.k_ch+1)/icChMeanEB_[currentRing];
             outFile_->eb_xstals.ic_old = ebOldICs_[currentRing][ebXstal.iphi()];
             outFile_->eb_xstals.ic_abs = ebAbsICs_[currentRing][ebXstal.iphi()];
-            outFile_->eb_xstals.ic_err = ebICErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
+            outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
+            outFile_->eb_xstals.ic_ring_err = ebICRingErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ring);
             outFile_->eb_xstals.Fill();
         }
     }
@@ -327,7 +334,8 @@ void ComputeICs()
                                          /outFile_->ee_xstals.k_ch+1)/icChMeanEE_[currentRing];
             outFile_->ee_xstals.ic_old = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
             outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];            
-            outFile_->ee_xstals.ic_err = eeICErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
+            outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
+            outFile_->ee_xstals.ic_ring_err = eeICRingErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ring);
             outFile_->ee_xstals.Fill();
         }
     }

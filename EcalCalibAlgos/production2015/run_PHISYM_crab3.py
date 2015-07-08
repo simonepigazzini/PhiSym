@@ -16,7 +16,7 @@ config.JobType.priority        = 20
 
 config.section_('Data')
 # This string determines the primary dataset of the newly-produced outputs.
-config.Data.inputDataset       = '/AlCaPhiSym/Run2015A-v1/RAW'
+config.Data.inputDataset       = '/AlCaPhiSym/Run2015B-v1/RAW'
 #config.Data.useParent = True
 config.Data.inputDBS           = 'global'
 config.Data.splitting          = 'LumiBased'

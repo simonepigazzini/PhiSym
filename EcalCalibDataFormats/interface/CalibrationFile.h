@@ -45,8 +45,9 @@ public:
     float         ic_ring;
     float         ic_ch;
     float         ic_old;
-    float         ic_abs; 
-    float         ic_err;
+    float         ic_abs;
+    float         ic_ring_err;
+    float         ic_ch_err;
     
 private:
     
@@ -72,7 +73,8 @@ CrystalsEBTree::CrystalsEBTree()
     ic_ch=0;
     ic_old=0;
     ic_abs=0;
-    ic_err=0;
+    ic_ring_err=0;
+    ic_ch_err=0;
     
     //---create branches
     tree_->Branch("begin", &begin, "begin[2]/I");
@@ -91,7 +93,8 @@ CrystalsEBTree::CrystalsEBTree()
     tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
     tree_->Branch("ic_old", &ic_old, "ic_old/F");
     tree_->Branch("ic_abs", &ic_abs, "ic_abs/F");
-    tree_->Branch("ic_err", &ic_err, "ic_err/F");
+    tree_->Branch("ic_ring_err", &ic_ring_err, "ic_ring_err/F");
+    tree_->Branch("ic_ch_err", &ic_ch_err, "ic_ch_err/F");
 }
 
 
@@ -117,7 +120,8 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     ic_ch=0;
     ic_old=0;
     ic_abs=0;
-    ic_err=0;
+    ic_ring_err=0;
+    ic_ch_err=0;
     
     //---create branches
     tree_->SetBranchAddress("begin", &begin[0]);
@@ -136,7 +140,8 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     tree_->SetBranchAddress("ic_ch", &ic_ch);
     tree_->SetBranchAddress("ic_old", &ic_old);
     tree_->SetBranchAddress("ic_abs", &ic_abs);
-    tree_->SetBranchAddress("ic_err", &ic_err);
+    tree_->SetBranchAddress("ic_ring_err", &ic_ring_err);
+    tree_->SetBranchAddress("ic_ch_err", &ic_ch_err);
 }
 
 bool CrystalsEBTree::NextEntry(int64_t entry)
@@ -192,7 +197,8 @@ public:
     float         ic_ch;
     float         ic_old;
     float         ic_abs;
-    float         ic_err;
+    float         ic_ring_err;
+    float         ic_ch_err;
     
 private:
 
@@ -219,7 +225,8 @@ CrystalsEETree::CrystalsEETree()
     ic_ch=0;
     ic_old=0;
     ic_abs=0;
-    ic_err=0;
+    ic_ring_err=0;
+    ic_ch_err=0;
     
     //---create branches
     tree_->Branch("begin", &begin, "begin[2]/I");
@@ -239,7 +246,8 @@ CrystalsEETree::CrystalsEETree()
     tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
     tree_->Branch("ic_old", &ic_old, "ic_old/F");
     tree_->Branch("ic_abs", &ic_abs, "ic_abs/F");
-    tree_->Branch("ic_err", &ic_err, "ic_err/F");
+    tree_->Branch("ic_ring_err", &ic_ring_err, "ic_ring_err/F");
+    tree_->Branch("ic_ch_err", &ic_ch_err, "ic_ch_err/F");
 }
 
 CrystalsEETree::CrystalsEETree(TTree* tree)
@@ -265,7 +273,8 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     ic_ch=0;
     ic_old=0;
     ic_abs=0;
-    ic_err=0;
+    ic_ring_err=0;
+    ic_ch_err=0;
     
     //---create branches
     tree_->SetBranchAddress("begin", &begin[0]);
@@ -285,7 +294,8 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     tree_->SetBranchAddress("ic_ch", &ic_ch);
     tree_->SetBranchAddress("ic_old", &ic_old);
     tree_->SetBranchAddress("ic_abs", &ic_abs);
-    tree_->SetBranchAddress("ic_err", &ic_err);
+    tree_->SetBranchAddress("ic_ring_err", &ic_ring_err);
+    tree_->SetBranchAddress("ic_ch_err", &ic_ch_err);
 }
 
 bool CrystalsEETree::NextEntry(int64_t entry)

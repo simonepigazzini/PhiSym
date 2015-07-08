@@ -4,7 +4,7 @@ config = Configuration()
 
 config.section_('General')
 #config.General.requestName     = 'PHISYM-CMSSW_741-GR_P_v56-Run2012D-step2_v4'
-config.General.requestName     = 'PHISYM-CMSSW_741_oldTHR-GR_P_v56-Run2012D-step2_v5'
+config.General.requestName     = 'PHISYM-CMSSW_741_thr300-GR_P_V56-Run2012D-step2_v1'
 config.General.transferLogs    = True
 config.General.transferOutputs = True
 
@@ -18,7 +18,7 @@ config.JobType.priority        = 20
 config.section_('Data')
 # This string determines the primary dataset of the newly-produced outputs.
 #config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_FAST-GR_P_V56-Run2012D_v2-c20084c8026ace63212a55347fd8fd41/USER'
-config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_oldTHR-GR_P_V56-Run2012D_v2-f7938e3696e7187e48e8e9d9a5f4207d/USER'
+config.Data.inputDataset       = ''
 
 
 #config.Data.useParent = True

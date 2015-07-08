@@ -28,13 +28,13 @@ process.source = cms.Source("PoolSource",
 # PHISYM Calib
 process.load('PhiSym.EcalCalibAlgos.PhiSymCalibration_cfi')
 process.PhiSymCalibration.blocksToSum = 1000
-process.PhiSymCalibration.computeICs = False
-process.PhiSymCalibration.oldCalibFile = "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_1/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2012D_newThr.dat"
+#process.PhiSymCalibration.computeICs = False
+process.PhiSymCalibration.oldCalibFile = ""
 process.PhiSymCalibration.absCalibFile = "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_1/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2015Abs.dat"
 
 # Output TFile
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("phisym_intercalibs_1000lumis.root"))
+                                   fileName = cms.string("phisym_intercalibs_"+str(process.PhiSymCalibration.blocksToSum)+"lumis.root"))
 
 process.path = cms.Path(process.PhiSymCalibration)
 
