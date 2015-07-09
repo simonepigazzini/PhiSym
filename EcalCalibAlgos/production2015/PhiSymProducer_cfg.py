@@ -71,7 +71,7 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 isStream=True
-runMultiFit=True
+runMultiFit=False
 isBX50ns=True
 
 if (runMultiFit):
