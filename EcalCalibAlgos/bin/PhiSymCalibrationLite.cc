@@ -458,8 +458,9 @@ int main( int argc, char *argv[] )
     int nIOVs = IOVBounds.getParameter<int>("nIOVs");
     
     //---get input/output files
-    inputFiles = filesOpt.getParameter<vector<string> >("inputFiles");
     outputFileBase = filesOpt.getParameter<string>("outputFile");
+    inputFiles = filesOpt.getParameter<vector<string> >("inputFiles");
+    
 
     //---get ICs (the old ones for comparison, and reco ones to compute the absolute ICs)
     oldICsFiles = filesOpt.getParameter<vector<string> >("oldConstantsFiles");
