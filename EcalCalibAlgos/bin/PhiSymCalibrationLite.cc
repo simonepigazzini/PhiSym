@@ -43,7 +43,6 @@ float ebAbsICs_[kNRingsEB][361];
 float eeAbsICs_[EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][2];
 //---ring based
 //---EB
-uint64_t ebOccupancy_[kNRingsEB]={0};
 double ebRingsSumEt_[kNRingsEB][11];
 double ebRingsSumEt2_[kNRingsEB]={0};
 double kFactorsEB_[kNRingsEB]={0};
@@ -52,7 +51,6 @@ float icRMeanEB_[kNRingsEB];
 float ebICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
 float ebQuantilesCuts_[kNRingsEB][2];
 //---EE
-uint64_t eeOccupancy_[kNRingsEE]={0};
 double eeRingsSumEt_[kNRingsEE][11];
 double eeRingsSumEt2_[kNRingsEE]={0};
 double kFactorsEE_[kNRingsEE]={0};
@@ -440,6 +438,8 @@ int main( int argc, char *argv[] )
 
     //---inputs    
     vector<string> inputFiles;
+    string outputFileBase;
+    vector<string> oldICsFiles;
     kFactorsComputed_=false;
     nLumis_=0;
     nEvents_=0;
@@ -448,182 +448,228 @@ int main( int argc, char *argv[] )
     const edm::ParameterSet &process = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
     const edm::ParameterSet &filesOpt = process.getParameter<edm::ParameterSet>("ioFilesOpt");
     const edm::ParameterSet &IOVBounds = process.getParameter<edm::ParameterSet>("IOVBounds");
-
+        
     //---get IOV boundaries
-    vector<int> IOVBegin = IOVBounds.getParameter<vector<int> >("begin");
-    vector<int> IOVEnd = IOVBounds.getParameter<vector<int> >("end");
+    vector<int> IOVBeginRuns = IOVBounds.getParameter<vector<int> >("beginRuns");
+    vector<int> IOVEndRuns = IOVBounds.getParameter<vector<int> >("endRuns");
+    vector<int> IOVBeginLumis = IOVBounds.getParameter<vector<int> >("beginLumis");
+    vector<int> IOVEndLumis = IOVBounds.getParameter<vector<int> >("endLumis");    
+    int startingIOV = IOVBounds.getParameter<int>("startingIOV");
+    int nIOVs = IOVBounds.getParameter<int>("nIOVs");
     
-    //---get input files
-    inputFiles=filesOpt.getParameter<vector<string> >("inputFiles");
+    //---get input/output files
+    inputFiles = filesOpt.getParameter<vector<string> >("inputFiles");
+    outputFileBase = filesOpt.getParameter<string>("outputFile");
 
     //---get ICs (the old ones for comparison, and reco ones to compute the absolute ICs)
-    Read2012ICs(filesOpt.getParameter<string>("oldConstantsFile"));
+    oldICsFiles = filesOpt.getParameter<vector<string> >("oldConstantsFiles");
     ReadAbsICs(filesOpt.getParameter<string>("recoConstantsFile"));
 
-    //---output file
-    TFile* out = TFile::Open(filesOpt.getParameter<string>("outputFile").c_str(), "RECREATE");
-    outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(out));
-    for(int ch=0; ch<EBDetId::kSizeForDenseIndexing; ++ch)
-        ebXstals_[ch] = PhiSymRecHit();
-    for(int ch=0; ch<EEDetId::kSizeForDenseIndexing; ++ch)
-        eeXstals_[ch] = PhiSymRecHit();
-    
-    for(auto& fileName : inputFiles)
+    for(int iIOV=startingIOV; iIOV<startingIOV+nIOVs; ++iIOV)
     {
-        //---open the next file
-        TFile* file = TFile::Open(fileName.c_str());
-        CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
-        CrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
+        //---output file        
+        TFile* out = TFile::Open((outputFileBase+
+                                  to_string(IOVBeginRuns[iIOV])+"_"+
+                                  to_string(IOVEndRuns[iIOV])+".root").c_str(),
+                                 "RECREATE");
+        outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(out));
 
-        //---skip out of bounds runs
-        ebTree.NextEntry();
-        if(ebTree.begin[0] < IOVBegin[0] ||
-           (ebTree.begin[0] == IOVBegin[0] && IOVBegin[1] != -1 && ebTree.begin[1] < IOVBegin[1]))
-        {
-            file->Close();
-            continue;
-        }
-        if(ebTree.end[0] > IOVEnd[0] ||
-           (ebTree.end[0] == IOVEnd[0] && IOVEnd[1] != -1 && ebTree.end[1] < IOVEnd[1]))
-        {
-            file->Close();
-            continue;
-        }
-        ebTree.NextEntry(EBDetId::kSizeForDenseIndexing+1);
-        cout << "Reading file: " << fileName.c_str() << "..." << endl;
-        
-        //---get miscalib values
-        if(nMisCalib_ == -1)
-        {
-            misCalibValuesEB_ = new vector<float>;
-            misCalibValuesEE_ = new vector<float>;
-            TH1F* eb = (TH1F*)file->Get("eb_miscalib");
-            TH1F* ee = (TH1F*)file->Get("ee_miscalib");
-            if(eb)
-                nMisCalib_ = eb->GetNbinsX();
+        //---reset
+        for(int ch=0; ch<EBDetId::kSizeForDenseIndexing; ++ch)
+            ebXstals_[ch] = PhiSymRecHit();
+        for(int ch=0; ch<EEDetId::kSizeForDenseIndexing; ++ch)
+            eeXstals_[ch] = PhiSymRecHit();
 
-            nMisCalib_ = 11;
-            for(int index=1; index<=nMisCalib_; ++index)
+        Read2012ICs(oldICsFiles[iIOV]);
+    
+        for(auto& fileName : inputFiles)
+        {
+            //---open the next file
+            TFile* file = TFile::Open(fileName.c_str());
+            CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
+            CrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
+
+            //---skip out of bounds runs
+            ebTree.NextEntry();
+            if(ebTree.begin[0] < IOVBeginRuns[iIOV] ||
+               (ebTree.begin[0] == IOVBeginRuns[iIOV] && IOVBeginLumis[iIOV] != -1 && ebTree.begin[1] < IOVBeginLumis[iIOV]))
             {
-                int iMis=index-1;
-                if(!eb)
-                    iMis = iMis>5 ? iMis-5 : iMis>0 ? iMis-6 : 0;
-                if(eb)
-                    misCalibValuesEB_->push_back(eb->GetBinContent(index));
-                else
-                    misCalibValuesEB_->push_back(0.01*(float)iMis + 1);
-                if(ee)
-                    misCalibValuesEE_->push_back(ee->GetBinContent(index));
-                else
-                    misCalibValuesEE_->push_back(0.02*(float)iMis + 1);
+                file->Close();
+                continue;
             }
-        }
-        nMisCalib_=10;
+            if(ebTree.end[0] > IOVEndRuns[iIOV] ||
+               (ebTree.end[0] == IOVEndRuns[iIOV] && IOVEndLumis[iIOV] != -1 && ebTree.end[1] < IOVEndLumis[iIOV]))
+            {
+                file->Close();
+                continue;
+            }
+            ebTree.NextEntry(EBDetId::kSizeForDenseIndexing+1);
+            cout << "Reading file: " << fileName.c_str() << "..." << endl;
+        
+            //---get miscalib values
+            if(nMisCalib_ == -1)
+            {
+                misCalibValuesEB_ = new vector<float>;
+                misCalibValuesEE_ = new vector<float>;
+                TH1F* eb = (TH1F*)file->Get("eb_miscalib");
+                TH1F* ee = (TH1F*)file->Get("ee_miscalib");
+                if(eb)
+                    nMisCalib_ = eb->GetNbinsX();
 
-        //---compute quantiles for EB and EE in order to remove outliers crystal from
-        //---the sumEt averages computation
+                nMisCalib_ = 11;
+                for(int index=1; index<=nMisCalib_; ++index)
+                {
+                    int iMis=index-1;
+                    if(!eb)
+                        iMis = iMis>5 ? iMis-5 : iMis>0 ? iMis-6 : 0;
+                    if(eb)
+                        misCalibValuesEB_->push_back(eb->GetBinContent(index));
+                    else
+                        misCalibValuesEB_->push_back(0.01*(float)iMis + 1);
+                    if(ee)
+                        misCalibValuesEE_->push_back(ee->GetBinContent(index));
+                    else
+                        misCalibValuesEE_->push_back(0.02*(float)iMis + 1);
+                }
+            }
+            nMisCalib_=10;
+
+            //---compute quantiles for EB and EE in order to remove outliers crystal from
+            //---the sumEt averages computation
+            //---EB
+            for(int iRing=0; iRing<kNRingsEB; ++iRing)
+            {
+                int ieta = iRing<85 ? iRing - 85 : iRing - 84;
+                string cut = "ieta==";
+                cut += to_string(ieta);
+                TH1F* sumEtSpectrum = new TH1F("tmp", "", 10000, 0, 20000);
+                ebTree.Draw("rec_hit.GetSumEt(0)>>tmp", cut.c_str(), "goff");
+                //---quantiles
+                Double_t ebQuantilesPos[2]={0.05, 0.95}; 
+                Double_t ebQuantilesCut[2];
+                sumEtSpectrum->GetQuantiles(2, ebQuantilesCut, ebQuantilesPos);
+                ebQuantilesCuts_[iRing][0] = ebQuantilesCut[0];
+                ebQuantilesCuts_[iRing][1] = ebQuantilesCut[1];
+                sumEtSpectrum->Delete();
+            }
+            //---EE
+            for(int iRing=0; iRing<kNRingsEE; ++iRing)
+            {
+                int iring = iRing<kNRingsEE/2 ? iRing-kNRingsEE/2 : iRing+1-kNRingsEE/2;
+                string cut = "iring==";
+                cut += to_string(iring);
+                TH1F* sumEtSpectrum = new TH1F("tmp", "", 10000, 0, 200000);
+                eeTree.Draw("rec_hit.GetSumEt(0)>>tmp", cut.c_str(), "goff");
+                //---quantiles
+                Double_t eeQuantilesPos[2]={0.05, 0.95}; 
+                Double_t eeQuantilesCut[2];
+                sumEtSpectrum->GetQuantiles(2, eeQuantilesCut, eeQuantilesPos);
+                eeQuantilesCuts_[iRing][0] = eeQuantilesCut[0];
+                eeQuantilesCuts_[iRing][1] = eeQuantilesCut[1];
+                sumEtSpectrum->Delete();
+            }
+            
+            int currentBlock=-1;
+            //---EB
+            while(ebTree.NextEntry())
+            {
+                //---counts summed lumis
+                if(currentBlock != ebTree.block)
+                {
+                    nLumis_ += ebTree.n_lumis;
+                    nEvents_ += ebTree.n_events;
+                    currentBlock = ebTree.block;
+                }
+            
+                int index = EBDetId(ebTree.ieta, ebTree.iphi).denseIndex();
+                int currentRing = ebTree.ieta<0 ? ebTree.ieta + 85 : ebTree.ieta + 84;
+                ebXstals_[index] += *ebTree.rec_hit;
+                //---no geometry available, thus fill a hashedIndex->ring map
+                if(ebRingsMap_.find(index) == ebRingsMap_.end())
+                    ebRingsMap_[index]=currentRing;
+
+                if(ebTree.rec_hit->GetSumEt() < ebQuantilesCuts_[currentRing][0] ||
+                   ebTree.rec_hit->GetSumEt() > ebQuantilesCuts_[currentRing][1])
+                    continue;
+                ebRingsSumEt2_[currentRing] += ebTree.rec_hit->GetSumEt2(); 
+                for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+                {
+                    if(ebTree.rec_hit->GetSumEt(iMis) > 0)
+                    {
+                        ebRingsSumEt_[currentRing][iMis] += ebTree.rec_hit->GetSumEt(iMis);
+                        goodXstalsEB_[currentRing][ebTree.iphi][iMis]=1;
+                    }
+                }
+            }
+
+            //---EE
+            while(eeTree.NextEntry())
+            {
+                int currentRing = eeTree.iring;
+                currentRing = currentRing<0 ? currentRing+kNRingsEE/2 : currentRing-1+kNRingsEE/2;
+                int index = EEDetId(eeTree.ix, eeTree.iy, eeTree.iring>0?1:-1).denseIndex();
+                eeXstals_[index] += *eeTree.rec_hit;
+                //---no geometry available, thus fill a hashedIndex->ring map
+                if(eeRingsMap_.find(index) == eeRingsMap_.end())
+                    eeRingsMap_[index]=currentRing;
+
+                if(eeTree.rec_hit->GetSumEt() < eeQuantilesCuts_[currentRing][0] ||
+                   eeTree.rec_hit->GetSumEt() > eeQuantilesCuts_[currentRing][1])
+                    continue;
+                eeRingsSumEt2_[currentRing] += eeTree.rec_hit->GetSumEt2();
+                for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+                {
+                    if(eeTree.rec_hit->GetSumEt(iMis) > 0)
+                    {
+                        eeRingsSumEt_[currentRing][iMis] += eeTree.rec_hit->GetSumEt(iMis);
+                        goodXstalsEE_[currentRing][eeTree.ix][eeTree.iy][iMis]=1;
+                    }
+                }
+            }
+            file->Close();
+        }
+    
+        //---restore the usual convention for which the central value do not count
+        //---nMisCalib_ = number of mis-calib values
+        ComputeICs();
+
+        //---finalize outputs
+        outFile_->cd();
+        outFile_->eb_xstals.Write("eb_xstals");
+        outFile_->ee_xstals.Write("ee_xstals");
+        out->Close();
+
+        //---reset
+        nLumis_ = 0;
+        nEvents_ = 0;
+        kFactorsComputed_ = false;
         //---EB
         for(int iRing=0; iRing<kNRingsEB; ++iRing)
         {
-            int ieta = iRing<85 ? iRing - 85 : iRing - 84;
-            string cut = "ieta==";
-            cut += to_string(ieta);
-            TH1F* sumEtSpectrum = new TH1F("tmp", "", 10000, 0, 20000);
-            ebTree.Draw("rec_hit.GetSumEt(0)>>tmp", cut.c_str(), "goff");
-            //---quantiles
-            Double_t ebQuantilesPos[2]={0.05, 0.95}; 
-            Double_t ebQuantilesCut[2];
-            sumEtSpectrum->GetQuantiles(2, ebQuantilesCut, ebQuantilesPos);
-            ebQuantilesCuts_[iRing][0] = ebQuantilesCut[0];
-            ebQuantilesCuts_[iRing][1] = ebQuantilesCut[1];
-            sumEtSpectrum->Delete();
+            ebRingsSumEt2_[iRing] = 0;
+            for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+            {
+                ebRingsSumEt_[iRing][iMis] = 0;
+                nGoodInRingEB_[iRing][iMis] = 0;
+                for(int iPhi=0; iPhi<=360; ++iPhi)
+                    goodXstalsEB_[iRing][iPhi][iMis]=0;
+            }
         }
         //---EE
         for(int iRing=0; iRing<kNRingsEE; ++iRing)
         {
-            int iring = iRing<kNRingsEE/2 ? iRing-kNRingsEE/2 : iRing+1-kNRingsEE/2;
-            string cut = "iring==";
-            cut += to_string(iring);
-            TH1F* sumEtSpectrum = new TH1F("tmp", "", 10000, 0, 200000);
-            eeTree.Draw("rec_hit.GetSumEt(0)>>tmp", cut.c_str(), "goff");
-            //---quantiles
-            Double_t eeQuantilesPos[2]={0.05, 0.95}; 
-            Double_t eeQuantilesCut[2];
-            sumEtSpectrum->GetQuantiles(2, eeQuantilesCut, eeQuantilesPos);
-            eeQuantilesCuts_[iRing][0] = eeQuantilesCut[0];
-            eeQuantilesCuts_[iRing][1] = eeQuantilesCut[1];
-            sumEtSpectrum->Delete();
-        }
-            
-        int currentBlock=-1;
-        //---EB
-        while(ebTree.NextEntry())
-        {
-            //---counts summed lumis
-            if(currentBlock != ebTree.block)
-            {
-                nLumis_ += ebTree.n_lumis;
-                nEvents_ += ebTree.n_events;
-                currentBlock = ebTree.block;
-            }
-            
-            int index = EBDetId(ebTree.ieta, ebTree.iphi).denseIndex();
-            int currentRing = ebTree.ieta<0 ? ebTree.ieta + 85 : ebTree.ieta + 84;
-            ebXstals_[index] += *ebTree.rec_hit;
-            //---no geometry available, thus fill a hashedIndex->ring map
-            if(ebRingsMap_.find(index) == ebRingsMap_.end())
-                ebRingsMap_[index]=currentRing;
-
-            if(ebTree.rec_hit->GetSumEt() < ebQuantilesCuts_[currentRing][0] ||
-               ebTree.rec_hit->GetSumEt() > ebQuantilesCuts_[currentRing][1])
-                continue;
-            ebRingsSumEt2_[currentRing] += ebTree.rec_hit->GetSumEt2(); 
+            eeRingsSumEt2_[iRing] = 0;
             for(int iMis=0; iMis<=nMisCalib_; ++iMis)
             {
-                if(ebTree.rec_hit->GetSumEt(iMis) > 0)
-                {
-                    ebRingsSumEt_[currentRing][iMis] += ebTree.rec_hit->GetSumEt(iMis);
-                    goodXstalsEB_[currentRing][ebTree.iphi][iMis]=1;
-                }
+                eeRingsSumEt_[iRing][iMis] = 0;
+                nGoodInRingEE_[iRing][iMis] = 0;
+                for(int iX=0; iX<=100; ++iX)
+                    for(int iY=0; iY<=100; ++iY)
+                        goodXstalsEE_[iRing][iX][iY][iMis]=0;
             }
         }
-
-        //---EE
-        while(eeTree.NextEntry())
-        {
-            int currentRing = eeTree.iring;
-            currentRing = currentRing<0 ? currentRing+kNRingsEE/2 : currentRing-1+kNRingsEE/2;
-            int index = EEDetId(eeTree.ix, eeTree.iy, eeTree.iring>0?1:-1).denseIndex();
-            eeXstals_[index] += *eeTree.rec_hit;
-            //---no geometry available, thus fill a hashedIndex->ring map
-            if(eeRingsMap_.find(index) == eeRingsMap_.end())
-                eeRingsMap_[index]=currentRing;
-
-            if(eeTree.rec_hit->GetSumEt() < eeQuantilesCuts_[currentRing][0] ||
-               eeTree.rec_hit->GetSumEt() > eeQuantilesCuts_[currentRing][1])
-                continue;
-            eeRingsSumEt2_[currentRing] += eeTree.rec_hit->GetSumEt2();
-            for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-            {
-                if(eeTree.rec_hit->GetSumEt(iMis) > 0)
-                {
-                    eeRingsSumEt_[currentRing][iMis] += eeTree.rec_hit->GetSumEt(iMis);
-                    goodXstalsEE_[currentRing][eeTree.ix][eeTree.iy][iMis]=1;
-                }
-            }
-        }
-        file->Close();
-    }
-    
-    //---restore the usual convention for which the central value do not count
-    //---nMisCalib_ = number of mis-calib values
-    ComputeICs();
-
-    //---finalize outputs
-    outFile_->cd();
-    outFile_->eb_xstals.Write("eb_xstals");
-    outFile_->ee_xstals.Write("ee_xstals");
-    out->Close();
+        nMisCalib_ = -1;
+    }    
 }
 
 #endif

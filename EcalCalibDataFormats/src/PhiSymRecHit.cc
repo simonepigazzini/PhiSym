@@ -2,14 +2,14 @@
 
 //**********constructors******************************************************************
 PhiSymRecHit::PhiSymRecHit():
-    id_(0), nHits_(0), et2Sum_(0)
+    id_(0), nHits_(0), et2Sum_(0), lcSum_(0), lc2Sum_(0)
 {
     for(int i=0; i<N_MISCALIB_VALUES; ++i)
         etSum_[i] = 0;
 }
             
 PhiSymRecHit::PhiSymRecHit(uint32_t id, float* etValues):
-    id_(id), nHits_(0), et2Sum_(0)
+    id_(id), nHits_(0), et2Sum_(0), lcSum_(0), lc2Sum_(0)
 {
     for(int i=0; i<N_MISCALIB_VALUES; ++i)
         etSum_[i] = 0;
