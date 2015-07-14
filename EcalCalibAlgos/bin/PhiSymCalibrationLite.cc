@@ -460,7 +460,23 @@ int main( int argc, char *argv[] )
     //---get input/output files
     outputFileBase = filesOpt.getParameter<string>("outputFile");
     inputFiles = filesOpt.getParameter<vector<string> >("inputFiles");
-    
+    map<int, vector<string> > iovInputFiles;
+    for(auto& fileName : inputFiles)
+    {
+        //---open the next file
+        TFile* file = TFile::Open(fileName.c_str());
+        CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
+
+        //---assign file to the correct IOVs 
+        //---(requires only that the file last run is > the IOV first run)
+        ebTree.NextEntry();
+        for(int iIOV=startingIOV; iIOV<startingIOV+nIOVs; ++iIOV)
+        {
+            if(ebTree.end[0] > IOVBeginRuns[iIOV] && ebTree.end[0] < IOVEndRuns[iIOV])
+                iovInputFiles[iIOV].push_back(fileName);
+        }
+        file->Close();
+    }
 
     //---get ICs (the old ones for comparison, and reco ones to compute the absolute ICs)
     oldICsFiles = filesOpt.getParameter<vector<string> >("oldConstantsFiles");
@@ -468,6 +484,9 @@ int main( int argc, char *argv[] )
 
     for(int iIOV=startingIOV; iIOV<startingIOV+nIOVs; ++iIOV)
     {
+        if(iovInputFiles[iIOV].size() == 0)
+            continue;
+        
         //---output file        
         TFile* out = TFile::Open((outputFileBase+
                                   to_string(IOVBeginRuns[iIOV])+"_"+
@@ -483,28 +502,14 @@ int main( int argc, char *argv[] )
 
         Read2012ICs(oldICsFiles[iIOV]);
     
-        for(auto& fileName : inputFiles)
+        for(auto& fileName : iovInputFiles[iIOV])
         {
             //---open the next file
             TFile* file = TFile::Open(fileName.c_str());
             CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
             CrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
 
-            //---skip out of bounds runs
-            ebTree.NextEntry();
-            if(ebTree.begin[0] < IOVBeginRuns[iIOV] ||
-               (ebTree.begin[0] == IOVBeginRuns[iIOV] && IOVBeginLumis[iIOV] != -1 && ebTree.begin[1] < IOVBeginLumis[iIOV]))
-            {
-                file->Close();
-                continue;
-            }
-            if(ebTree.end[0] > IOVEndRuns[iIOV] ||
-               (ebTree.end[0] == IOVEndRuns[iIOV] && IOVEndLumis[iIOV] != -1 && ebTree.end[1] < IOVEndLumis[iIOV]))
-            {
-                file->Close();
-                continue;
-            }
-            ebTree.NextEntry(EBDetId::kSizeForDenseIndexing+1);
+            cout << "IOV: " << iIOV << endl;
             cout << "Reading file: " << fileName.c_str() << "..." << endl;
         
             //---get miscalib values
@@ -543,7 +548,7 @@ int main( int argc, char *argv[] )
                 int ieta = iRing<85 ? iRing - 85 : iRing - 84;
                 string cut = "ieta==";
                 cut += to_string(ieta);
-                TH1F* sumEtSpectrum = new TH1F("tmp", "", 10000, 0, 20000);
+                TH1F* sumEtSpectrum = new TH1F("tmp", "", 100000, 0, 500000);
                 ebTree.Draw("rec_hit.GetSumEt(0)>>tmp", cut.c_str(), "goff");
                 //---quantiles
                 Double_t ebQuantilesPos[2]={0.05, 0.95}; 
@@ -559,7 +564,7 @@ int main( int argc, char *argv[] )
                 int iring = iRing<kNRingsEE/2 ? iRing-kNRingsEE/2 : iRing+1-kNRingsEE/2;
                 string cut = "iring==";
                 cut += to_string(iring);
-                TH1F* sumEtSpectrum = new TH1F("tmp", "", 10000, 0, 200000);
+                TH1F* sumEtSpectrum = new TH1F("tmp", "", 50000, 0, 1000000);
                 eeTree.Draw("rec_hit.GetSumEt(0)>>tmp", cut.c_str(), "goff");
                 //---quantiles
                 Double_t eeQuantilesPos[2]={0.05, 0.95}; 
@@ -647,6 +652,8 @@ int main( int argc, char *argv[] )
         //---EB
         for(int iRing=0; iRing<kNRingsEB; ++iRing)
         {
+            icChMeanEB_[iRing] = 0;
+            icRMeanEB_[iRing] = 0;
             ebRingsSumEt2_[iRing] = 0;
             for(int iMis=0; iMis<=nMisCalib_; ++iMis)
             {
@@ -660,6 +667,8 @@ int main( int argc, char *argv[] )
         for(int iRing=0; iRing<kNRingsEE; ++iRing)
         {
             eeRingsSumEt2_[iRing] = 0;
+            icChMeanEE_[iRing] = 0;
+            icRMeanEE_[iRing] = 0;
             for(int iMis=0; iMis<=nMisCalib_; ++iMis)
             {
                 eeRingsSumEt_[iRing][iMis] = 0;
