@@ -96,6 +96,7 @@ maps["EB_k_ch"]=ROOT.TH2F("map_EB_k_ch", "EB channel-based k-factors --- MAP", 3
 maps["EB_k_diff"]=ROOT.TH2F("map_EB_k_diff", "EB k-factors relative difference (ch-ring)/ring --- MAP",
                                   360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_n_hits"]=ROOT.TH2F("map_EB_n_hits", "Number of hits/lumi EB--- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
+maps["EB_old_ic"]=ROOT.TH2F("map_EB_old_ic", "IC-2012D EB--- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_ratio_ic_ring"]=ROOT.TH2F("map_EB_ratio_ic_ring", "IC_{ring}-2015 / IC-2012D EB--- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_ratio_ic_ch"]=ROOT.TH2F("map_EB_ratio_ic_ch", "IC_{ch}-2015 / IC-2012D EB--- MAP", 360, -0.5, 359.5, 171, -85.5, 85.5)
 maps["EB_ratio_ic_ch_corr"]=ROOT.TH2F("map_EB_ratio_ic_ch_corr", "IC_{ch_corr}-2015 / IC-2012D EB--- MAP",
@@ -167,6 +168,7 @@ while ebTree.NextEntry():
     maps["EB_k_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.k_ch-ebTree.k_ring)/ebTree.k_ring)
     maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.rec_hit.GetNhits()/ebTree.n_lumis)
     if ebTree.ic_old != 0 and ebTree.ic_ch != 0:
+        maps["EB_old_ic"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_old)
         maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
         maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old) 
         maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/
@@ -246,6 +248,7 @@ ranges[re.compile("prEta_EE_err.*")]=[0, 0.0005]
 ranges[re.compile(".*EE.*_k_((?!diff).)*$")]=[1, 1.7]
 ranges[re.compile(".*EE.*_k_diff$")]=[-0.05, 0.05]
 ranges[re.compile(".*_n_hits$")]=[0, 500]
+ranges[re.compile(".*_old_ic$")]=[0.5, 1.5]
 
 # Define axis titles
 axisTitles={}

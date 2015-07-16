@@ -50,6 +50,7 @@ public:
     virtual void beginJob() override;
     virtual void beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup) override;
     virtual void endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup) override;
+    virtual void endRun(edm::Run const& run, edm::EventSetup const& setup) override;
     virtual void endJob() override;
     virtual void analyze(edm::Event const&, edm::EventSetup const&) override {};
 
@@ -180,6 +181,21 @@ void PhiSymCalibration::endJob()
     outFile_->ee_xstals.Write("ee_xstals");
 }
 
+void PhiSymCalibration::endRun(edm::Run const& run, edm::EventSetup const& setup)
+{
+    //---stop sums at run end
+    //---increment block output trees counters
+    outFile_->eb_xstals.block++;
+    outFile_->eb_xstals.n_lumis = nBlocks_*nSummedLumis_;
+    outFile_->ee_xstals.block++;
+    outFile_->ee_xstals.n_lumis = nBlocks_*nSummedLumis_;
+
+    if(computeICs_)
+        ComputeICs();
+    else
+        FillOutput();
+}
+
 void PhiSymCalibration::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {}
 
@@ -197,10 +213,13 @@ void PhiSymCalibration::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm
     if(!infoHandle_.isValid())
         return;
     //---if good block count it and record first run
-    outFile_->eb_xstals.begin[0] = lumi.luminosityBlockAuxiliary().run();
-    outFile_->eb_xstals.begin[1] = lumi.luminosityBlockAuxiliary().luminosityBlock();
-    outFile_->ee_xstals.begin[0] = lumi.luminosityBlockAuxiliary().run();
-    outFile_->ee_xstals.begin[1] = lumi.luminosityBlockAuxiliary().luminosityBlock();
+    if(nBlocks_ == 0)
+    {
+        outFile_->eb_xstals.begin[0] = lumi.luminosityBlockAuxiliary().run();
+        outFile_->eb_xstals.begin[1] = lumi.luminosityBlockAuxiliary().luminosityBlock();
+        outFile_->ee_xstals.begin[0] = lumi.luminosityBlockAuxiliary().run();
+        outFile_->ee_xstals.begin[1] = lumi.luminosityBlockAuxiliary().luminosityBlock();
+    }
     nEvents_ += infoHandle_.product()->back().GetNEvents();
     ++nBlocks_;
 
@@ -422,6 +441,8 @@ void PhiSymCalibration::ComputeICs()
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
     {
         ebRingsSumEt2_[iRing]=0;
+        icChMeanEB_[iRing] = 0;
+        icRMeanEB_[iRing] = 0;
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             ebRingsSumEt_[iRing][iMis]=0;
@@ -432,6 +453,8 @@ void PhiSymCalibration::ComputeICs()
     for(int iRing=0; iRing<kNRingsEE; ++iRing)
     {
         eeRingsSumEt2_[iRing]=0;
+        icChMeanEE_[iRing] = 0;
+        icRMeanEE_[iRing] = 0;
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             eeRingsSumEt_[iRing][iMis]=0;

@@ -1,0 +1,62 @@
+# import ROOT in batch mode
+from __future__ import division
+import sys
+import re
+import argparse
+oldargv = sys.argv[:]
+sys.argv = [ '-b-' ]
+import ROOT
+ROOT.gROOT.SetBatch(True)
+sys.argv = oldargv
+
+from PhiSym.EcalCalibAlgos.EcalCalibAnalysis import *
+
+parser = argparse.ArgumentParser (description = 'Dump PhiSym IC correction from a ROOT file')
+parser.add_argument('inputfile' , default="phisym_intercalibs.root", help='analyze this file')
+parser.add_argument('-b', '--block' , default=-1, type=int, help='analyze this block')
+parser.add_argument('-f', '--outputFile' , default=-1, type=int, help='store the ICs in this file')
+parser.add_argument('-k', '--kType' , default="ch", help='k-Factor computation type: ch / ring')
+parser.add_argument('--rel' , action="store_true", default=False, help='dump phisym ICs correction only')
+
+opts = parser.parse_args ()
+
+# Load the CalibrationFile format
+ROOT.gSystem.Load("libPhiSymEcalCalibDataFormats.so");
+ROOT.AutoLibraryLoader.enable()
+
+# Get the crystals trees
+inFile = ROOT.TFile(opts.inputfile)
+bareTree = inFile.Get("eb_xstals")
+ebTree = ROOT.CrystalsEBTree(bareTree)
+bareTree = inFile.Get("ee_xstals")
+eeTree = ROOT.CrystalsEETree(bareTree)
+
+#EB
+while ebTree.NextEntry():
+    if opts.block != -1 and ebTree.block != opts.block:
+        continue;
+    if opts.kType == "ch":
+        ic = ebTree.ic_ch
+    else:
+        ic = ebTree.ic_ring
+    if opts.rel:
+        ic = ebTree.ic_abs/ic
+
+    print repr(ebTree.ieta), repr(ebTree.iphi), repr(0), "%.5f" % ic
+
+#EE
+while eeTree.NextEntry():
+    if opts.block != -1 and eeTree.block != opts.block:
+        continue;
+    if opts.kType == "ch":
+        ic = eeTree.ic_ch
+    else:
+        ic = eeTree.ic_ring
+    if opts.rel:
+        ic = eeTree.ic_abs/ic
+    if eeTree.iring > 0:
+        side = 1
+    else:
+        side = -1
+        
+    print repr(eeTree.ix), repr(eeTree.iy), repr(side), "%.5f" % ic

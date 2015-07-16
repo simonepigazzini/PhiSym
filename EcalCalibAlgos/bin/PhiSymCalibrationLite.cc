@@ -469,12 +469,21 @@ int main( int argc, char *argv[] )
 
         //---assign file to the correct IOVs 
         //---(requires only that the file last run is > the IOV first run)
-        ebTree.NextEntry();
+        //ebTree.NextEntry();
         for(int iIOV=startingIOV; iIOV<startingIOV+nIOVs; ++iIOV)
         {
-            if(ebTree.end[0] > IOVBeginRuns[iIOV] && ebTree.end[0] < IOVEndRuns[iIOV])
-                iovInputFiles[iIOV].push_back(fileName);
-        }
+            for(int iBlk=0; iBlk<nIOVs; ++iBlk)
+            {
+                if(ebTree.NextEntry(61200*iBlk+1))
+                {
+                    cout << iIOV << "  " << ebTree.end[0] << "  " << IOVBeginRuns[iIOV] << endl;                                                                                
+                    if(ebTree.begin[0] >= IOVBeginRuns[iIOV] && ebTree.end[0] <= IOVEndRuns[iIOV])
+                    {
+                        iovInputFiles[iIOV].push_back(fileName);
+                    }
+                }
+            }
+        }        
         file->Close();
     }
 
@@ -500,7 +509,7 @@ int main( int argc, char *argv[] )
         for(int ch=0; ch<EEDetId::kSizeForDenseIndexing; ++ch)
             eeXstals_[ch] = PhiSymRecHit();
 
-        Read2012ICs(oldICsFiles[iIOV]);
+        Read2012ICs(oldICsFiles[0]);
     
         for(auto& fileName : iovInputFiles[iIOV])
         {
@@ -551,7 +560,7 @@ int main( int argc, char *argv[] )
                 TH1F* sumEtSpectrum = new TH1F("tmp", "", 100000, 0, 500000);
                 ebTree.Draw("rec_hit.GetSumEt(0)>>tmp", cut.c_str(), "goff");
                 //---quantiles
-                Double_t ebQuantilesPos[2]={0.05, 0.95}; 
+                Double_t ebQuantilesPos[2]={0.1, 0.9}; 
                 Double_t ebQuantilesCut[2];
                 sumEtSpectrum->GetQuantiles(2, ebQuantilesCut, ebQuantilesPos);
                 ebQuantilesCuts_[iRing][0] = ebQuantilesCut[0];
@@ -567,7 +576,7 @@ int main( int argc, char *argv[] )
                 TH1F* sumEtSpectrum = new TH1F("tmp", "", 50000, 0, 1000000);
                 eeTree.Draw("rec_hit.GetSumEt(0)>>tmp", cut.c_str(), "goff");
                 //---quantiles
-                Double_t eeQuantilesPos[2]={0.05, 0.95}; 
+                Double_t eeQuantilesPos[2]={0.1, 0.9}; 
                 Double_t eeQuantilesCut[2];
                 sumEtSpectrum->GetQuantiles(2, eeQuantilesCut, eeQuantilesPos);
                 eeQuantilesCuts_[iRing][0] = eeQuantilesCut[0];
