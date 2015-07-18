@@ -2,10 +2,10 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.PSet()
 
-nIOVs=1
+nIOVs=18
 
 process.IOVBounds = cms.PSet(
-    startingIOV = cms.int32(16),
+    startingIOV = cms.int32(0),
     nIOVs       = cms.int32(nIOVs),    
     # beginRuns   = cms.vint32(191043, 191086, 191247, 191691, 193093, 193336, 193834, 194051, 194150, 194223,
     #                          194429, 194480, 194691, 194912, 195147, 195396, 195633, 195913, 195963, 196249,
@@ -45,13 +45,25 @@ process.ioFilesOpt = cms.PSet(
     outputFile = cms.string('summed_'),
     
     #oldConstantsFiles = cms.vstring(),
-    oldConstantsFiles = cms.vstring('$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2012D_newThr.dat'),
+    oldConstantsFiles = cms.vstring('/afs/cern.ch/work/s/spigazzi/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2012D_newThr.dat'),
     
     #recoConstantsFile = cms.string('/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_1/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2012DAbs.dat'),
-    recoConstantsFile = cms.string('$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2015Abs.dat'),
+    recoConstantsFile = cms.string('/afs/cern.ch/work/s/spigazzi/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2015B_Abs.dat'),
     
     inputFiles = cms.vstring(
         [
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_10.root",
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_101.root",
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_11.root",
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_121.root",
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_189.root",
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_4.root",
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_56.root",
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_73.root",
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_83.root",            
+            # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_84.root",
+            
+
             "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_1.root",
             "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_10.root",
             "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT/phisym_intercalibs_1000blocks_100.root",

@@ -18,7 +18,7 @@ from DataFormats.FWLite import Handle, Events, Lumis
 
 # open file (you can use 'edmFileUtil -d /store/whatever.root' to get the physical file name)
 #lumis = Lumis("file:phisym.root")
-lumis = Lumis("root://xrootd-cms.infn.it//store/user/spigazzi/AlCaPhiSym/crab_PHISYM-CMSSW_741-weights-GR_P_V56-Run2015B_v1/150714_150558/0000/phisym_weights_1lumis_59.root")
+lumis = Lumis("root://xrootd-cms.infn.it//store/user/spigazzi/AlCaPhiSym/crab_PHISYM-CMSSW_741-weights-GR_P_V56-Run2015B_v1/150714_150558/0000/phisym_weights_1lumis_13.root")
 
 handlePhiSymInfo  = Handle ("std::vector<PhiSymInfo>")
 handlePhiSymRecHitsEB  = Handle ("std::vector<PhiSymRecHit>")
