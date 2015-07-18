@@ -220,6 +220,7 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
                 etCutsEB_[ring] = eThresholdEB_/cosh(eta) + etCutEB_;
             }
         }
+        cout << kNRingsEE << endl;
 	for(auto& eeDetId : endcapDetIds)
         {
 	    EEDetId myId(eeDetId);
@@ -230,7 +231,7 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
             {
                 const CaloCellGeometry *cellGeometry = endcapGeometry->getGeometry(myId);
                 etCutsEE_[ring] = eThresholdsEE_[ring]/cosh(cellGeometry->getPosition().eta()) + etCutEE_;
-                etCutsEE_[ring+ringsInOneEE] = etCutsEE_[ring];                
+                etCutsEE_[ring+ringsInOneEE] = etCutsEE_[ring];
             }
         }
     }
