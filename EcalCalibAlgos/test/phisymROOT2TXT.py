@@ -36,33 +36,35 @@ while ebTree.NextEntry():
     if opts.block != -1 and ebTree.block != opts.block:
         continue;
     if opts.kType == "ch":
-        ic = ebTree.ic_ch
+        ic = 1/ebTree.ic_ch        
+        ic_err = ebTree.ic_ch_err*ic
     else:
-        ic = ebTree.ic_ring
-    if opts.rel:
-        if ic > 0:
-            ic = ebTree.ic_abs/ic
-        else:
-            ic = 0
+        ic = 1/ebTree.ic_ring
+        ic_err = ebTree.ic_ring_err*ic
+    if not opts.rel:
+        ic = ebTree.ic_abs*ic
+    if ic == 0:        
+        ic_err = 999    
 
-    print repr(ebTree.ieta), repr(ebTree.iphi), repr(0), "%.5f" % ic
+    print repr(ebTree.ieta), repr(ebTree.iphi), repr(0), "%.5f" % ic, "%.7f" % ic_err
 
 #EE
 while eeTree.NextEntry():
     if opts.block != -1 and eeTree.block != opts.block:
         continue;
     if opts.kType == "ch":
-        ic = eeTree.ic_ch
+        ic = 1/eeTree.ic_ch
+        ic_err = eeTree.ic_ch_err*ic
     else:
-        ic = eeTree.ic_ring
-    if opts.rel:
-        if ic > 0:
-            ic = eeTree.ic_abs/ic
-        else:
-            ic = 0
+        ic = 1/eeTree.ic_ring
+        ic_err = eeTree.ic_ring_err*ic
+    if not opts.rel:
+        ic = eeTree.ic_abs*ic
+    if ic == 0:
+        ic_err = 999
     if eeTree.iring > 0:
         side = 1
     else:
         side = -1
         
-    print repr(eeTree.ix), repr(eeTree.iy), repr(side), "%.5f" % ic
+    print repr(eeTree.ix), repr(eeTree.iy), repr(side), "%.5f" % ic, "%.7f" % ic_err

@@ -16,13 +16,14 @@ process.options = cms.untracked.PSet(
 
 # Global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v0')
 
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
 #                                "root://xrootd-cms.infn.it//store/user/spigazzi/AlCaPhiSym/crab_PHISYM-CMSSW_741_FAST-GR_P_V56-Run2012D_v1/150626_221215/0000/phisym_weights_1lumis_1.root"
-                                "file:/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_1/src/PhiSym/EcalCalibAlgos/phisym_weights_1lumis.root")
+                                "file:/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/phisym_weights_1lumis.root")
 )                                
 
 # PHISYM Calib

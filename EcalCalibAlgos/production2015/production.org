@@ -1,7 +1,13 @@
-|     Date | git-tag     | json                 | release     |
-|----------+-------------+----------------------+-------------|
-| 08-07-15 | Run2015A_v1 | Run2015A_all.json    | CMSSW_7_4_1 |
-| 09-07-15 | Run2015B_v1 | Run2015B_090715.json | CMSSW_7_4_1 |
-| 14-07-15 | Run2015B_v2 | Run2015B_140715      | CMSSW_7_4_1 |
-|          |             |                      |             |
+|     Date | Produced dataset* | git-tag     | json                 | release            |
+|----------+-------------------+-------------+----------------------+--------------------|
+| 08-07-15 | PhiSym2015A_v1    | Run2015A_v1 | Run2015A_all.json    | CMSSW_7_4_1        |
+| 08-07-15 | PhiSym2015A_v2    | Run2015A_v1 | Run2015A_all.json    | CMSSW_7_4_1        |
+| 09-07-15 | PhiSym2015B_v1    | Run2015B_v1 | Run2015B_080715.json | CMSSW_7_4_1        |
+| 14-07-15 | PhiSym2015B_v1    | Run2015B_v2 | Run2015B_140715.json | CMSSW_7_4_1        |
+| 16-07-15 | PhiSym2015B_v2    | Run2015B_v3 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
+|          |                   |             |                      |                    |
 
+* Dataset table -> das convertion
+  + PhiSym2015A_v1 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741-weights-_GR_P_V56-Run2015A_v1-d1d8759b5763650129fcdb1ec58b4e6a/USER
+  + PhiSym2015A_v2 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741-multifit-_GR_P_V56-Run2015A_v1-aa6d0f694fbde2c60e6338a92e82f36e/USER
+  + PhiSym2015B_v1 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741-weights-GR_P_V56-Run2015B_v1-e3b4bffc2242645ab4214de910b2af8d/USER

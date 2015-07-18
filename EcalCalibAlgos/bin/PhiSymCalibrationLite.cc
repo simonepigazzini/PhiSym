@@ -47,36 +47,36 @@ double ebRingsSumEt_[kNRingsEB][11];
 double ebRingsSumEt2_[kNRingsEB]={0};
 double kFactorsEB_[kNRingsEB]={0};
 double kFactorsErrEB_[kNRingsEB]={0};
-float icRMeanEB_[kNRingsEB];
-float ebICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
-float ebQuantilesCuts_[kNRingsEB][2];
+float  icRMeanEB_[kNRingsEB];
+double ebICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
+float  ebQuantilesCuts_[kNRingsEB][2];
 //---EE
 double eeRingsSumEt_[kNRingsEE][11];
 double eeRingsSumEt2_[kNRingsEE]={0};
 double kFactorsEE_[kNRingsEE]={0};
 double kFactorsErrEE_[kNRingsEE]={0};
-float icRMeanEE_[kNRingsEE];
-float eeICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
-float eeQuantilesCuts_[kNRingsEE][2];
+float  icRMeanEE_[kNRingsEE];
+double eeICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
+float  eeQuantilesCuts_[kNRingsEE][2];
 //---crystal based
 //---EB
 map<int, int> ebRingsMap_;
 PhiSymRecHit ebXstals_[EBDetId::kSizeForDenseIndexing];
-bool goodXstalsEB_[kNRingsEB][361][11];
-float nGoodInRingEB_[kNRingsEB][11];
+bool   goodXstalsEB_[kNRingsEB][361][11];
+float  nGoodInRingEB_[kNRingsEB][11];
 double kFactorsChEB_[EBDetId::kSizeForDenseIndexing]={0};
 double kFactorsChErrEB_[EBDetId::kSizeForDenseIndexing]={0};
-float ebICChErr_[EBDetId::kSizeForDenseIndexing]={0};
-float icChMeanEB_[kNRingsEB];
+double ebICChErr_[EBDetId::kSizeForDenseIndexing]={0};
+float  icChMeanEB_[kNRingsEB];
 //---EE
 map<int, int> eeRingsMap_;
 PhiSymRecHit eeXstals_[EEDetId::kSizeForDenseIndexing];
-bool goodXstalsEE_[kNRingsEE][EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][11];
-float nGoodInRingEE_[kNRingsEE][11];
+bool   goodXstalsEE_[kNRingsEE][EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][11];
+float  nGoodInRingEE_[kNRingsEE][11];
 double kFactorsChEE_[EEDetId::kSizeForDenseIndexing]={0};
 double kFactorsChErrEE_[EEDetId::kSizeForDenseIndexing]={0};
-float eeICChErr_[EEDetId::kSizeForDenseIndexing]={0};
-float icChMeanEE_[kNRingsEE];
+double eeICChErr_[EEDetId::kSizeForDenseIndexing]={0};
+float  icChMeanEE_[kNRingsEE];
 
 bool kFactorsComputed_;
 
@@ -401,12 +401,12 @@ void ReadAbsICs(string name)
     
     //---help variables
     int x,y,subdet;
-    float ic;
+    float ic, fake;
         
     ifstream absICs(name.c_str(), ios::in);
     while(absICs.good())
     {
-        absICs >> x >> y >> subdet >> ic;
+        absICs >> x >> y >> subdet >> ic >> fake;
         if(subdet==0)
             ebAbsICs_[x<0 ? x+85 : x+84][y]=ic;        
         else
@@ -476,11 +476,8 @@ int main( int argc, char *argv[] )
             {
                 if(ebTree.NextEntry(61200*iBlk+1))
                 {
-                    cout << iIOV << "  " << ebTree.end[0] << "  " << IOVBeginRuns[iIOV] << endl;                                                                                
                     if(ebTree.begin[0] >= IOVBeginRuns[iIOV] && ebTree.end[0] <= IOVEndRuns[iIOV])
-                    {
                         iovInputFiles[iIOV].push_back(fileName);
-                    }
                 }
             }
         }        
@@ -588,6 +585,10 @@ int main( int argc, char *argv[] )
             //---EB
             while(ebTree.NextEntry())
             {
+                //---skip unwanted blocks
+                if(ebTree.begin[0] < IOVBeginRuns[iIOV] || ebTree.end[0] > IOVEndRuns[iIOV])
+                    continue;
+                
                 //---counts summed lumis
                 if(currentBlock != ebTree.block)
                 {
@@ -620,6 +621,10 @@ int main( int argc, char *argv[] )
             //---EE
             while(eeTree.NextEntry())
             {
+                //---skip unwanted blocks
+                if(eeTree.begin[0] < IOVBeginRuns[iIOV] || eeTree.end[0] > IOVEndRuns[iIOV])
+                    continue;
+                
                 int currentRing = eeTree.iring;
                 currentRing = currentRing<0 ? currentRing+kNRingsEE/2 : currentRing-1+kNRingsEE/2;
                 int index = EEDetId(eeTree.ix, eeTree.iy, eeTree.iring>0?1:-1).denseIndex();

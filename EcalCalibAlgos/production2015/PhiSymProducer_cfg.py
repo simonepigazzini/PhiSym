@@ -128,7 +128,8 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("phisym_spectra.root"))
 
 # GLOBAL-TAG
-process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v0')
 
 # SCHEDULE
 if (not runMultiFit):

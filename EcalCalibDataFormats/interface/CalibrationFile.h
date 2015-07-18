@@ -46,8 +46,8 @@ public:
     float         ic_ch;
     float         ic_old;
     float         ic_abs;
-    float         ic_ring_err;
-    float         ic_ch_err;
+    double        ic_ring_err;
+    double        ic_ch_err;
     
 private:
     
@@ -93,8 +93,8 @@ CrystalsEBTree::CrystalsEBTree()
     tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
     tree_->Branch("ic_old", &ic_old, "ic_old/F");
     tree_->Branch("ic_abs", &ic_abs, "ic_abs/F");
-    tree_->Branch("ic_ring_err", &ic_ring_err, "ic_ring_err/F");
-    tree_->Branch("ic_ch_err", &ic_ch_err, "ic_ch_err/F");
+    tree_->Branch("ic_ring_err", &ic_ring_err, "ic_ring_err/D");
+    tree_->Branch("ic_ch_err", &ic_ch_err, "ic_ch_err/D");
 }
 
 
@@ -197,8 +197,8 @@ public:
     float         ic_ch;
     float         ic_old;
     float         ic_abs;
-    float         ic_ring_err;
-    float         ic_ch_err;
+    double        ic_ring_err;
+    double        ic_ch_err;
     
 private:
 
@@ -246,8 +246,8 @@ CrystalsEETree::CrystalsEETree()
     tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
     tree_->Branch("ic_old", &ic_old, "ic_old/F");
     tree_->Branch("ic_abs", &ic_abs, "ic_abs/F");
-    tree_->Branch("ic_ring_err", &ic_ring_err, "ic_ring_err/F");
-    tree_->Branch("ic_ch_err", &ic_ch_err, "ic_ch_err/F");
+    tree_->Branch("ic_ring_err", &ic_ring_err, "ic_ring_err/D");
+    tree_->Branch("ic_ch_err", &ic_ch_err, "ic_ch_err/D");
 }
 
 CrystalsEETree::CrystalsEETree(TTree* tree)
