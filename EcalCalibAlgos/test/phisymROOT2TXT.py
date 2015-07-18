@@ -40,7 +40,10 @@ while ebTree.NextEntry():
     else:
         ic = ebTree.ic_ring
     if opts.rel:
-        ic = ebTree.ic_abs/ic
+        if ic > 0:
+            ic = ebTree.ic_abs/ic
+        else:
+            ic = 0
 
     print repr(ebTree.ieta), repr(ebTree.iphi), repr(0), "%.5f" % ic
 
@@ -53,7 +56,10 @@ while eeTree.NextEntry():
     else:
         ic = eeTree.ic_ring
     if opts.rel:
-        ic = eeTree.ic_abs/ic
+        if ic > 0:
+            ic = eeTree.ic_abs/ic
+        else:
+            ic = 0
     if eeTree.iring > 0:
         side = 1
     else:

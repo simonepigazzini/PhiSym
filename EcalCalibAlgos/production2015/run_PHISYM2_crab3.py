@@ -3,7 +3,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 config.section_('General')
-config.General.requestName     = 'PHISYM-CMSSW_741-weights-GR_P_V56-Run2015B-step2_v1'
+config.General.requestName     = 'PHISYM-CMSSW_741-weights-GR_P_V56-Run2015B-step2_v2'
 config.General.transferLogs    = True
 config.General.transferOutputs = True
 
@@ -20,9 +20,9 @@ config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741-wei
 
 #config.Data.useParent = True
 config.Data.inputDBS           = 'phys03'
-config.Data.splitting          = 'LumiBased'
-config.Data.lumiMask           = '/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/ECALJSON/files/Cert_All_13TeV_PromptReco_Collisions15_ECALonly_JSON.txt'
-config.Data.unitsPerJob        = 100
+config.Data.splitting          = 'FileBased'
+config.Data.lumiMask           = '/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/251022-251562-Prompt-pfgEcal-noLaserProblem.json'
+config.Data.unitsPerJob        = 1
 config.Data.totalUnits         = -1
 config.Data.publication        = False
 config.Data.ignoreLocality     = True

@@ -3,8 +3,8 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 config.section_('General')
-#config.General.requestName     = 'PHISYM-CMSSW_741-GR_P_v56-Run2012D-step2_v4'
-config.General.requestName     = 'PHISYM-CMSSW_741_thr400-GR_P_V56-Run2012D-step2_v1'
+config.General.requestName     = 'PHISYM-CMSSW_741_newTHR-GR_P_V56-Run2012D-step2_v3'
+#config.General.requestName     = 'PHISYM-CMSSW_741_thr400-GR_P_V56-Run2012D-step2_v1'
 config.General.transferLogs    = True
 config.General.transferOutputs = True
 
@@ -17,9 +17,9 @@ config.JobType.priority        = 20
 
 config.section_('Data')
 # This string determines the primary dataset of the newly-produced outputs.
-#config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_FAST-GR_P_V56-Run2012D_v2-c20084c8026ace63212a55347fd8fd41/USER'
+config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_newTHR-GR_P_V56-Run2012D_v3-6649b4438dce540b3d7279b4c1bfe052/USER'
 #config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_thr300-GR_P_V56-Run2012D_v1-077595173bb310f3280b0f11299085f6/USER'
-config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_thr400-GR_P_V56-Run2012D_v1-6d392e3a5d4bbfdc25b4f3584abcd375/USER'
+#config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_thr400-GR_P_V56-Run2012D_v1-6d392e3a5d4bbfdc25b4f3584abcd375/USER'
 
 #config.Data.useParent = True
 config.Data.inputDBS           = 'phys03'
