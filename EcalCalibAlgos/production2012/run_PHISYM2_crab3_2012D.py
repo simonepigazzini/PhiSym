@@ -3,7 +3,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 config.section_('General')
-config.General.requestName     = 'PHISYM-CMSSW_741_newTHR-GR_P_V56-Run2012D-step2_v3'
+config.General.requestName     = 'PHISYM-CMSSW_746_newTHR-74X_dataRun2_Prompt_v0-Run2012D-step2_v1'
 #config.General.requestName     = 'PHISYM-CMSSW_741_thr400-GR_P_V56-Run2012D-step2_v1'
 config.General.transferLogs    = True
 config.General.transferOutputs = True
@@ -17,9 +17,7 @@ config.JobType.priority        = 20
 
 config.section_('Data')
 # This string determines the primary dataset of the newly-produced outputs.
-config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_newTHR-GR_P_V56-Run2012D_v3-6649b4438dce540b3d7279b4c1bfe052/USER'
-#config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_thr300-GR_P_V56-Run2012D_v1-077595173bb310f3280b0f11299085f6/USER'
-#config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741_thr400-GR_P_V56-Run2012D_v1-6d392e3a5d4bbfdc25b4f3584abcd375/USER'
+config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_746_newTHR-74X_dataRun2_Prompt_v0-Run2012D_v1-ce179159fb683d6f1920b7fe36370c0e/USER'
 
 #config.Data.useParent = True
 config.Data.inputDBS           = 'phys03'

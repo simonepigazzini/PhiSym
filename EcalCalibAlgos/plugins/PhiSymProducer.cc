@@ -146,9 +146,9 @@ void PhiSymProducer::beginJob()
         etCutsEE_[iRing+ringsInOneEE] = -1;
     }
 
-    //---misCalib value init
-    float misCalibStepEB = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/nMisCalib_;
-    float misCalibStepEE = fabs(misCalibRangeEE_[1]-misCalibRangeEE_[0])/nMisCalib_;
+    //---misCalib value init (nMisCalib is half oj the correct value!)
+    float misCalibStepEB = fabs(misCalibRangeEB_[1]-misCalibRangeEB_[0])/(nMisCalib_*2);
+    float misCalibStepEE = fabs(misCalibRangeEE_[1]-misCalibRangeEE_[0])/(nMisCalib_*2);
     for(int iMis=-nMisCalib_; iMis<=nMisCalib_; ++iMis)
     {
         //--- 0 -> 0; -i -> [1...n/2]; +i -> [n/2+1...n]

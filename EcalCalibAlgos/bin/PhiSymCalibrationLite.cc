@@ -93,7 +93,7 @@ auto_ptr<CalibrationFile> outFile_;
 // + this implies that the error on the single channel k-factor is larger.
 void ComputeKfactors()
 {
-    TF1* kFactFitFunc = new TF1("kFFF", "[0]*x", -0.5, 0.5);
+    TF1* kFactFitFunc = new TF1("kFFF", "[0]*x+[1]", -0.5, 0.5);
     kFactFitFunc->SetParameter(0, 1);
     TGraphErrors* kFactorGraph = new TGraphErrors();
     //---EB---

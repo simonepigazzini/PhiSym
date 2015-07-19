@@ -6,6 +6,7 @@
 | 14-07-15 | PhiSym2015B_v1    | Run2015B_v2 | Run2015B_140715.json | CMSSW_7_4_1        |
 | 16-07-15 | PhiSym2015B_v2    | Run2015B_v3 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
 | 18-07-15 | PhiSym2015B_v3    | Run2015B_v4 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
+| 19-07-15 | PhiSym2015B_v3    | Run2015B_v5 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
 |          |                   |             |                      |                    |
 
 * Dataset table -> das convertion
