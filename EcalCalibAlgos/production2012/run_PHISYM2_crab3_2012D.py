@@ -3,7 +3,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 config.section_('General')
-config.General.requestName     = 'PHISYM-CMSSW_746_newTHR-74X_dataRun2_Prompt_v0-Run2012D-step2_v1'
+config.General.requestName     = 'PHISYM-CMSSW_746_newTHR-74X_dataRun2_Prompt_v0-Run2012D-step2_v2'
 #config.General.requestName     = 'PHISYM-CMSSW_741_thr400-GR_P_V56-Run2012D-step2_v1'
 config.General.transferLogs    = True
 config.General.transferOutputs = True
@@ -17,7 +17,7 @@ config.JobType.priority        = 20
 
 config.section_('Data')
 # This string determines the primary dataset of the newly-produced outputs.
-config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_746_newTHR-74X_dataRun2_Prompt_v0-Run2012D_v1-ce179159fb683d6f1920b7fe36370c0e/USER'
+config.Data.inputDataset       = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_746_newTHR-74X_dataRun2_Prompt_v0-Run2012D_v2-ce179159fb683d6f1920b7fe36370c0e/USER'
 
 #config.Data.useParent = True
 config.Data.inputDBS           = 'phys03'

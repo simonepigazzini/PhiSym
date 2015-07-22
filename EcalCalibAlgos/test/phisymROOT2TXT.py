@@ -21,6 +21,7 @@ parser.add_argument('--rel' , action="store_true", default=False, help='dump phi
 opts = parser.parse_args ()
 
 # Load the CalibrationFile format
+ROOT.gSystem.Load("libDataFormatsEcalDetId.so");
 ROOT.gSystem.Load("libPhiSymEcalCalibDataFormats.so");
 ROOT.AutoLibraryLoader.enable()
 
@@ -31,40 +32,104 @@ ebTree = ROOT.CrystalsEBTree(bareTree)
 bareTree = inFile.Get("ee_xstals")
 eeTree = ROOT.CrystalsEETree(bareTree)
 
+ebIC=[-999 for i in range(61200)]
+eeIC=[-999 for i in range(14648)]
+ebK=[-999 for i in range(61200)]
+eeK=[-999 for i in range(14648)]
+ebN=[0 for i in range(61200)]
+eeN=[0 for i in range(14648)]
+ebICerr=[999 for i in range(61200)]
+eeICerr=[999 for i in range(14648)]
+ebICsys=[999 for i in range(61200)]
+eeICsys=[999 for i in range(14648)]
+
 #EB
 while ebTree.NextEntry():
     if opts.block != -1 and ebTree.block != opts.block:
         continue;
+    index = ROOT.EBDetId(ebTree.ieta, ebTree.iphi).hashedIndex()    
     if opts.kType == "ch":
-        ic = 1/ebTree.ic_ch        
-        ic_err = ebTree.ic_ch_err*ic
+        ic = ebTree.ic_ch
+        ic_err = ebTree.ic_ch_err
     else:
-        ic = 1/ebTree.ic_ring
-        ic_err = ebTree.ic_ring_err*ic
+        ic = ebTree.ic_ring
+        ic_err = ebTree.ic_ring_err
+    ic_err = ic_err*ic
+    if ic <= 0:
+        ic = -1
+        ic_err = 999    
+    ic = 1/ic    
     if not opts.rel:
         ic = ebTree.ic_abs*ic
-    if ic == 0:        
-        ic_err = 999    
 
-    print repr(ebTree.ieta), repr(ebTree.iphi), repr(0), "%.5f" % ic, "%.7f" % ic_err
+    ebIC[index] = ic
+    ebICerr[index] = ic_err
+    ebICsys[index] = ebTree.ic_err_sys
+    ebK[index] = ebTree.k_ch
+    ebN[index] = ebTree.rec_hit.GetNhits()
 
 #EE
 while eeTree.NextEntry():
     if opts.block != -1 and eeTree.block != opts.block:
         continue;
-    if opts.kType == "ch":
-        ic = 1/eeTree.ic_ch
-        ic_err = eeTree.ic_ch_err*ic
-    else:
-        ic = 1/eeTree.ic_ring
-        ic_err = eeTree.ic_ring_err*ic
-    if not opts.rel:
-        ic = eeTree.ic_abs*ic
-    if ic == 0:
-        ic_err = 999
     if eeTree.iring > 0:
         side = 1
     else:
         side = -1
+    index = ROOT.EEDetId(eeTree.ix, eeTree.iy, side).hashedIndex()    
+    if opts.kType == "ch":
+        ic = eeTree.ic_ch
+        ic_err = eeTree.ic_ch_err
+    else:
+        ic = eeTree.ic_ring
+        ic_err = eeTree.ic_ring_err
+    ic_err = ic_err*ic
+    if ic <= 0:
+        ic = -1
+        ic_err = 999    
+    ic = 1/ic    
+    if not opts.rel:
+        ic = eeTree.ic_abs*ic
+
+    eeIC[index] = ic
+    eeICerr[index] = ic_err
+    eeICsys[index] = eeTree.ic_err_sys
+    eeK[index] = eeTree.k_ch
+    eeN[index] = eeTree.rec_hit.GetNhits()
+
+print "# status = used/unused (1/0) in ring sumEt avarage computation, or bad channel (-1)"
+print "# ieta(ix) -- iphi(iy) -- zside -- IC -- IC_err -- IC_err_stat -- IC_err_sys -- status -- n_hits -- k-factor"
+    
+for index in range(61200):    
+    if ebIC[index] == -999:
+        ebIC[index] = -1
+        status = -1
+    else:
+        status = 1
+
+    ieta = ROOT.EBDetId(ROOT.EBDetId.detIdFromDenseIndex(index)).ieta()
+    iphi = ROOT.EBDetId(ROOT.EBDetId.detIdFromDenseIndex(index)).iphi()
+    if ebICerr[index] == 999:
+        err = 999
+    else:
+        err = sqrt(ebICerr[index]*ebICerr[index] + ebICsys[index]*ebICsys[index])
+    print ieta, iphi, 0, "%.5f" % ebIC[index], "%.7f" % err, "%.7f" % ebICerr[index], "%.7f" % ebICsys[index],
+    print status, ebN[index], ebK[index]
+
+for index in range(14648):    
+    if eeIC[index] == -999:
+        eeIC[index] = -1
+        status = -1
+    else:
+        status = 1
         
-    print repr(eeTree.ix), repr(eeTree.iy), repr(side), "%.5f" % ic, "%.7f" % ic_err
+    ix = ROOT.EEDetId(ROOT.EEDetId.detIdFromDenseIndex(index)).ix()
+    iy = ROOT.EEDetId(ROOT.EEDetId.detIdFromDenseIndex(index)).iy()
+    zside = ROOT.EEDetId(ROOT.EEDetId.detIdFromDenseIndex(index)).zside()
+    if eeICerr[index] == 999:
+        err = 999
+    else:
+        err = sqrt(eeICerr[index]*eeICerr[index] + eeICsys[index]*eeICsys[index])
+    print ix, iy, zside, "%.5f" % eeIC[index], "%.7f" % err, "%.7f" % eeICerr[index], "%.7f" % eeICsys[index],
+    print status, eeN[index], eeK[index]
+

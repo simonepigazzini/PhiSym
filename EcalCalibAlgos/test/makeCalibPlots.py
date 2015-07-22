@@ -136,19 +136,33 @@ maps["EEm_ratio_ic_ch"]=ROOT.TH2F("map_EEm_ratio_ic_ch", "IC_{ch}-2015 / IC-2012
 
 ## VARIABLES map
 varReMap={}
-varReMap["err_ic_ch"]="ic_err/ic_ch"
-varReMap["err_ic_ring"]="ic_err/ic_ring"
+varReMap["err_ic_ch"]="ic_ch_err/ic_ch"
+varReMap["err_ic_ring"]="ic_ring_err/ic_ring"
 
 ## geometrical corr
 ones = [1 for i in range (61200)]
 ebUnCorrIC= [0 for i in range (61200)]
+ebOldIC={}
+ebAbsIC={}
+for ieta in range (-85,86):
+    ebOldIC[str(ieta)]=ROOT.TH1F(str(ieta)+"old", "", 100, 0.5, 1.5)
+    ebAbsIC[str(ieta)]=ROOT.TH1F(str(ieta)+"abs", "", 100, 0.5, 1.5)
+    
 while ebTree.NextEntry():
     if opts.block != -1 and ebTree.block != opts.block:
         continue
-    ebUnCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]=(ebTree.ic_ch)
+    ebUnCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]=(ebTree.ic_ch)    
+    ebOldIC[str(ebTree.ieta)].Fill(ebTree.ic_old)
+    ebAbsIC[str(ebTree.ieta)].Fill(ebTree.ic_abs/ebTree.ic_ch)
 
 diffp,rmsp,diffm,rmsm= calculatedifferences(ebUnCorrIC, ones)
 geoCorrIC = applycorrections(ebUnCorrIC, diffp, diffm)
+
+ebICCorrOld={}
+ebICCorrAbs={}
+for ring in ebOldIC.keys():
+    ebICCorrOld[ring]=ebOldIC[ring].GetMean()
+    ebICCorrAbs[ring]=ebAbsIC[ring].GetMean()
 
 ## FILL THE HISTOS ##
 ## EB
@@ -168,15 +182,17 @@ while ebTree.NextEntry():
     maps["EB_k_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.k_ch-ebTree.k_ring)/ebTree.k_ring)
     maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.rec_hit.GetNhits()/ebTree.n_lumis)
     if ebTree.ic_old != 0 and ebTree.ic_ch != 0:
+        abs_ic_norm = ebTree.ic_abs/ebTree.ic_ch/ebICCorrAbs[str(ebTree.ieta)]
+        old_ic_norm = ebTree.ic_old/ebICCorrOld[str(ebTree.ieta)]
         maps["EB_old_ic"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_old)
         maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
-        maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old) 
+        maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, abs_ic_norm/old_ic_norm) 
         maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/
                                          ebTree.ic_old)
         maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])
         histos["EB_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch)
         histos["EB_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])    
-        histos["EB_ratio_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch/ebTree.ic_old)
+        histos["EB_ratio_ic_ch"].Fill(abs_ic_norm/old_ic_norm)
         histos["EB_ratio_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
 
 # profiles
@@ -248,7 +264,7 @@ ranges[re.compile("prEta_EE_err.*")]=[0, 0.0005]
 ranges[re.compile(".*EE.*_k_((?!diff).)*$")]=[1, 1.7]
 ranges[re.compile(".*EE.*_k_diff$")]=[-0.05, 0.05]
 ranges[re.compile(".*_n_hits$")]=[0, 500]
-ranges[re.compile(".*_old_ic$")]=[0.5, 1.5]
+ranges[re.compile(".*_old_ic$")]=[0.9, 1.1]
 
 # Define axis titles
 axisTitles={}
