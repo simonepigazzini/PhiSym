@@ -7,6 +7,8 @@
 | 16-07-15 | PhiSym2015B_v2    | Run2015B_v3 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
 | 18-07-15 | PhiSym2015B_v3    | Run2015B_v4 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
 | 19-07-15 | PhiSym2015B_v3    | Run2015B_v5 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
+|          | PhiSym2015B_v4    |             |                      |                    |
+| 22-07-15 | PhiSym2015B_v5    | Run2015B_v6 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
 |          |                   |             |                      |                    |
 
 * Dataset table -> das convertion
@@ -20,3 +22,5 @@
    + fixed lasar issue
    + new realese and GT (no effect expected for PhiSym)
    + bad EE rings definition discovered
+** PhiSym2015B_v5 = 
+   + 2015B production with ic tag from 2012: EcalIntercalibCostants_2012ABCD_offline

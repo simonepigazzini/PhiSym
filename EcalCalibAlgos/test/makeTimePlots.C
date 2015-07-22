@@ -1,4 +1,10 @@
 {
+    string type_name;
+    // int type=0; //IC
+    // int type=1; // SumEt
+    int type=2; // LC
+    // int type=3; // Nhits
+            
     gSystem->Load("libFWCoreFWLite.so"); 
     AutoLibraryLoader::enable();
     gSystem->Load("libDataFormatsFWLite.so");
@@ -6,17 +12,17 @@
     gSystem->Load("libPhiSymEcalCalibDataFormats.so");
 
     vector<string> files={
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/newThr_2012D/summed_208538_208686.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251244_251244.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251251_251251.root",
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251252_251252.root"
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251521_251521.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251522_251522.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251548_251548.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251559_251559.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251560_251560.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251561_251561.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251562_251562.root"
+        //"$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/newThr_2012D/summed_208538_208686.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251244_251244.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251251_251251.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251252_251252.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251521_251521.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251522_251522.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251548_251548.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251559_251559.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251560_251560.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251561_251561.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/summed_251562_251562.root"
     };
 
     float ebICs[70][EBDetId::kSizeForDenseIndexing]={};
@@ -37,7 +43,30 @@
         while(ebTree.NextEntry())
         {
             ++index;
-            ebICs[iFile][index] = ebTree.ic_ch;
+            if(ebTree.rec_hit->GetNhits() > 0)
+            {
+                switch(type)
+                {
+                case 0:
+                    ebICs[iFile][index] = ebTree.ic_ch;
+                    type_name = "IC";
+                    break;
+                case 1:
+                    ebICs[iFile][index] = ebTree.rec_hit->GetSumEt();
+                    type_name = "SumEt";
+                    break;
+                case 2:                
+                    ebICs[iFile][index] = ebTree.rec_hit->GetLCSum();
+                    type_name = "LC";
+                    break;
+                case 3:
+                    ebICs[iFile][index] = ebTree.rec_hit->GetSumEt(0)/ebTree.rec_hit->GetNhits();
+                    type_name = "Nhits";
+                    break;
+                }
+            }
+            else
+                ebICs[iFile][index] = 0;
             if(iFile==0)
                 ebMap[index] = make_pair(ebTree.ieta<0 ? ebTree.ieta+85 : ebTree.ieta+84, ebTree.iphi);
         }
@@ -46,7 +75,22 @@
         while(eeTree.NextEntry())
         {
             ++index;
-            eeICs[iFile][index] = eeTree.ic_ch;
+            if(eeTree.rec_hit->GetNhits() > 0)
+            {
+                switch(type)
+                {
+                case 0:
+                    eeICs[iFile][index] = eeTree.ic_ch;                    
+                case 1:
+                    eeICs[iFile][index] = eeTree.rec_hit->GetSumEt();                         
+                case 2:
+                    eeICs[iFile][index] = eeTree.rec_hit->GetLCSum();     
+                case 3:
+                    eeICs[iFile][index] = eeTree.rec_hit->GetSumEt(0)/eeTree.rec_hit->GetNhits();
+                }
+            }
+            else
+                eeICs[iFile][index] = 0;
             if(iFile==0)
             {
                 eeMap[index] = eeTree.iring<0? eeTree.iring+39 : eeTree.iring+38;
@@ -56,7 +100,7 @@
 
         file->Close();
     }
-    TFile* outFile = new TFile("ic_ratios_vs_time.root", "RECREATE");
+    TFile* outFile = new TFile(string(type_name+"_ratios_vs_time.root").c_str(), "RECREATE");
     outFile->cd();
     //---EB
     // TH2F* mapAbsEB[70];
@@ -144,8 +188,12 @@
             }       
         }
         //---EB
-        // tmpAbsEB->Fit(fitFuncAbsEB, "OQ");
-        // tmpRelEB->Fit(fitFuncRelEB, "OQ");
+        float mapAbsEB_range[2];
+        float mapRelEB_range[2];
+        float mapAbsEE_range[2];
+        float mapRelEE_range[2];                                
+        if(iFile==1)
+            map_range
         hAbsEB->Fill(fitFuncAbsEB->GetParameter(2));
         grAbsEB->SetPoint(iFile-1, iFile, tmpAbsEB->GetRMS());
         grAbsEB->SetPointError(iFile-1, 0, tmpAbsEB->GetRMSError());
@@ -153,9 +201,9 @@
         grRelEB->SetPoint(iFile-1, iFile, tmpRelEB->GetRMS());
         grRelEB->SetPointError(iFile-1, 0, tmpRelEB->GetRMSError());
         tmpAbsEB->Write(string("AbsEB_"+to_string(iFile)).c_str());
-        tmpRelEB->Write(string("RelEB_"+to_string(iFile)).c_str());
-        mapAbsEB->SetAxisRange(0.98, 1.02, "Z");
-        mapRelEB->SetAxisRange(0.98, 1.02, "Z");
+        tmpRelEB->Write(string("RelEB_"+to_string(iFile)).c_str());        
+        mapAbsEB->SetAxisRange(0.99, 1.01, "Z");
+        mapRelEB->SetAxisRange(0.99, 1.01, "Z");
         mapAbsEB->Write(string("mapAbsEB_"+to_string(iFile)).c_str());
         mapRelEB->Write(string("mapRelEB_"+to_string(iFile)).c_str());
         tmpAbsEB->Delete();
@@ -163,8 +211,6 @@
         mapAbsEB->Delete();
         mapRelEB->Delete();
         //---EE
-        // tmpAbsEE->Fit(fitFuncAbsEE, "OQ");
-        // tmpRelEE->Fit(fitFuncRelEE, "OQ");
         hAbsEE->Fill(fitFuncAbsEE->GetParameter(2));
         grAbsEE->SetPoint(iFile-1, iFile, tmpAbsEE->GetRMS());
         grAbsEE->SetPointError(iFile-1, 0, tmpAbsEE->GetRMSError());

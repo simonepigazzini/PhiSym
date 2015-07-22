@@ -42,7 +42,7 @@ process.IOVBounds = cms.PSet(
 )
 
 process.ioFilesOpt = cms.PSet(    
-    outputFile = cms.string('summed_noSumEtBounds'),
+    outputFile = cms.string('summed_'),
     
     #oldConstantsFiles = cms.vstring(),
     oldConstantsFiles = cms.vstring('/afs/cern.ch/work/s/spigazzi/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2012D_newThr.dat'),

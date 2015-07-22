@@ -338,7 +338,7 @@ void ComputeICs()
             outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];            
             outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
             outFile_->ee_xstals.ic_ring_err = eeICRingErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ring);
-            outFile_->ee_xstals.ic_err_sys = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
+            outFile_->ee_xstals.ic_err_sys = eeOldICsErr_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
             outFile_->ee_xstals.Fill();
         }
     }
@@ -431,6 +431,22 @@ void ReadAbsICs(string name)
     absICs.close();
 
     return;
+}
+
+//----------compute std::vector averages in a selected range------------------------------
+pair<float, float> VectorMeanRMS(vector<float>& sumEts, int low, int high)
+{
+    float sum=0;
+    float sum2=0;
+    int n=0;
+    for(int i=low; i<high; ++i)
+    {
+        sum += sumEts[i];
+        sum2 += sumEts[i]*sumEts[i];
+        ++n;
+    }
+
+    return make_pair(sum/n, sqrt(sum2/n - sum*sum/(n*n)));
 }
 
 //**********MAIN**************************************************************************
@@ -686,15 +702,20 @@ int main( int argc, char *argv[] )
         for(int iRing=0; iRing<kNRingsEB; ++iRing)
         {
             sort(ebRingsSumEts[iRing].begin(), ebRingsSumEts[iRing].end());
-            float sum=0,sum2=0,n=0;
-            for(int iCh=0; iCh<(int)ebRingsSumEts[iRing].size(); ++iCh)
+            float mean=-1;
+            float rms=-1;
+            for(int iRm=0; iRm<(int)ebRingsSumEts[iRing].size()/2; ++iRm)
             {
-                sum += ebRingsSumEts[iRing].at(iCh);
-                sum2 += ebRingsSumEts[iRing].at(iCh)*ebRingsSumEts[iRing].at(iCh);
-                n = n+1;
+                pair<float, float> tmp = VectorMeanRMS(ebRingsSumEts[iRing],
+                                                       iRm, ebRingsSumEts[iRing].size()-1-iRm);
+                if(mean == -1 || fabs(mean-tmp.first)/mean>0.0005)
+                {
+                    mean = tmp.first;
+                    rms = tmp.second;
+                }
+                else
+                    break;
             }
-            float mean = sum/n;
-            float rms = sqrt(sum2/n - mean*mean);
             //---sumEt cuts
             ebSumEtCuts_[iRing][0] = mean-2*rms;
             ebSumEtCuts_[iRing][1] = mean+2*rms;
@@ -710,15 +731,20 @@ int main( int argc, char *argv[] )
         for(int iRing=0; iRing<kNRingsEE; ++iRing)
         {
             sort(eeRingsSumEts[iRing].begin(), eeRingsSumEts[iRing].end());
-            float sum=0,sum2=0,n=0;
-            for(int iCh=0; iCh<(int)eeRingsSumEts[iRing].size(); ++iCh)
+            float mean=-1;
+            float rms=-1;
+            for(int iRm=0; iRm<(int)eeRingsSumEts[iRing].size()/2; ++iRm)
             {
-                sum += eeRingsSumEts[iRing].at(iCh);
-                sum2 += eeRingsSumEts[iRing].at(iCh)*eeRingsSumEts[iRing].at(iCh);
-                n = n+1;
+                pair<float, float> tmp = VectorMeanRMS(eeRingsSumEts[iRing],
+                                                       iRm, eeRingsSumEts[iRing].size()-1-iRm);
+                if(mean == -1 || fabs(mean-tmp.first)/mean>0.001)
+                {
+                    mean = tmp.first;
+                    rms = tmp.second;
+                }
+                else
+                    break;
             }
-            float mean = sum/n;
-            float rms = sqrt(sum2/n - mean*mean);
             //---sumEt cuts
             eeSumEtCuts_[iRing][0] = mean-2*rms;
             eeSumEtCuts_[iRing][1] = mean+2*rms;
@@ -726,45 +752,45 @@ int main( int argc, char *argv[] )
 
         //---remove bad crystals from the ring sums
         //---EB
-        // for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
-        // {
-        //     int currentRing = ebRingsMap_[index];
-        //     if(currentRing > -1 &&
-        //        (ebXstals_[index].GetSumEt() < ebSumEtCuts_[currentRing][0] ||
-        //         ebXstals_[index].GetSumEt() > ebSumEtCuts_[currentRing][1]))
-        //     {
-        //         EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
-        //         ebRingsSumEt2_[currentRing] -= ebXstals_[index].GetSumEt2();
-        //         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-        //         {
-        //             if(ebXstals_[index].GetSumEt(iMis) > 0)
-        //             {
-        //                 ebRingsSumEt_[currentRing][iMis] -= ebXstals_[index].GetSumEt(iMis);
-        //                 goodXstalsEB_[currentRing][ebXstal.iphi()][iMis]=0;
-        //             }
-        //         }
-        //     }
-        // }
-        // //---EE
-        // for(int index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
-        // {
-        //     int currentRing = eeRingsMap_[index];
-        //     if(currentRing > -1 &&
-        //        (eeXstals_[index].GetSumEt() < eeSumEtCuts_[currentRing][0] ||
-        //         eeXstals_[index].GetSumEt() > eeSumEtCuts_[currentRing][1]))
-        //     {
-        //         EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
-        //         eeRingsSumEt2_[currentRing] -= eeXstals_[index].GetSumEt2();
-        //         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-        //         {
-        //             if(eeXstals_[index].GetSumEt(iMis) > 0)
-        //             {
-        //                 eeRingsSumEt_[currentRing][iMis] -= eeXstals_[index].GetSumEt(iMis);
-        //                 goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][iMis]=0;
-        //             }
-        //         }
-        //     }
-        // }
+        for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
+        {
+            int currentRing = ebRingsMap_[index];
+            if(currentRing > -1 &&
+               (ebXstals_[index].GetSumEt() < ebSumEtCuts_[currentRing][0] ||
+                ebXstals_[index].GetSumEt() > ebSumEtCuts_[currentRing][1]))
+            {
+                EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
+                ebRingsSumEt2_[currentRing] -= ebXstals_[index].GetSumEt2();
+                for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+                {
+                    if(ebXstals_[index].GetSumEt(iMis) > 0)
+                    {
+                        ebRingsSumEt_[currentRing][iMis] -= ebXstals_[index].GetSumEt(iMis);
+                        goodXstalsEB_[currentRing][ebXstal.iphi()][iMis]=0;
+                    }
+                }
+            }
+        }
+        //---EE
+        for(int index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
+        {
+            int currentRing = eeRingsMap_[index];
+            if(currentRing > -1 &&
+               (eeXstals_[index].GetSumEt() < eeSumEtCuts_[currentRing][0] ||
+                eeXstals_[index].GetSumEt() > eeSumEtCuts_[currentRing][1]))
+            {
+                EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
+                eeRingsSumEt2_[currentRing] -= eeXstals_[index].GetSumEt2();
+                for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+                {
+                    if(eeXstals_[index].GetSumEt(iMis) > 0)
+                    {
+                        eeRingsSumEt_[currentRing][iMis] -= eeXstals_[index].GetSumEt(iMis);
+                        goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][iMis]=0;
+                    }
+                }
+            }
+        }
         
         //---compute k-fact and ICs for this IOV
         ComputeICs();

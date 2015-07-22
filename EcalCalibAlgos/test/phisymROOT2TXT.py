@@ -101,9 +101,11 @@ print "# status = used/unused (1/0) in ring sumEt avarage computation, or bad ch
 print "# ieta(ix) -- iphi(iy) -- zside -- IC -- IC_err -- IC_err_stat -- IC_err_sys -- status -- n_hits -- k-factor"
     
 for index in range(61200):    
-    if ebIC[index] == -999:
+    if ebIC[index] == -999 or ebN[index]==0 or ebIC[index] <= 0:
         ebIC[index] = -1
         status = -1
+        ebICerr[index] = 999
+        ebICsys[index] = 999
     else:
         status = 1
 
@@ -117,9 +119,11 @@ for index in range(61200):
     print status, ebN[index], ebK[index]
 
 for index in range(14648):    
-    if eeIC[index] == -999:
+    if eeIC[index] == -999 or ebN[index]==0 or eeIC[index] <= 0:
         eeIC[index] = -1
         status = -1
+        eeICerr[index] = 999
+        eeICsys[index] = 999
     else:
         status = 1
         
