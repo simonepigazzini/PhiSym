@@ -97,11 +97,12 @@ while eeTree.NextEntry():
     eeK[index] = eeTree.k_ch
     eeN[index] = eeTree.rec_hit.GetNhits()
 
+print "f"
 print "# status = used/unused (1/0) in ring sumEt avarage computation, or bad channel (-1)"
 print "# ieta(ix) -- iphi(iy) -- zside -- IC -- IC_err -- IC_err_stat -- IC_err_sys -- status -- n_hits -- k-factor"
     
 for index in range(61200):    
-    if ebIC[index] == -999 or ebN[index]==0 or ebIC[index] <= 0:
+    if ebN[index]==0 or ebIC[index] <= 0:
         ebIC[index] = -1
         status = -1
         ebICerr[index] = 999
@@ -119,7 +120,7 @@ for index in range(61200):
     print status, ebN[index], ebK[index]
 
 for index in range(14648):    
-    if eeIC[index] == -999 or ebN[index]==0 or eeIC[index] <= 0:
+    if ebN[index]==0 or eeIC[index] <= 0:
         eeIC[index] = -1
         status = -1
         eeICerr[index] = 999

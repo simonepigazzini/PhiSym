@@ -45,22 +45,8 @@ process.source = cms.Source("PoolSource",
                                 'drop *_hltTriggerSummaryAOD_*_*'
                             ),
                             fileNames = cms.untracked.vstring(
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/795/00000/E001FA5B-D510-E511-A5B8-02163E0135FD.root")
-                            #'/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/908/00000/7E213B41-2F0A-E511-9261-02163E011D69.root')
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/04281A56-F509-E511-8C9A-02163E0143C5.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/0657B565-EC09-E511-825B-02163E011DC2.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/18766157-F509-E511-93A8-02163E011DE4.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/1A16BC83-F909-E511-B17C-02163E011B6D.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/2235CE58-F509-E511-804E-02163E013826.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/368DD35A-F509-E511-BAD4-02163E011891.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/3ECCF956-F509-E511-8E13-02163E011DE4.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/66007B5B-F509-E511-A910-02163E014349.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/6ABBFC56-F509-E511-8AF7-02163E01396D.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/AE98FA5A-F509-E511-A205-02163E0142B3.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/F098F257-F509-E511-9270-02163E012124.root',
-                            # '/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/919/00000/FA57815A-F509-E511-86CD-02163E011B82.root')
-                            #'/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/246/920/00000/F082B567-DE09-E511-B94D-02163E011D50.root')
+                                #"root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root",
+                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root",
 )
 
 # Production Info
