@@ -3,8 +3,7 @@
 	AutoLibraryLoader::enable();
 	gSystem->Load("libDataFormatsFWLite.so");
 	gSystem->Load("libDataFormatsPatCandidates.so");
-        gSystem->Load("libPhiSymEcalCalibDataFormats.so");
-
+        gSystem->Load("libPhiSymEcalCalibDataFormats.so");        
 
         Int_t MyPalette[200];
         Double_t red[9]   = {  0./255.,   5./255.,  15./255.,  35./255., 102./255., 196./255., 208./255., 199./255., 110./255.};

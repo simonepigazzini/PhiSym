@@ -292,8 +292,8 @@ void ComputeICs()
         {
             //---fill the output tree
             outFile_->eb_xstals.n_events = nEvents_;
-            // outFile_->eb_xstals.bounds[0] = ebSumEtCuts_[currentRing][0];
-            // outFile_->eb_xstals.bounds[1] = ebSumEtCuts_[currentRing][1];
+            outFile_->eb_xstals.bounds[0] = ebSumEtCuts_[currentRing][0];
+            outFile_->eb_xstals.bounds[1] = ebSumEtCuts_[currentRing][1];
             outFile_->eb_xstals.rec_hit = &ebXstals_[index];
             outFile_->eb_xstals.ieta = ebXstal.ieta();
             outFile_->eb_xstals.iphi = ebXstal.iphi();

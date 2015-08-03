@@ -135,6 +135,7 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     tree_->SetBranchAddress("block", &block);
     tree_->SetBranchAddress("n_lumis", &n_lumis);
     tree_->SetBranchAddress("n_events", &n_events);
+    tree_->SetBranchAddress("bounds", &bounds[0]);
     tree_->SetBranchAddress("rec_hit", &rec_hit);
     tree_->SetBranchAddress("ieta", &ieta);
     tree_->SetBranchAddress("iphi", &iphi);
