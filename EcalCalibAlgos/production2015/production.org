@@ -10,21 +10,26 @@
 |          | PhiSym2015B_v4    |             |                      |                    |
 | 22-07-15 | PhiSym2015B_v5    | Run2015B_v6 | Run2015B_160715.json | CMSSW_7_4_6_patch6 |
 | 23-07-15 | PhiSym2015A_v3    | Run2015B_v6 | Run2015A_all.json    | CMSSW_7_4_6_patch6 |
+| 24-08-15 | PhiSym2015A_v4    | Run2015B_v6 | Run2015A_all.json    | CMSSW_7_4_6_patch6 |
 |          |                   |             |                      |                    |
 
 * Dataset table -> das convertion
 + PhiSym2015A_v1 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741-weights-_GR_P_V56-Run2015A_v1-d1d8759b5763650129fcdb1ec58b4e6a/
-   + probably wrong EE rings definition
+  + probably wrong EE rings definition
 + PhiSym2015A_v2 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741-multifit-_GR_P_V56-Run2015A_v1-aa6d0f694fbde2c60e6338a92e82f36e/USER
-   + probably wrong EE rings definition
+  + probably wrong EE rings definition
 + PhiSym2015B_v1 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741-weights-GR_P_V56-Run2015B_v1-e3b4bffc2242645ab4214de910b2af8d/USER
-   + wrong EE rings + limited production with bad runs (laser tag not up-to-date)
+  + wrong EE rings + limited production with bad runs (laser tag not up-to-date)
 + PhiSym2015B_v2 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_746-weights-74X_dataRun2_Prompt_v0-Run2015B_v1-88e4d50a7b392b21c3a58fbe75490b08/USER
-   + fixed lasar issue
-   + new realese and GT (no effect expected for PhiSym)
-   + bad EE rings definition discovered
+  + fixed lasar issue
+  + new realese and GT (no effect expected for PhiSym)
+  + bad EE rings definition discovered
 + PhiSym2015B_v5 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_746-weights-74X_dataRun2_Prompt_v0-Run2015B_v5-ea1e65ac5aab8e5b8c90d76058f5919b/USER
-   + 2015B production with ic tag from 2012: EcalIntercalibCostants_2012ABCD_offline
+  + 2015B production with ic tag from 2012: EcalIntercalibCostants_2012ABCD_offline
 + PhiSym2015A_v3 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_741-multifit-GR_P_V56-Run2015A_all_v3-ea1e65ac5aab8e5b8c90d76058f5919b/USER
-   + 2015B production with ic tag from 2012: EcalIntercalibCostants_2012ABCD_offline
-   + NOTE: the name that is misleading the data are reconstructed with "weights" not "multifit" and 74X_dataRun2_Prompt_v0 GT 
+  + 2015B production with ic tag from 2012: EcalIntercalibCostants_2012ABCD_offline
+  + NOTE: the name that is misleading the data are reconstructed with "weights" not "multifit" and 74X_dataRun2_Prompt_v0 GT 
++ PhiSym2015A_v4 = /AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_746-weights_thr600-74X_dataRun2_Prompt_v0-Run2015A_v1-610d0b8f057daf960c912e30c0687068/USER
+  + same as _v3 but with higher Et thresolds in EB: 0.6 GeV
+  + goal is to check the material correction in the region |ieta|>60
+  + problems may arise from different material, e.g. transition from TB to TE or from lower noise in the foward region

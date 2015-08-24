@@ -1,5 +1,5 @@
 {
-    string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root";
+    string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root";
     
     gSystem->Load("libFWCoreFWLite.so"); 
     AutoLibraryLoader::enable();

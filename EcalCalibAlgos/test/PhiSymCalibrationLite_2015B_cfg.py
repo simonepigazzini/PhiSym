@@ -52,7 +52,7 @@ process.ioFilesOpt = cms.PSet(
         "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/phisym_intercalibs_1000blocks_20.root",
         "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/phisym_intercalibs_1000blocks_9.root",        
         "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/phisym_intercalibs_1000blocks_15.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/phisym_intercalibs_1000blocks_3.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/phisym_intercalibs_1000blocks_3.root"
         
         # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/phisym_intercalibs_1000blocks_1.root",
         # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/phisym_intercalibs_1000blocks_10.root",
@@ -74,7 +74,6 @@ process.ioFilesOpt = cms.PSet(
         # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/phisym_intercalibs_1000blocks_7.root",
         # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/phisym_intercalibs_1000blocks_8.root",
         # "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v4/phisym_intercalibs_1000blocks_9.root"
-
         ])
 )
 

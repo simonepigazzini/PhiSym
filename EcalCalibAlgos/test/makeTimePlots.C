@@ -1,9 +1,9 @@
 {
     string type_name;
-    // int type=0; //IC
+    int type=0; //IC
     // int type=1; // LC
     // int type=2; // SumEt
-    int type=3; //Nhits/Nhits_tot
+    // int type=3; //Nhits/Nhits_tot
     // int type=4; //k-factors
             
     gSystem->Load("libFWCoreFWLite.so"); 
@@ -13,8 +13,8 @@
     gSystem->Load("libPhiSymEcalCalibDataFormats.so");
 
     vector<string> files={
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/newThr_2012D/summed_208538_208686.root",
-        //"$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root",
+        //"$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/newThr_2012D/summed_208538_208686.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root",
         "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251244_251244.root",
         "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251251_251251.root",
         "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251252_251252.root",

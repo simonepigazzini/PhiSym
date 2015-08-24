@@ -3,7 +3,7 @@ from WMCore.Configuration import Configuration
 config = Configuration()
 
 config.section_('General')
-config.General.requestName     = 'PHISYM-CMSSW_741-multifit-GR_P_V56-Run2015A_all_v3'
+config.General.requestName     = 'PHISYM-CMSSW_746-weights_thr600-74X_dataRun2_Prompt_v0-Run2015A_v1'
 config.General.transferLogs    = True
 config.General.transferOutputs = True
 

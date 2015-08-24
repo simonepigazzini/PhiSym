@@ -11,4 +11,8 @@
       name="PhiSymCalibrationLite"
       file="PhiSymCalibrationLite.cc">
   </bin>
+  <bin
+      name="MaterialCorrection"
+      file="MaterialCorrection.cc">
+  </bin>
 </environment>

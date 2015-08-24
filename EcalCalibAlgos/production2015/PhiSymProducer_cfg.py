@@ -45,9 +45,9 @@ process.source = cms.Source("PoolSource",
                                 'drop *_hltTriggerSummaryAOD_*_*'
                             ),
                             fileNames = cms.untracked.vstring(
-                                #"root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root",
-)
+                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root"
+                                #"root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root",
+))
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -96,6 +96,7 @@ if (not runMultiFit):
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
+process.PhiSymProducer.eThreshold_barrel = 0.6
 #process.PhiSymProducer.makeSpectraTreeEB = True
 #process.PhiSymProducer.makeSpectraTreeEE = True
 
