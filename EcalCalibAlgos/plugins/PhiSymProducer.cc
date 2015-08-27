@@ -79,7 +79,6 @@ private:
     int            lumisToSum_;
     int            statusThreshold_;
     int            nLumis_;
-    bool           applyEtThreshold_;
     //---geometry
     EcalRingCalibrationTools       calibRing_;
     static const short             kNRingsEB = EcalRingCalibrationTools::N_RING_BARREL;
@@ -118,7 +117,6 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     lumisToSum_(pSet.getParameter<int>("lumisToSum")),
     statusThreshold_(pSet.getParameter<int>("statusThreshold")),
     nLumis_(0),
-    applyEtThreshold_(pSet.getParameter<bool>("applyEtThreshold")),
     makeSpectraTreeEB_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEB")),
     makeSpectraTreeEE_(pSet.getUntrackedParameter<bool>("makeSpectraTreeEE"))
 {    
@@ -220,7 +218,6 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
                 etCutsEB_[ring] = eThresholdEB_/cosh(eta) + etCutEB_;
             }
         }
-        cout << kNRingsEE << endl;
 	for(auto& eeDetId : endcapDetIds)
         {
 	    EEDetId myId(eeDetId);
@@ -283,7 +280,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     {
         float energy = recHit.energy();
         //---if recHit energy is below thr even with the highest miscalib skip this recHit
-        if(energy*misCalibRangeEB_[1] < eThresholdEB_)
+        if(energy*misCalibRangeEB_[1] < eThresholdEB_ && !makeSpectraTreeEB_)
             continue;
 
         //---check channel status
@@ -344,7 +341,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         int ring = calibRing_.getRingIndex(eeHit) - kNRingsEB;
         float energy = recHit.energy();
         //---if recHit energy is below thr even with the highest miscalib skip this recHit
-        if(energy*misCalibRangeEE_[1] < eThresholdsEE_[ring])
+        if(energy*misCalibRangeEE_[1] < eThresholdsEE_[ring] && makeSpectraTreeEE_)
             continue;
 
         //---check channel status

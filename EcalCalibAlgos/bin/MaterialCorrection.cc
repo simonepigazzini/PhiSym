@@ -61,8 +61,9 @@ pair<float, float> IterativeCut(vector<float>& ics, int low, int high, double ep
 //**********MAIN**************************************************************************
 int main(int argc, char *argv[])
 {
-    //string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root";
-    string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root";
+    string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root";
+    //string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_thr600_v1/summed_250866_250866.root";
+    //string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root";
 
     AutoLibraryLoader::enable();        
     gSystem->Load("libFWCoreFWLite.so"); 
@@ -291,6 +292,8 @@ int main(int argc, char *argv[])
         corr_syst_pull->Fill(ebm_corr_diff[iphi-1]/ebm_corr_diff_err[iphi-1]);            
     }    
 
+    //---generate txt corrections file
+    ofstream outTxtFile("geo_and_material_corr.txt", ios::out);
     for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
         double correction=corrections[index];
@@ -299,10 +302,12 @@ int main(int argc, char *argv[])
         map_ic_uncorr->Fill(ebMap[index].second, ebMap[index].first, ic_uncorr[index]);
         map_ic_corr->Fill(ebMap[index].second, ebMap[index].first, ic_uncorr[index]*correction);
         map_corrections->Fill(ebMap[index].second, ebMap[index].first, correction);
+        outTxtFile << ebMap[index].first << "   " << ebMap[index].second << "   0   " << correction << endl;
     }
+    outTxtFile.close();
 
     //---output plots
-    TFile* outFile = TFile::Open("geo_and_meterial_corr.root", "RECREATE");
+    TFile* outFile = TFile::Open("geo_and_material_corr.root", "RECREATE");
     outFile->cd();
     //---style
     gr_uncorr_EBm->SetTitle("PhiSym IC vs phi - uncorrectred;#it{i#phi};#it{IC}");

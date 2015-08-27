@@ -136,8 +136,8 @@ maps["EEm_ratio_ic_ch"]=ROOT.TH2F("map_EEm_ratio_ic_ch", "IC_{ch}-2015 / IC-2012
 
 ## VARIABLES map
 varReMap={}
-varReMap["err_ic_ch"]="ic_ch_err/ic_ch"
-varReMap["err_ic_ring"]="ic_ring_err/ic_ring"
+varReMap["err_ic_ch"]="ic_ch_err*ic_ch"
+varReMap["err_ic_ring"]="ic_ring_err*ic_ring"
 
 ## geometrical corr
 ones = [1 for i in range (61200)]
@@ -153,7 +153,7 @@ while ebTree.NextEntry():
         continue
     ebUnCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]=(ebTree.ic_ch)    
     ebOldIC[str(ebTree.ieta)].Fill(ebTree.ic_old)
-    ebAbsIC[str(ebTree.ieta)].Fill(ebTree.ic_abs/ebTree.ic_ch)
+    ebAbsIC[str(ebTree.ieta)].Fill(ebTree.ic_abs*ebTree.ic_ch)
 
 diffp,rmsp,diffm,rmsm= calculatedifferences(ebUnCorrIC, ones)
 geoCorrIC = applycorrections(ebUnCorrIC, diffp, diffm)
@@ -182,18 +182,18 @@ while ebTree.NextEntry():
     maps["EB_k_diff"].Fill(ebTree.iphi, ebTree.ieta, (ebTree.k_ch-ebTree.k_ring)/ebTree.k_ring)
     maps["EB_n_hits"].Fill(ebTree.iphi, ebTree.ieta, ebTree.rec_hit.GetNhits()/ebTree.n_lumis)
     if ebTree.ic_old != 0 and ebTree.ic_ch != 0:
-        abs_ic_norm = ebTree.ic_abs/ebTree.ic_ch/ebICCorrAbs[str(ebTree.ieta)]
+        abs_ic_norm = ebTree.ic_abs*ebTree.ic_ch/ebICCorrAbs[str(ebTree.ieta)]
         old_ic_norm = ebTree.ic_old/ebICCorrOld[str(ebTree.ieta)]
         maps["EB_old_ic"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_old)
-        maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/ebTree.ic_ring/ebTree.ic_old)
+        maps["EB_ratio_ic_ring"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs*ebTree.ic_ring/ebTree.ic_old)
         maps["EB_ratio_ic_ch"].Fill(ebTree.iphi, ebTree.ieta, abs_ic_norm/old_ic_norm) 
-        maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/
+        maps["EB_ratio_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs*geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/
                                          ebTree.ic_old)
-        maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])
-        histos["EB_ic_ch"].Fill(ebTree.ic_abs/ebTree.ic_ch)
-        histos["EB_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])    
+        maps["EB_ic_ch_corr"].Fill(ebTree.iphi, ebTree.ieta, ebTree.ic_abs*geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])
+        histos["EB_ic_ch"].Fill(ebTree.ic_abs*ebTree.ic_ch)
+        histos["EB_ic_ch_corr"].Fill(ebTree.ic_abs*geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)])    
         histos["EB_ratio_ic_ch"].Fill(abs_ic_norm/old_ic_norm)
-        histos["EB_ratio_ic_ch_corr"].Fill(ebTree.ic_abs/geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
+        histos["EB_ratio_ic_ch_corr"].Fill(ebTree.ic_abs*geoCorrIC[hashedIndex(ebTree.ieta, ebTree.iphi)]/ebTree.ic_old)
 
 # profiles
 tmpHisto=ROOT.TH1F("tmp", "tmp", 1000, -100, 100)
@@ -244,10 +244,10 @@ while eeTree.NextEntry():
     maps[subdet+"k_diff"].Fill(eeTree.ix, eeTree.iy, (eeTree.k_ch-eeTree.k_ring)/eeTree.k_ring)
     maps[subdet+"n_hits"].Fill(eeTree.ix, eeTree.iy, eeTree.rec_hit.GetNhits())#/eeTree.n_lumis)
     if eeTree.ic_old>0 :
-        maps[subdet+"ratio_ic_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs/eeTree.ic_ring/eeTree.ic_old)
-        maps[subdet+"ratio_ic_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs/eeTree.ic_ch/eeTree.ic_old)
-        histos["EE_ic_ch"].Fill(eeTree.ic_abs/eeTree.ic_ch)
-        histos["EE_ratio_ic_ch"].Fill(eeTree.ic_abs/eeTree.ic_ch/eeTree.ic_old)
+        maps[subdet+"ratio_ic_ring"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs*eeTree.ic_ring/eeTree.ic_old)
+        maps[subdet+"ratio_ic_ch"].Fill(eeTree.ix, eeTree.iy, eeTree.ic_abs*eeTree.ic_ch/eeTree.ic_old)
+        histos["EE_ic_ch"].Fill(eeTree.ic_abs*eeTree.ic_ch)
+        histos["EE_ratio_ic_ch"].Fill(eeTree.ic_abs*eeTree.ic_ch/eeTree.ic_old)
 
 ## DRAW PLOTS ##    
 # Define z-axis ranges: with regexp matching ;)

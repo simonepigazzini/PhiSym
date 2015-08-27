@@ -2,7 +2,7 @@ from WMCore.Configuration import Configuration
 
 config = Configuration()
 config.section_('General')
-config.General.requestName = 'PHISYM-CMSSW_741_FAST-GR_P_V56-Run2012C_Boff_v1'
+config.General.requestName = 'PHISYM-CMSSW_746-74X_dataRun2_Prompt_v0-Run2012C_Boff_v1'
 config.General.transferLogs = True
 config.General.transferOutputs = True
 config.section_('JobType')
@@ -19,7 +19,7 @@ config.Data.inputDataset = '/AlCaPhiSym/Run2012C-v1/RAW'
 #config.Data.useParent = True
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
-config.Data.lumiMask = 'Run2012D_0T.json'
+config.Data.lumiMask = 'Run2012C_0T.json'
 config.Data.unitsPerJob = 100
 config.Data.totalUnits = -1
 config.Data.publication = True

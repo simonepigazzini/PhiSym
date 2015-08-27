@@ -48,7 +48,7 @@
             switch(type)
             {
             case 0:
-                ebVar[iFile][index] = 1/ebTree.ic_ch;
+                ebVar[iFile][index] = ebTree.ic_ch;
                 type_name = "IC";
                 break;
             case 1:                
@@ -78,7 +78,7 @@
             switch(type)
             {
             case 0:
-                eeVar[iFile][index] = 1/eeTree.ic_ch;
+                eeVar[iFile][index] = eeTree.ic_ch;
                 type_name = "IC";
                 break;
             case 1:                

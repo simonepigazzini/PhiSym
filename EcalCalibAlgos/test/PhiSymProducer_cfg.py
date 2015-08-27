@@ -29,7 +29,7 @@ process.MessageLogger.cerr.default = cms.untracked.PSet(
 
 # import of standard configurations
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(300000)
 )
 
 # skip bad events
@@ -48,35 +48,35 @@ process.source = cms.Source("PoolSource",
                                 #"root://cmsxrootd-site.fnal.gov//store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root",
                                 #"root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root"
 
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/141BB8BB-8928-E511-A6C6-02163E011B19.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/143169BD-8928-E511-9223-02163E0126E1.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/141BB8BB-8928-E511-A6C6-02163E011B19.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/143169BD-8928-E511-9223-02163E0126E1.root",
                                 "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/1A616841-7128-E511-837E-02163E0138B3.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/226B28BB-8928-E511-A130-02163E0133D1.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/26DE7ABA-8928-E511-9718-02163E01412F.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/28520B3B-7128-E511-B938-02163E013674.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/36EE68BB-8928-E511-A60E-02163E013901.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/3AA78CBC-8928-E511-B690-02163E014531.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/40073738-7128-E511-B7DF-02163E011A46.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/4CBE81BC-8928-E511-AB82-02163E012965.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/52044E3A-7128-E511-93B9-02163E012BD2.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/541653BD-8928-E511-B6FD-02163E012283.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/5EABF842-6528-E511-8BDF-02163E011D88.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/64DEFF48-6528-E511-8CF8-02163E011DCE.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/686420CA-8928-E511-98E4-02163E011DDE.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/68EF982E-4F28-E511-94C1-02163E0133F2.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/6A593EB5-8928-E511-875E-02163E01192D.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/76A185BA-8928-E511-A817-02163E01416E.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/7CAA69BD-8928-E511-9438-02163E013406.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/96D53EBC-8928-E511-B0B0-02163E0134FD.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/9CF4BE3E-7128-E511-98C0-02163E0127D3.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/A2D7D6BB-8928-E511-935D-02163E0141EF.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/AAC052D1-8928-E511-AA97-02163E014629.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/AC2028BD-8928-E511-9EFE-02163E012AA4.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/BE0CB3BB-8928-E511-B062-02163E012601.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/CAB0F4BA-8928-E511-9772-02163E0117FF.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/CC009E3C-7128-E511-911C-02163E011D23.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/FC9B1038-6528-E511-BB04-02163E0139A2.root",
-                                "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/FE3699BB-8928-E511-B0B2-02163E011B42.root"
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/226B28BB-8928-E511-A130-02163E0133D1.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/26DE7ABA-8928-E511-9718-02163E01412F.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/28520B3B-7128-E511-B938-02163E013674.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/36EE68BB-8928-E511-A60E-02163E013901.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/3AA78CBC-8928-E511-B690-02163E014531.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/40073738-7128-E511-B7DF-02163E011A46.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/4CBE81BC-8928-E511-AB82-02163E012965.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/52044E3A-7128-E511-93B9-02163E012BD2.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/541653BD-8928-E511-B6FD-02163E012283.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/5EABF842-6528-E511-8BDF-02163E011D88.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/64DEFF48-6528-E511-8CF8-02163E011DCE.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/686420CA-8928-E511-98E4-02163E011DDE.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/68EF982E-4F28-E511-94C1-02163E0133F2.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/6A593EB5-8928-E511-875E-02163E01192D.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/76A185BA-8928-E511-A817-02163E01416E.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/7CAA69BD-8928-E511-9438-02163E013406.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/96D53EBC-8928-E511-B0B0-02163E0134FD.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/9CF4BE3E-7128-E511-98C0-02163E0127D3.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/A2D7D6BB-8928-E511-935D-02163E0141EF.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/AAC052D1-8928-E511-AA97-02163E014629.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/AC2028BD-8928-E511-9EFE-02163E012AA4.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/BE0CB3BB-8928-E511-B062-02163E012601.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/CAB0F4BA-8928-E511-9772-02163E0117FF.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/CC009E3C-7128-E511-911C-02163E011D23.root",
+                                # "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/FC9B1038-6528-E511-BB04-02163E0139A2.root",
+                                #"root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/561/00000/FE3699BB-8928-E511-B0B2-02163E011B42.root"
                             )
 )
 
@@ -127,8 +127,9 @@ if (not runMultiFit):
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
+
 process.PhiSymProducer.makeSpectraTreeEB = True
-#process.PhiSymProducer.makeSpectraTreeEE = True
+process.PhiSymProducer.makeSpectraTreeEE = True
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(

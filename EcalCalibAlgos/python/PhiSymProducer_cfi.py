@@ -16,7 +16,6 @@ PhiSymProducer = cms.EDProducer(
     misCalibRangeEE = cms.vdouble(0.90, 1.10),
     lumisToSum = cms.int32(1),          
     statusThreshold = cms.int32(0),
-    applyEtThreshold = cms.bool(True),
     makeSpectraTreeEB = cms.untracked.bool(False),
     makeSpectraTreeEE = cms.untracked.bool(False)
 )

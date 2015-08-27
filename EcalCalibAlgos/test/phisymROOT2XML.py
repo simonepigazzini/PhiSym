@@ -1,7 +1,8 @@
-# import ROOT in batch mode
 from __future__ import division
+import lxml.etree as ET
 import sys
 import re
+import time
 import argparse
 oldargv = sys.argv[:]
 sys.argv = [ '-b-' ]
@@ -14,7 +15,9 @@ from PhiSym.EcalCalibAlgos.EcalCalibAnalysis import *
 parser = argparse.ArgumentParser (description = 'Dump PhiSym IC correction from a ROOT file')
 parser.add_argument('inputfile' , default="phisym_intercalibs.root", help='analyze this file')
 parser.add_argument('-b', '--block' , default=-1, type=int, help='analyze this block')
-parser.add_argument('-f', '--outputFile' , default=-1, type=int, help='store the ICs in this file')
+parser.add_argument('-v', '--version' , default=-1, type=int, help='ic version')
+parser.add_argument('-f', '--outputFile' , default="phisym_ic.xml", help='store the ICs in this file')
+parser.add_argument('-c', '--correctionsFile' , default="", help='load geo&material correction from this file')
 parser.add_argument('-k', '--kType' , default="ch", help='k-Factor computation type: ch / ring')
 parser.add_argument('--rel' , action="store_true", default=False, help='dump phisym ICs correction only')
 
@@ -42,6 +45,8 @@ ebICerr=[999 for i in range(61200)]
 eeICerr=[999 for i in range(14648)]
 ebICsys=[999 for i in range(61200)]
 eeICsys=[999 for i in range(14648)]
+ebCorr=[1 for i in range(61200)]
+eeCorr=[1 for i in range(14648)]
 
 #EB
 while ebTree.NextEntry():
@@ -95,18 +100,31 @@ while eeTree.NextEntry():
     eeK[index] = eeTree.k_ch
     eeN[index] = eeTree.rec_hit.GetNhits()
 
-print "f"
-print "# status = used/unused (1/0) in ring sumEt avarage computation, or bad channel (-1)"
-print "# ieta(ix) -- iphi(iy) -- zside -- IC -- IC_err -- IC_err_stat -- IC_err_sys -- status -- n_hits -- k-factor"
-    
+# read correction file if specified
+with open(opts.correctionsFile) as corrections:
+    channels = corrections.readlines()
+    for channel in channels:
+        tokens = channel.split()
+        if int(tokens[2]) == 0:
+            ebCorr[ROOT.EBDetId(int(tokens[0]), int(tokens[1])).hashedIndex()] = float(tokens[3])
+        else:
+            eeCorr[ROOT.EEDetId(int(tokens[0]), int(tokens[1]), int(tokens[2])).hashedIndex()] = float(tokens[3])
+
+# write the XML file
+container = ET.Element("EcalFloatCondObjectContainer")
+header = ET.SubElement(container, "EcalCondHeader")
+ET.SubElement(header, "method").text = "PhiSymmetry"
+ET.SubElement(header, "version").text = str(opts.version)
+ET.SubElement(header, "datasource").text = opts.inputfile
+ET.SubElement(header, "since").text = "1"
+ET.SubElement(header, "tag").text = "unknown"
+ET.SubElement(header, "date").text = time.strftime("%c")
+
 for index in range(61200):    
     if ebN[index]==0 or ebIC[index] <= 0:
         ebIC[index] = -1
-        status = -1
         ebICerr[index] = 999
         ebICsys[index] = 999
-    else:
-        status = 1
 
     ieta = ROOT.EBDetId(ROOT.EBDetId.detIdFromDenseIndex(index)).ieta()
     iphi = ROOT.EBDetId(ROOT.EBDetId.detIdFromDenseIndex(index)).iphi()
@@ -114,17 +132,15 @@ for index in range(61200):
         err = 999
     else:
         err = sqrt(ebICerr[index]*ebICerr[index] + ebICsys[index]*ebICsys[index])
-    print ieta, iphi, 0, "%.5f" % ebIC[index], "%.7f" % err, "%.7f" % ebICerr[index], "%.7f" % ebICsys[index],
-    print status, ebN[index], ebK[index]
+
+    cell = ET.SubElement(container, "cell", iEta=str(ieta), iPhi=str(iphi))
+    ET.SubElement(cell, "Value").text = str(ebIC[index]*ebCorr[index])
 
 for index in range(14648):    
     if ebN[index]==0 or eeIC[index] <= 0:
         eeIC[index] = -1
-        status = -1
         eeICerr[index] = 999
         eeICsys[index] = 999
-    else:
-        status = 1
         
     ix = ROOT.EEDetId(ROOT.EEDetId.detIdFromDenseIndex(index)).ix()
     iy = ROOT.EEDetId(ROOT.EEDetId.detIdFromDenseIndex(index)).iy()
@@ -133,6 +149,11 @@ for index in range(14648):
         err = 999
     else:
         err = sqrt(eeICerr[index]*eeICerr[index] + eeICsys[index]*eeICsys[index])
-    print ix, iy, zside, "%.5f" % eeIC[index], "%.7f" % err, "%.7f" % eeICerr[index], "%.7f" % eeICsys[index],
-    print status, eeN[index], eeK[index]
 
+    cell = ET.SubElement(container, "cell", ix=str(ix), iy=str(iy), zside=str(zside))
+    ET.SubElement(cell, "Value").text = str(eeIC[index])
+    
+# write the xml tree to tho out file
+out = open(opts.outputFile, "w")
+out.write(ET.tostring(container, pretty_print=True))
+out.close()

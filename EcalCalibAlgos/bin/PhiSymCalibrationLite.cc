@@ -301,14 +301,16 @@ void ComputeICs()
             outFile_->eb_xstals.k_ring_err = GetRingKfactor(currentRing, 0).second;
             outFile_->eb_xstals.k_ch = GetChannelKfactor(index, 0).first;
             outFile_->eb_xstals.k_ch_err = GetChannelKfactor(index, 0).second;
-            outFile_->eb_xstals.ic_ring = ((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                                           /outFile_->eb_xstals.k_ring+1)/icRMeanEB_[currentRing];
-            outFile_->eb_xstals.ic_ch = ((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                                         /outFile_->eb_xstals.k_ch+1)/icChMeanEB_[currentRing];
+            outFile_->eb_xstals.ic_ring = 1/(((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
+                                              /outFile_->eb_xstals.k_ring+1)/icRMeanEB_[currentRing]);
+            outFile_->eb_xstals.ic_ch = 1/(((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
+                                            /outFile_->eb_xstals.k_ch+1)/icChMeanEB_[currentRing]);
             outFile_->eb_xstals.ic_old = ebOldICs_[currentRing][ebXstal.iphi()];
             outFile_->eb_xstals.ic_abs = ebAbsICs_[currentRing][ebXstal.iphi()];
-            outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
             outFile_->eb_xstals.ic_ring_err = ebICRingErr_[currentRing]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ring);
+            outFile_->eb_xstals.ic_ring_err = outFile_->eb_xstals.ic_ring_err/pow(outFile_->eb_xstals.ic_ring, 2);
+            outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
+            outFile_->eb_xstals.ic_ch_err = outFile_->eb_xstals.ic_ch_err/pow(outFile_->eb_xstals.ic_ch, 2);
             outFile_->eb_xstals.ic_err_sys = ebOldICsErr_[currentRing][ebXstal.iphi()];
             outFile_->eb_xstals.Fill();
         }
@@ -330,14 +332,16 @@ void ComputeICs()
             outFile_->ee_xstals.k_ring_err = GetRingKfactor(currentRing, 1).second;
             outFile_->ee_xstals.k_ch = GetChannelKfactor(index, 1).first;
             outFile_->ee_xstals.k_ch_err = GetChannelKfactor(index, 1).second;
-            outFile_->ee_xstals.ic_ring = ((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                                           /outFile_->ee_xstals.k_ring+1)/icRMeanEE_[currentRing];
-            outFile_->ee_xstals.ic_ch = ((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                                         /outFile_->ee_xstals.k_ch+1)/icChMeanEE_[currentRing];
+            outFile_->ee_xstals.ic_ring = 1/(((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
+                                              /outFile_->ee_xstals.k_ring+1)/icRMeanEE_[currentRing]);
+            outFile_->ee_xstals.ic_ch = 1/(((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
+                                            /outFile_->ee_xstals.k_ch+1)/icChMeanEE_[currentRing]);
             outFile_->ee_xstals.ic_old = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
             outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];            
-            outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
             outFile_->ee_xstals.ic_ring_err = eeICRingErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ring);
+            outFile_->ee_xstals.ic_ring_err = outFile_->ee_xstals.ic_ring_err/pow(outFile_->ee_xstals.ic_ring, 2);
+            outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
+            outFile_->ee_xstals.ic_ch_err = outFile_->ee_xstals.ic_ch_err/pow(outFile_->ee_xstals.ic_ch, 2);
             outFile_->ee_xstals.ic_err_sys = eeOldICsErr_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
             outFile_->ee_xstals.Fill();
         }
