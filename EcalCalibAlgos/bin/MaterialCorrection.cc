@@ -61,16 +61,33 @@ pair<float, float> IterativeCut(vector<float>& ics, int low, int high, double ep
 //**********MAIN**************************************************************************
 int main(int argc, char *argv[])
 {
-    string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root";
-    //string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_thr600_v1/summed_250866_250866.root";
-    //string file_name = "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root";
-
     AutoLibraryLoader::enable();        
     gSystem->Load("libFWCoreFWLite.so"); 
     gSystem->Load("libDataFormatsFWLite.so");
     gSystem->Load("libDataFormatsEcalDetId.so");
     gSystem->Load("libPhiSymEcalCalibDataFormats.so");
 
+    //---Setup---
+    if(argc < 2)
+    {
+        cout << "Usage : " << argv[0] << " [parameters.py]" << endl;
+        return 0;
+    }
+    if(!edm::readPSetsFrom(argv[1])->existsAs<edm::ParameterSet>("process"))
+    {
+        cout << " ERROR: ParametersSet 'process' is missing in your configuration file"
+             << endl;
+        return 0;
+    }
+
+    //---get the python configuration
+    const edm::ParameterSet &process = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
+    const edm::ParameterSet &filesOpt = process.getParameter<edm::ParameterSet>("ioFilesOpt");
+    
+    string outputFileBase = filesOpt.getParameter<string>("outputFileBase");
+    string inputFile = filesOpt.getParameter<string>("inputFile");
+
+    //---init
     float sm_ic_mean[18][2];
     float sm_ic_rms[18][2];    
     float sm_ic_sum[18][2];
@@ -105,7 +122,7 @@ int main(int argc, char *argv[])
     TH2F* map_ic_corr = new TH2F("map_ic_corr", "PhiSym corrected ICs map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
     TH2F* map_corrections = new TH2F("map_corrections", "Corrections map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
     
-    TFile* file = TFile::Open(file_name.c_str(), "READ");
+    TFile* file = TFile::Open(inputFile.c_str(), "READ");
     CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
 
     while(ebTree.NextEntry())
@@ -293,7 +310,7 @@ int main(int argc, char *argv[])
     }    
 
     //---generate txt corrections file
-    ofstream outTxtFile("geo_and_material_corr.txt", ios::out);
+    ofstream outTxtFile((outputFileBase+".txt").c_str(), ios::out);
     for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
         double correction=corrections[index];
@@ -307,7 +324,7 @@ int main(int argc, char *argv[])
     outTxtFile.close();
 
     //---output plots
-    TFile* outFile = TFile::Open("geo_and_material_corr.root", "RECREATE");
+    TFile* outFile = TFile::Open((outputFileBase+".root").c_str(), "RECREATE");
     outFile->cd();
     //---style
     gr_uncorr_EBm->SetTitle("PhiSym IC vs phi - uncorrectred;#it{i#phi};#it{IC}");

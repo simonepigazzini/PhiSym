@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser (description = 'Dump PhiSym IC correction from 
 parser.add_argument('inputfile' , default="phisym_intercalibs.root", help='analyze this file')
 parser.add_argument('-b', '--block' , default=-1, type=int, help='analyze this block')
 parser.add_argument('-f', '--outputFile' , default=-1, type=int, help='store the ICs in this file')
+parser.add_argument('-c', '--correctionsFile' , default="", help='load geo&material correction from this file')
 parser.add_argument('-k', '--kType' , default="ch", help='k-Factor computation type: ch / ring')
 parser.add_argument('--rel' , action="store_true", default=False, help='dump phisym ICs correction only')
 
@@ -42,6 +43,18 @@ ebICerr=[999 for i in range(61200)]
 eeICerr=[999 for i in range(14648)]
 ebICsys=[999 for i in range(61200)]
 eeICsys=[999 for i in range(14648)]
+ebCorr=[1 for i in range(61200)]
+eeCorr=[1 for i in range(14648)]
+
+# read correction file if specified
+with open(opts.correctionsFile) as corrections:
+    channels = corrections.readlines()
+    for channel in channels:
+        tokens = channel.split()
+        if int(tokens[2]) == 0:
+            ebCorr[ROOT.EBDetId(int(tokens[0]), int(tokens[1])).hashedIndex()] = float(tokens[3])
+        else:
+            eeCorr[ROOT.EEDetId(int(tokens[0]), int(tokens[1]), int(tokens[2])).hashedIndex()] = float(tokens[3])
 
 #EB
 while ebTree.NextEntry():
@@ -114,7 +127,7 @@ for index in range(61200):
         err = 999
     else:
         err = sqrt(ebICerr[index]*ebICerr[index] + ebICsys[index]*ebICsys[index])
-    print ieta, iphi, 0, "%.5f" % ebIC[index], "%.7f" % err, "%.7f" % ebICerr[index], "%.7f" % ebICsys[index],
+    print ieta, iphi, 0, "%.5f" % (ebIC[index]*ebCorr[index]), "%.7f" % err, "%.7f" % ebICerr[index], "%.7f" % ebICsys[index],
     print status, ebN[index], ebK[index]
 
 for index in range(14648):    
