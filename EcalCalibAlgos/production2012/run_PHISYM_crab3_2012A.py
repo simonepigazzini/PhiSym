@@ -2,7 +2,7 @@ from WMCore.Configuration import Configuration
 
 config = Configuration()
 config.section_('General')
-config.General.requestName = 'PHISYM-CMSSW_746-74X_dataRun2_Prompt_v0-Run2012C_TimeEvo_v1'
+config.General.requestName = 'PHISYM-CMSSW_746-74X_dataRun2_Prompt_v0-Run2012A_TimeEvo_v1'
 config.General.transferLogs = True
 config.General.transferOutputs = True
 config.section_('JobType')
@@ -11,15 +11,14 @@ config.JobType.pluginName = 'Analysis'
 # Name of the CMSSW configuration file
 config.JobType.psetName = 'PhiSymProducer2012D_cfg.py'
 config.JobType.priority = 20
-config.JobType.maxJobRuntimeMin= 3000
+config.JobType.maxJobRuntimeMin= 2800
 config.section_('Data')
 
 # This string determines the primary dataset of the newly-produced outputs.
-config.Data.inputDataset = '/AlCaPhiSym/Run2012C-v1/RAW'
+config.Data.inputDataset = '/AlCaPhiSym/Run2012A-v1/RAW'
 #config.Data.useParent = True
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'LumiBased'
-#config.Data.lumiMask = 'Run2012C_0T.json'
 config.Data.lumiMask = 'json_Golden.txt'
 config.Data.unitsPerJob = 100
 config.Data.totalUnits = -1

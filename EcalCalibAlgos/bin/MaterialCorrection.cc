@@ -26,37 +26,9 @@
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
+#include "PhiSym/EcalCalibAlgos/interface/utils.h"
 
 using namespace std;
-
-//----------compute std::vector averages in a selected range------------------------------
-pair<float, float> VectorMeanRMS(vector<float>& ics, int low, int high)
-{
-    float sum=0;
-    float sum2=0;
-    int n=0;
-    for(int i=low; i<high; ++i)
-    {
-        sum += ics[i];
-        sum2 += ics[i]*ics[i];
-        ++n;
-    }
-
-    return make_pair(sum/n, sqrt((sum2/n - sum*sum/(n*n))/n));
-}
-
-//----------compute std::vector outliers iterative removal--------------------------------
-pair<float, float> IterativeCut(vector<float>& ics, int low, int high, double eps)
-{
-    if(low >= high)
-        return make_pair(-1, -1);
-    
-    pair<float, float> current = VectorMeanRMS(ics, low, high);
-    if(fabs(current.first - VectorMeanRMS(ics, low+1, high-1).first) < eps)
-        return current;
-    else 
-        return IterativeCut(ics, low+1, high-1, eps);
-}
 
 //**********MAIN**************************************************************************
 int main(int argc, char *argv[])
@@ -86,6 +58,7 @@ int main(int argc, char *argv[])
     
     string outputFileBase = filesOpt.getParameter<string>("outputFileBase");
     string inputFile = filesOpt.getParameter<string>("inputFile");
+    string runsRange(inputFile.end()-18, inputFile.end()-5);
 
     //---init
     float sm_ic_mean[18][2];
@@ -203,8 +176,8 @@ int main(int argc, char *argv[])
         //---with TB
         sort(iphi_ic[iPhi][0].begin(), iphi_ic[iPhi][0].end());
         sort(iphi_ic[iPhi][1].begin(), iphi_ic[iPhi][1].end());
-        pair<float, float> tmp_ebm = IterativeCut(iphi_ic[iPhi][0], 0, iphi_ic[iPhi][0].size(), 0.001);
-        pair<float, float> tmp_ebp = IterativeCut(iphi_ic[iPhi][1], 0, iphi_ic[iPhi][1].size(), 0.001);
+        pair<float, float> tmp_ebm = PhiSym::IterativeCut(iphi_ic[iPhi][0], 0, iphi_ic[iPhi][0].size(), 0.001);
+        pair<float, float> tmp_ebp = PhiSym::IterativeCut(iphi_ic[iPhi][1], 0, iphi_ic[iPhi][1].size(), 0.001);
         point_unc[0] = tmp_ebm.first;
         point_unc[1] = tmp_ebp.first;
         error_unc[0] = tmp_ebm.second;
@@ -234,8 +207,8 @@ int main(int argc, char *argv[])
         //---no TB
         sort(iphi_ic_b60[iPhi][0].begin(), iphi_ic_b60[iPhi][0].end());
         sort(iphi_ic_b60[iPhi][1].begin(), iphi_ic_b60[iPhi][1].end());
-        tmp_ebm = IterativeCut(iphi_ic_b60[iPhi][0], 0, iphi_ic_b60[iPhi][0].size(), 0.001);
-        tmp_ebp = IterativeCut(iphi_ic_b60[iPhi][1], 0, iphi_ic_b60[iPhi][1].size(), 0.001);
+        tmp_ebm = PhiSym::IterativeCut(iphi_ic_b60[iPhi][0], 0, iphi_ic_b60[iPhi][0].size(), 0.001);
+        tmp_ebp = PhiSym::IterativeCut(iphi_ic_b60[iPhi][1], 0, iphi_ic_b60[iPhi][1].size(), 0.001);
         point_unc[0] = tmp_ebm.first;
         point_unc[1] = tmp_ebp.first;
         error_unc[0] = tmp_ebm.second;
@@ -310,7 +283,7 @@ int main(int argc, char *argv[])
     }    
 
     //---generate txt corrections file
-    ofstream outTxtFile((outputFileBase+".txt").c_str(), ios::out);
+    ofstream outTxtFile((outputFileBase+runsRange+".txt").c_str(), ios::out);
     for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
         double correction=corrections[index];
@@ -324,7 +297,7 @@ int main(int argc, char *argv[])
     outTxtFile.close();
 
     //---output plots
-    TFile* outFile = TFile::Open((outputFileBase+".root").c_str(), "RECREATE");
+    TFile* outFile = TFile::Open((outputFileBase+runsRange+".root").c_str(), "RECREATE");
     outFile->cd();
     //---style
     gr_uncorr_EBm->SetTitle("PhiSym IC vs phi - uncorrectred;#it{i#phi};#it{IC}");

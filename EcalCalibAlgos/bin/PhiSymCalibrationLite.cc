@@ -25,6 +25,7 @@
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
+#include "PhiSym/EcalCalibAlgos/interface/utils.h"
 
 using namespace std;
 
@@ -437,22 +438,6 @@ void ReadAbsICs(string name)
     return;
 }
 
-//----------compute std::vector averages in a selected range------------------------------
-pair<float, float> VectorMeanRMS(vector<float>& sumEts, int low, int high)
-{
-    float sum=0;
-    float sum2=0;
-    int n=0;
-    for(int i=low; i<high; ++i)
-    {
-        sum += sumEts[i];
-        sum2 += sumEts[i]*sumEts[i];
-        ++n;
-    }
-
-    return make_pair(sum/n, sqrt(sum2/n - sum*sum/(n*n)));
-}
-
 //**********MAIN**************************************************************************
 int main( int argc, char *argv[] )
 {
@@ -710,8 +695,8 @@ int main( int argc, char *argv[] )
             float rms=-1;
             for(int iRm=0; iRm<(int)ebRingsSumEts[iRing].size()/2; ++iRm)
             {
-                pair<float, float> tmp = VectorMeanRMS(ebRingsSumEts[iRing],
-                                                       iRm, ebRingsSumEts[iRing].size()-1-iRm);
+                pair<float, float> tmp = PhiSym::VectorMeanRMS(ebRingsSumEts[iRing],
+                                                               iRm, ebRingsSumEts[iRing].size()-1-iRm);
                 if(mean == -1 || fabs(mean-tmp.first)/mean>0.0005)
                 {
                     mean = tmp.first;
@@ -739,8 +724,8 @@ int main( int argc, char *argv[] )
             float rms=-1;
             for(int iRm=0; iRm<(int)eeRingsSumEts[iRing].size()/2; ++iRm)
             {
-                pair<float, float> tmp = VectorMeanRMS(eeRingsSumEts[iRing],
-                                                       iRm, eeRingsSumEts[iRing].size()-1-iRm);
+                pair<float, float> tmp = PhiSym::VectorMeanRMS(eeRingsSumEts[iRing],
+                                                               iRm, eeRingsSumEts[iRing].size()-1-iRm);
                 if(mean == -1 || fabs(mean-tmp.first)/mean>0.001)
                 {
                     mean = tmp.first;

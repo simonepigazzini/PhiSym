@@ -15,4 +15,8 @@
       name="MaterialCorrection"
       file="MaterialCorrection.cc">
   </bin>
+  <bin
+      name="TimeEvolution"
+      file="TimeEvolution.cc">
+  </bin>
 </environment>

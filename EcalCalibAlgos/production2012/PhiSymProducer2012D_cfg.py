@@ -86,17 +86,17 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("phisym_spectra.root"))
 
 # GLOBAL-TAG
-process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v0')
 process.GlobalTag.toGet = cms.VPSet(
     cms.PSet(record = cms.string("EcalLaserAPDPNRatiosRcd"),
              tag = cms.string("EcalLaserAPDPNRatios_20130130_447_p1_v2"),
              connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_42X_ECAL_LAS")
          ),
     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             # tag = cms.string("EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies"),
-             # connect = cms.untracked.string("frontier://FrontierInt/CMS_COND_ECAL")
-             tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
-             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
+             tag = cms.string("EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies"),
+             connect = cms.untracked.string("frontier://FrontierInt/CMS_COND_ECAL")
+             # tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
+             # connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
          ),
     cms.PSet(record = cms.string("EcalChannelStatusRcd"),
              tag = cms.string("EcalChannelStatus_v1_prompt"),

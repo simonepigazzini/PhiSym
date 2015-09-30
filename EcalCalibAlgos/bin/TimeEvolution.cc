@@ -1,4 +1,57 @@
+#ifndef __TIME_EVOLUTION__
+#define __TIME_EVOLUTION__
+
+#include <map>
+#include <vector>
+#include <string>
+#include <fstream>
+
+#include "TSystem.h"
+#include "TMath.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TF1.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TGraphErrors.h"
+
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
+
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "DataFormats/EcalDetId/interface/EEDetId.h"
+
+#include "Calibration/Tools/interface/EcalRingCalibrationTools.h"
+
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
+#include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
+#include "PhiSym/EcalCalibAlgos/interface/utils.h"
+
+using namespace std;
+
+//**********MAIN**************************************************************************
+int main(int argc, char *argv[])
 {
+    AutoLibraryLoader::enable();        
+    gSystem->Load("libFWCoreFWLite.so"); 
+    gSystem->Load("libDataFormatsFWLite.so");
+    gSystem->Load("libDataFormatsEcalDetId.so");
+    gSystem->Load("libPhiSymEcalCalibDataFormats.so");
+
+    //---Setup---
+    if(argc < 2)
+    {
+        cout << "Usage : " << argv[0] << " [parameters.py]" << endl;
+        return 0;
+    }
+    if(!edm::readPSetsFrom(argv[1])->existsAs<edm::ParameterSet>("process"))
+    {
+        cout << " ERROR: ParametersSet 'process' is missing in your configuration file"
+             << endl;
+        return 0;
+    }
+
     string type_name;
     int type=0; //IC
     // int type=1; // LC
@@ -7,90 +60,35 @@
     // int type=4; //k-factors
     // int type=5; //corrections
     bool applyCorr=true;
+
     
-    gSystem->Load("libFWCoreFWLite.so"); 
-    AutoLibraryLoader::enable();
-    gSystem->Load("libDataFormatsFWLite.so");
-    gSystem->Load("libDataFormatsEcalDetId.so");
-    gSystem->Load("libPhiSymEcalCalibDataFormats.so");
+    //---get the python configuration
+    const edm::ParameterSet &process = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
+    const edm::ParameterSet &filesOpt = process.getParameter<edm::ParameterSet>("ioFilesOpt");
 
-    vector<string> files={        
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/summed_200781_200798.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root"
+    
+    vector<string> files = filesOpt.getParameter<vector<string> >("inputFiles");       
+    vector<string> corrections_files = filesOpt.getParameter<vector<string> >("correctionsFiles");       
 
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/newThr_2012D/summed_208538_208686.root",
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root"
-
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248003_248003.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248005_248005.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248006_248006.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248009_248009.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248025_248025.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248026_248026.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248028_248028.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248029_248029.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248030_248030.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248031_248031.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248033_248033.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248036_248036.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248038_248038.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250867_250867.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250869_250869.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250886_250886.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250890_250890.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250893_250893.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250896_250896.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250897_250897.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250930_250930.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250932_250932.root"
-        
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254292_254292.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254293_254293.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254294_254294.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254306_254306.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254307_254307.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254319_254319.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254341_254341.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254342_254342.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254349_254349.root"
-        
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251244_251244.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251251_251251.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251252_251252.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251521_251521.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251522_251522.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251548_251548.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251559_251559.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251560_251560.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251561_251561.root",
-        // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root"
-    };
-
-    vector<string> corrections_files={
-        //---Boff
-        // "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/geo_and_material_corr.txt",
-        // "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/geo_and_material_corr.txt"
-
-        //---Bon
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/newThr_2012D/corrections_208538_208686.txt",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/corrections_251562_251562.txt"
-    };
-
-    float ebVar[70][EBDetId::kSizeForDenseIndexing]={};
-    float eeVar[70][EEDetId::kSizeForDenseIndexing]={};
-    float ebCorr[70][EBDetId::kSizeForDenseIndexing]={};
+    map<int, vector<float> > ebVar;
+    map<int, vector<float> > eeVar;
+    map<int, vector<float> > ebCorr;
     pair<int, int> ebMap[EBDetId::kSizeForDenseIndexing];
     int eeMap[EEDetId::kSizeForDenseIndexing];
     pair<int, int> eeMap2[EEDetId::kSizeForDenseIndexing];
 
-    for(int iFile=0; iFile<files.size(); ++iFile)
+    for(unsigned int iFile=0; iFile<files.size(); ++iFile)
     {
         TFile* file = TFile::Open(files[iFile].c_str(), "READ");
         if(!file)
             continue;
         CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
         CrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
+
+        //---allocate enough memory
+        ebVar[iFile].resize(EBDetId::kSizeForDenseIndexing);
+        eeVar[iFile].resize(EEDetId::kSizeForDenseIndexing);
+        ebCorr[iFile].resize(EBDetId::kSizeForDenseIndexing);
         
         int index=-1;
         long int tot_hits_EB=0;
@@ -248,7 +246,7 @@
         grRelRingEE[iRing] = new TGraphErrors();
     }
     //---fill histos
-    for(int iFile=1; iFile<files.size(); ++iFile)
+    for(unsigned int iFile=1; iFile<files.size(); ++iFile)
     {
         TH1F* tmpAbsEB = new TH1F("tmpAbsEB", "", 2000, 0.5, 1.5);
         TH1F* tmpRelEB = new TH1F("tmpRelEB", "", 2000, 0.5, 1.5);
@@ -292,8 +290,6 @@
                 prRelEE[eeMap[index]]->Fill(eeVar[iFile][index]/eeVar[iFile-1][index]);
             }       
         }
-        // if(iFile==1)
-        // {
         mapAbsEB_range[0] = tmpAbsEB->GetMean()-2*tmpAbsEB->GetRMS();
         mapAbsEB_range[1] = tmpAbsEB->GetMean()+2*tmpAbsEB->GetRMS();
         mapRelEB_range[0] = tmpRelEB->GetMean()-2*tmpRelEB->GetRMS();
@@ -302,7 +298,6 @@
         mapAbsEE_range[1] = tmpAbsEE->GetMean()+2*tmpAbsEE->GetRMS();
         mapRelEE_range[0] = tmpRelEE->GetMean()-2*tmpRelEE->GetRMS();
         mapRelEE_range[1] = tmpRelEE->GetMean()+2*tmpRelEE->GetRMS();
-            //}
         
         //---EB                     
         hAbsEB->Fill(fitFuncAbsEB->GetParameter(2));
@@ -416,3 +411,66 @@
     
     outFile->Close();
 }
+
+#endif
+
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/summed_200781_200798.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root"
+
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/newThr_2012D/summed_208538_208686.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root"
+
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248003_248003.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248005_248005.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248006_248006.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248009_248009.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248025_248025.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248026_248026.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248028_248028.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248029_248029.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248030_248030.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248031_248031.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248033_248033.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248036_248036.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_248038_248038.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250866_250866.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250867_250867.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250869_250869.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250886_250886.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250890_250890.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250893_250893.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250896_250896.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250897_250897.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250930_250930.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/summed_250932_250932.root"
+        
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254292_254292.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254293_254293.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254294_254294.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254306_254306.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254307_254307.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254319_254319.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254341_254341.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254342_254342.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015C_Boff_v1/summed_254349_254349.root"
+        
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251244_251244.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251251_251251.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251252_251252.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251521_251521.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251522_251522.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251548_251548.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251559_251559.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251560_251560.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251561_251561.root",
+//         // "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root"
+// {
+//         //---Boff
+//         "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/geo_and_material_corr.txt",
+//         "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015A_v2/geo_and_material_corr.txt"
+
+//         //---Bon
+//         // "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/newThr_2012D/geo_and_material_corr.txt",
+//         // "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/geo_and_material_corr.txt"
+//     };
+
