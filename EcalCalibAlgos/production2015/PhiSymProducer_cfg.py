@@ -115,13 +115,14 @@ process.TFileService = cms.Service("TFileService",
 
 # GLOBAL-TAG
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'GR_P_V56')
-process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v0')
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
-             connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
-         )
-)
+#process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v0')
+process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_withOfflineCustomisations_v0')
+# process.GlobalTag.toGet = cms.VPSet(
+#     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
+#              tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
+#              connect = cms.untracked.string("frontier://PromptProd/CMS_COND_31X_ECAL")
+#          )
+# )
 
 # SCHEDULE
 if (not runMultiFit):
