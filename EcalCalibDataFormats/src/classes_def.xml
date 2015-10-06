@@ -1,0 +1,16 @@
+<lcgdict>
+  <class name="PhiSymRecHit"/>
+  <class name="std::vector<PhiSymRecHit>"/>
+  <class name="edm::Wrapper<std::vector<PhiSymRecHit> >"/>
+  
+  <class name="PhiSymInfo"/>
+  <class name="std::vector<PhiSymInfo>"/>
+  <class name="edm::Wrapper<std::vector<PhiSymInfo> >"/>
+  
+  <class name="EBTree"/>
+  <class name="EETree"/>
+  <class name="PhiSymFile"/>
+  <class name="CrystalsEBTree"/>
+  <class name="CrystalsEETree"/>
+  <class name="CalibrationFile"/>
+</lcgdict>
