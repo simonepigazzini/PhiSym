@@ -118,7 +118,8 @@ int main(int argc, char *argv[])
             {
                 if(type == "IC")
                 {
-                    ebVar[type][iFile][index] = ebTree.ic_abs*ebTree.ic_ch;
+                    ebVar[type][iFile][index] = //ebTree.ic_abs*
+                        ebTree.ic_ch;
                     if(applyCorr)
                         ebVar[type][iFile][index] *= ebCorr[index];
                 }
@@ -145,7 +146,8 @@ int main(int argc, char *argv[])
             for(auto& type : types)
             {
                 if(type == "IC")
-                    eeVar[type][iFile][index] = eeTree.ic_abs*eeTree.ic_ch;
+                    eeVar[type][iFile][index] = //eeTree.ic_abs*
+                        eeTree.ic_ch;
                 if(type == "LC")
                     eeVar[type][iFile][index] = eeTree.rec_hit->GetLCSum()/eeTree.rec_hit->GetNhits();
                 if(type == "SumEt")
@@ -262,13 +264,17 @@ int main(int argc, char *argv[])
             mapRelEE_range[0] = tmpRelEE->GetMean()-2*tmpRelEE->GetRMS();
             mapRelEE_range[1] = tmpRelEE->GetMean()+2*tmpRelEE->GetRMS();
         
-            //---EB                     
+            //---EB
+            fitFuncAbsEB->SetRange(mapAbsEB_range[0], mapAbsEB_range[1]);
+            tmpAbsEB->Fit(fitFuncAbsEB, "QR");
             hAbsEB->Fill(fitFuncAbsEB->GetParameter(2));
-            grAbsEB->SetPoint(iFile-1, iFile, PhiSym::EffectiveSigma(tmpAbsEB));
-            grAbsEB->SetPointError(iFile-1, 0, tmpAbsEB->GetRMSError());
+            grAbsEB->SetPoint(iFile-1, iFile, fitFuncAbsEB->GetParameter(2));
+            grAbsEB->SetPointError(iFile-1, 0, fitFuncAbsEB->GetParError(2));            
+            fitFuncRelEB->SetRange(mapRelEB_range[0], mapRelEB_range[1]);
+            tmpRelEB->Fit(fitFuncRelEB, "QR");
             hRelEB->Fill(fitFuncRelEB->GetParameter(2));
-            grRelEB->SetPoint(iFile-1, iFile, PhiSym::EffectiveSigma(tmpRelEB));
-            grRelEB->SetPointError(iFile-1, 0, tmpRelEB->GetRMSError());
+            grRelEB->SetPoint(iFile-1, iFile, fitFuncRelEB->GetParameter(2));
+            grRelEB->SetPointError(iFile-1, 0, fitFuncRelEB->GetParError(2));
             tmpAbsEB->Write(string("AbsEB_"+to_string(iFile)).c_str());
             tmpRelEB->Write(string("RelEB_"+to_string(iFile)).c_str());        
             mapAbsEB->SetAxisRange(mapAbsEB_range[0], mapAbsEB_range[1], "Z");
@@ -280,14 +286,18 @@ int main(int argc, char *argv[])
             mapAbsEB->Delete();
             mapRelEB->Delete();
             //---EE
+            fitFuncAbsEE->SetRange(mapAbsEE_range[0], mapAbsEE_range[1]);
+            tmpAbsEE->Fit(fitFuncAbsEE, "QR");
             hAbsEE->Fill(fitFuncAbsEE->GetParameter(2));
-            grAbsEE->SetPoint(iFile-1, iFile, PhiSym::EffectiveSigma(tmpAbsEE));
-            grAbsEE->SetPointError(iFile-1, 0, tmpAbsEE->GetRMSError());
+            grAbsEE->SetPoint(iFile-1, iFile, fitFuncAbsEE->GetParameter(2));
+            grAbsEE->SetPointError(iFile-1, 0, fitFuncAbsEE->GetParError(2));            
+            fitFuncRelEE->SetRange(mapRelEE_range[0], mapRelEE_range[1]);
+            tmpRelEE->Fit(fitFuncRelEE, "QR");
             hRelEE->Fill(fitFuncRelEE->GetParameter(2));
-            grRelEE->SetPoint(iFile-1, iFile, PhiSym::EffectiveSigma(tmpRelEE));
-            grRelEE->SetPointError(iFile-1, 0, tmpRelEE->GetRMSError());
+            grRelEE->SetPoint(iFile-1, iFile, fitFuncRelEE->GetParameter(1));
+            grRelEE->SetPointError(iFile-1, 0, fitFuncRelEE->GetParError(1));
             tmpAbsEE->Write(string("AbsEE_"+to_string(iFile)).c_str());
-            tmpRelEE->Write(string("RelEE_"+to_string(iFile)).c_str()); 
+            tmpRelEE->Write(string("RelEE_"+to_string(iFile)).c_str());        
             mapAbsEE->SetAxisRange(mapAbsEE_range[0], mapAbsEE_range[1], "Z");
             mapRelEE->SetAxisRange(mapRelEE_range[0], mapRelEE_range[1], "Z");
             mapAbsEE->Write(string("mapAbsEE_"+to_string(iFile)).c_str());
@@ -297,6 +307,7 @@ int main(int argc, char *argv[])
             mapAbsEE->Delete();
             mapRelEE->Delete();
         }
+
         //---EB
         hAbsEB->SetFillColor(kBlue-4);
         hRelEB->SetFillColor(kRed-4);
