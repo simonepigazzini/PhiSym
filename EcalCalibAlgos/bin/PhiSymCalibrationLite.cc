@@ -497,7 +497,7 @@ int main( int argc, char *argv[] )
             {
                 if(ebTree.NextEntry(61200*iBlk+1))
                 {
-                    if(ebTree.begin[0] >= IOVBeginRuns[iIOV] && ebTree.end[0] <= IOVEndRuns[iIOV])
+                    if(/*ebTree.begin[0] >= IOVBeginRuns[iIOV] &&*/ ebTree.end[0] <= IOVEndRuns[iIOV])
                         iovInputFiles[iIOV].push_back(fileName);
                 }
             }

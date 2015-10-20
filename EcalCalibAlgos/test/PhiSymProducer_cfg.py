@@ -188,6 +188,7 @@ else:
     process.phisymSequence *= process.PhiSymProducer
 
 process.path = cms.Path(process.triggerSelectionLoneBunch*process.phisymSequence)
+process.RECOSIMoutput.SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring('path'))
 
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 process.schedule = cms.Schedule(process.path, process.RECOSIMoutput_step)

@@ -103,7 +103,8 @@ int main(int argc, char *argv[])
             while(corrections.good())
             {
                 corrections >> ieta >> iphi >> side >> corr;
-                ebCorr[EBDetId(ieta, iphi).hashedIndex()] = corr;
+                if(ieta!=0 && iphi!=0)
+                    ebCorr[EBDetId(ieta, iphi).hashedIndex()] = corr;
             }
             corrections.close();
         }
@@ -118,8 +119,7 @@ int main(int argc, char *argv[])
             {
                 if(type == "IC")
                 {
-                    ebVar[type][iFile][index] = //ebTree.ic_abs*
-                        ebTree.ic_ch;
+                    ebVar[type][iFile][index] = ebTree.ic_abs*ebTree.ic_ch;
                     if(applyCorr)
                         ebVar[type][iFile][index] *= ebCorr[index];
                 }
@@ -146,8 +146,7 @@ int main(int argc, char *argv[])
             for(auto& type : types)
             {
                 if(type == "IC")
-                    eeVar[type][iFile][index] = //eeTree.ic_abs*
-                        eeTree.ic_ch;
+                    eeVar[type][iFile][index] = eeTree.ic_abs*eeTree.ic_ch;
                 if(type == "LC")
                     eeVar[type][iFile][index] = eeTree.rec_hit->GetLCSum()/eeTree.rec_hit->GetNhits();
                 if(type == "SumEt")
@@ -183,7 +182,8 @@ int main(int argc, char *argv[])
                 eeVar[type][iFile][index] = eeVar[type][iFile][index]/sum;
         }
         
-        cout << files[iFile] << " nhits/crystal (EB/EE): " << tot_hits_EB/71200. << "  " << tot_hits_EE/14000. << endl;
+        cout << iFile << ": " << files[iFile]
+             << " nhits/crystal (EB/EE): " << tot_hits_EB/71200. << "  " << tot_hits_EE/14000. << endl;
         file->Close();
     }
 
@@ -223,10 +223,10 @@ int main(int argc, char *argv[])
             TH2F* mapRelEB = new TH2F("mapRelEB", "", 360, 0.5, 360.5, 171, -85, 85);
             TH2F* mapAbsEE = new TH2F("mapAbsEE", "", 201, -100.5, 100.5, 101, 0.5, 100.5);
             TH2F* mapRelEE = new TH2F("mapRelEE", "", 201, -100.5, 100.5, 101, 0.5, 100.5);
-            mapAbsEB->SetContour(100);
-            mapRelEB->SetContour(100);
-            mapAbsEE->SetContour(100);
-            mapRelEE->SetContour(100);
+            mapAbsEB->SetContour(100000);
+            mapRelEB->SetContour(100000);
+            mapAbsEE->SetContour(100000);
+            mapRelEE->SetContour(100000);
             //---EB
             for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
             {

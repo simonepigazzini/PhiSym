@@ -332,11 +332,11 @@ int main(int argc, char *argv[])
         gr_sm_sub_b60_EBp->SetTitle("PhiSym IC vs phi - uncorrectred (SM averages subtracted);#it{i#phi};#it{IC}");
         gr_sm_sub_b60_EBp->SetMarkerColor(kRed+1);
         gr_sm_sub_b60_EBp->SetLineColor(kRed+1);
-        map_ic_uncorr->SetContour(100);
+        map_ic_uncorr->SetContour(100000);
         map_ic_uncorr->SetAxisRange(0.95, 1.05, "Z");    
-        map_ic_corr->SetContour(100);
+        map_ic_corr->SetContour(100000);
         map_ic_corr->SetAxisRange(0.95, 1.05, "Z");
-        map_corrections->SetContour(100);
+        map_corrections->SetContour(100000);
         map_corrections->SetAxisRange(0.9, 1.1, "Z");
         //---write histos
         gr_uncorr_EBm->Write("ic_uncorr_EBm");
