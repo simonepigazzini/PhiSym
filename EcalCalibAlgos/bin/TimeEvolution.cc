@@ -78,6 +78,10 @@ int main(int argc, char *argv[])
         //---allocate enough memory
         vector<float> ebCorr;
         ebCorr.resize(EBDetId::kSizeForDenseIndexing);
+        vector<float> eeCorr;
+        eeCorr.resize(EEDetId::kSizeForDenseIndexing);
+        for(int i=0; i<EEDetId::kSizeForDenseIndexing; ++i)
+            eeCorr[i]=1;
         for(auto& type : types)
         {
             ebVar[type][iFile].resize(EBDetId::kSizeForDenseIndexing);
@@ -97,14 +101,19 @@ int main(int argc, char *argv[])
                 return 0;
             }
             
-            int ieta, iphi, side;
+            int ix1, ix2, side;
             float corr;            
             ifstream corrections(corrections_files[iFile], ios::in);
             while(corrections.good())
             {
-                corrections >> ieta >> iphi >> side >> corr;
-                if(ieta!=0 && iphi!=0)
-                    ebCorr[EBDetId(ieta, iphi).hashedIndex()] = corr;
+                corrections >> ix1 >> ix2 >> side >> corr;
+                if(side==0)
+                {
+                    if(ix1!=0 && ix2!=0)
+                        ebCorr[EBDetId(ix1, ix2).hashedIndex()] = corr;
+                }
+                else if(EEDetId::validDetId(ix1, ix2, side))
+                    eeCorr[EEDetId(ix1, ix2, side).hashedIndex()] = corr;
             }
             corrections.close();
         }
@@ -146,7 +155,11 @@ int main(int argc, char *argv[])
             for(auto& type : types)
             {
                 if(type == "IC")
+                {
                     eeVar[type][iFile][index] = eeTree.ic_abs*eeTree.ic_ch;
+                    if(applyCorr)
+                        eeVar[type][iFile][index] *= eeCorr[index];
+                }
                 if(type == "LC")
                     eeVar[type][iFile][index] = eeTree.rec_hit->GetLCSum()/eeTree.rec_hit->GetNhits();
                 if(type == "SumEt")
@@ -156,31 +169,31 @@ int main(int argc, char *argv[])
                 if(type == "Kfact")
                     eeVar[type][iFile][index] = eeTree.k_ch;
                 if(type == "Corr")
-                    eeVar[type][iFile][index] = 1;
+                    eeVar[type][iFile][index] = 1;//eeCorr[index];
             }
             if(iFile==0)
             {
                 //eeMapRing[index] = eeTree.iring<0? eeTree.iring+39 : eeTree.iring+38;
-                eeMapXY[index] = make_pair(eeTree.iring<0 ? -eeTree.ix : eeTree.ix, eeTree.iy);
+                eeMapXY[index] = make_pair(eeTree.iring<0 ? eeTree.ix : 100+eeTree.ix, eeTree.iy);
             }
         }
         
-        for(auto& type : types)
-        {
-            if(type == "Nhits")
-                continue;
+        // for(auto& type : types)
+        // {
+        //     if(type == "Nhits")
+        //         continue;
 
-            float sum=0;
-            for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
-                sum += ebVar[type][iFile][index];
-            for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
-                ebVar[type][iFile][index] = ebVar[type][iFile][index]/sum;
-            sum=0;
-            for(int index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
-                sum += eeVar[type][iFile][index];
-            for(int index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
-                eeVar[type][iFile][index] = eeVar[type][iFile][index]/sum;
-        }
+        //     float sum=0;
+        //     for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
+        //         sum += ebVar[type][iFile][index];
+        //     for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
+        //         ebVar[type][iFile][index] = ebVar[type][iFile][index]/sum;
+        //     sum=0;
+        //     for(int index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
+        //         sum += eeVar[type][iFile][index];
+        //     for(int index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
+        //         eeVar[type][iFile][index] = eeVar[type][iFile][index]/sum;
+        // }
         
         cout << iFile << ": " << files[iFile]
              << " nhits/crystal (EB/EE): " << tot_hits_EB/71200. << "  " << tot_hits_EE/14000. << endl;
@@ -221,8 +234,8 @@ int main(int argc, char *argv[])
             TH1F* tmpRelEE = new TH1F("tmpRelEE", "", 1000, 0.5, 1.5);
             TH2F* mapAbsEB = new TH2F("mapAbsEB", "", 360, 0.5, 360.5, 171, -85, 85);        
             TH2F* mapRelEB = new TH2F("mapRelEB", "", 360, 0.5, 360.5, 171, -85, 85);
-            TH2F* mapAbsEE = new TH2F("mapAbsEE", "", 201, -100.5, 100.5, 101, 0.5, 100.5);
-            TH2F* mapRelEE = new TH2F("mapRelEE", "", 201, -100.5, 100.5, 101, 0.5, 100.5);
+            TH2F* mapAbsEE = new TH2F("mapAbsEE", "", 200, 0.5, 200.5, 100, 0.5, 100.5);
+            TH2F* mapRelEE = new TH2F("mapRelEE", "", 200, 0.5, 200.5, 100, 0.5, 100.5);
             mapAbsEB->SetContour(100000);
             mapRelEB->SetContour(100000);
             mapAbsEE->SetContour(100000);
@@ -247,12 +260,14 @@ int main(int argc, char *argv[])
                 if(eeVar[type][0][index] != 0 && eeVar[type][iFile][index] != 0)
                 {
                     tmpAbsEE->Fill(eeVar[type][iFile][index]/eeVar[type][0][index]);
-                    mapAbsEE->Fill(eeMapXY[index].first, eeMapXY[index].second, eeVar[type][iFile][index]/eeVar[type][0][index]);
+                    mapAbsEE->Fill(eeMapXY[index].first, eeMapXY[index].second,
+                                   eeVar[type][iFile][index]/eeVar[type][0][index]);
                 }
                 if(eeVar[type][iFile-1][index] != 0 && eeVar[type][iFile][index] != 0)
                 {
                     tmpRelEE->Fill(eeVar[type][iFile][index]/eeVar[type][iFile-1][index]);
-                    mapRelEE->Fill(eeMapXY[index].first, eeMapXY[index].second, eeVar[type][iFile][index]/eeVar[type][iFile-1][index]);
+                    mapRelEE->Fill(eeMapXY[index].first, eeMapXY[index].second,
+                                   eeVar[type][iFile][index]/eeVar[type][iFile-1][index]);
                 }       
             }
             mapAbsEB_range[0] = tmpAbsEB->GetMean()-2*tmpAbsEB->GetRMS();

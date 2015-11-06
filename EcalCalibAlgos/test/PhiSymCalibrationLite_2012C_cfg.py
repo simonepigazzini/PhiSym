@@ -21,20 +21,20 @@ process.ioFilesOpt = cms.PSet(
     recoConstantsFile = cms.string('/afs/cern.ch/work/s/spigazzi/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2012ABCD_17iov.dat'),
         
     inputFiles = cms.vstring([        
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_1.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_10.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_11.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_12.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_13.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_14.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_2.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_3.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_4.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_5.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_6.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_7.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_8.root",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_6_patch6/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_9.root"
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_1.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_10.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_11.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_12.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_13.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_14.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_2.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_3.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_4.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_5.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_6.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_7.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_8.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_12_patch4/src/PhiSym/EcalCalibAlgos/ntuples/2012C_v1/phisym_intercalibs_1000blocks_9.root"
         ])
 )
 

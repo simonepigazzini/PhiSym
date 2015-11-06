@@ -15,7 +15,7 @@ process.ioFilesOpt = cms.PSet(
         "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2012D_newThr/summed_208538_208686.root",
 
         # # 2015B Bon
-        # "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root"
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015B_newGT_v5/summed_251562_251562.root"
 
         # 2015CD
         # "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015CD_v1/summed_254232_254232.root",

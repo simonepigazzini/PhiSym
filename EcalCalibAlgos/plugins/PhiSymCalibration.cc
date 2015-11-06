@@ -388,53 +388,49 @@ void PhiSymCalibration::ComputeICs()
     {
         EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
         int currentRing = calibRing_.getRingIndex(ebXstal);
-        {
-            //---fill the output tree
-            outFile_->eb_xstals.n_events = nEvents_;
-            outFile_->eb_xstals.rec_hit = &ebXstals_[index];
-            outFile_->eb_xstals.ieta = ebXstal.ieta();
-            outFile_->eb_xstals.iphi = ebXstal.iphi();
-            outFile_->eb_xstals.k_ring = GetRingKfactor(currentRing, 0).first;
-            outFile_->eb_xstals.k_ring_err = GetRingKfactor(currentRing, 0).second;
-            outFile_->eb_xstals.k_ch = GetChannelKfactor(index, 0).first;
-            outFile_->eb_xstals.k_ch_err = GetChannelKfactor(index, 0).second;
-            outFile_->eb_xstals.ic_ring = ((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                                           /outFile_->eb_xstals.k_ring+1)/icRMeanEB_[currentRing];
-            outFile_->eb_xstals.ic_ch = ((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                                         /outFile_->eb_xstals.k_ch+1)/icChMeanEB_[currentRing];
-            outFile_->eb_xstals.ic_old = ebOldICs_[currentRing][ebXstal.iphi()];
-            outFile_->eb_xstals.ic_abs = ebAbsICs_[currentRing][ebXstal.iphi()];
-            outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
-            outFile_->eb_xstals.ic_ring_err = ebICRingErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ring);
-            outFile_->eb_xstals.Fill();
-        }
+        //---fill the output tree
+        outFile_->eb_xstals.n_events = nEvents_;
+        outFile_->eb_xstals.rec_hit = &ebXstals_[index];
+        outFile_->eb_xstals.ieta = ebXstal.ieta();
+        outFile_->eb_xstals.iphi = ebXstal.iphi();
+        outFile_->eb_xstals.k_ring = GetRingKfactor(currentRing, 0).first;
+        outFile_->eb_xstals.k_ring_err = GetRingKfactor(currentRing, 0).second;
+        outFile_->eb_xstals.k_ch = GetChannelKfactor(index, 0).first;
+        outFile_->eb_xstals.k_ch_err = GetChannelKfactor(index, 0).second;
+        outFile_->eb_xstals.ic_ring = ((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
+                                       /outFile_->eb_xstals.k_ring+1)/icRMeanEB_[currentRing];
+        outFile_->eb_xstals.ic_ch = ((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
+                                     /outFile_->eb_xstals.k_ch+1)/icChMeanEB_[currentRing];
+        outFile_->eb_xstals.ic_old = ebOldICs_[currentRing][ebXstal.iphi()];
+        outFile_->eb_xstals.ic_abs = ebAbsICs_[currentRing][ebXstal.iphi()];
+        outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
+        outFile_->eb_xstals.ic_ring_err = ebICRingErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ring);
+        outFile_->eb_xstals.Fill();
     }
     //---loop over the EE channels and compute the IC
     for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
     {
         EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
         int currentRing = calibRing_.getRingIndex(eeXstal)-kNRingsEB;
-        {
-            //---fill the output tree
-            outFile_->ee_xstals.n_events = nEvents_;
-            outFile_->ee_xstals.rec_hit = &eeXstals_[index];
-            outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
-            outFile_->ee_xstals.ix = eeXstal.ix();
-            outFile_->ee_xstals.iy = eeXstal.iy();
-            outFile_->ee_xstals.k_ring = GetRingKfactor(currentRing, 1).first;
-            outFile_->ee_xstals.k_ring_err = GetRingKfactor(currentRing, 1).second;
-            outFile_->ee_xstals.k_ch = GetChannelKfactor(index, 1).first;
-            outFile_->ee_xstals.k_ch_err = GetChannelKfactor(index, 1).second;
-            outFile_->ee_xstals.ic_ring = ((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                                           /outFile_->ee_xstals.k_ring+1)/icRMeanEE_[currentRing];
-            outFile_->ee_xstals.ic_ch = ((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                                         /outFile_->ee_xstals.k_ch+1)/icChMeanEE_[currentRing];
-            outFile_->ee_xstals.ic_old = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
-            outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];            
-            outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
-            outFile_->ee_xstals.ic_ring_err = eeICRingErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ring);
-            outFile_->ee_xstals.Fill();
-        }
+        //---fill the output tree
+        outFile_->ee_xstals.n_events = nEvents_;
+        outFile_->ee_xstals.rec_hit = &eeXstals_[index];
+        outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
+        outFile_->ee_xstals.ix = eeXstal.ix();
+        outFile_->ee_xstals.iy = eeXstal.iy();
+        outFile_->ee_xstals.k_ring = GetRingKfactor(currentRing, 1).first;
+        outFile_->ee_xstals.k_ring_err = GetRingKfactor(currentRing, 1).second;
+        outFile_->ee_xstals.k_ch = GetChannelKfactor(index, 1).first;
+        outFile_->ee_xstals.k_ch_err = GetChannelKfactor(index, 1).second;
+        outFile_->ee_xstals.ic_ring = ((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
+                                       /outFile_->ee_xstals.k_ring+1)/icRMeanEE_[currentRing];
+        outFile_->ee_xstals.ic_ch = ((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
+                                     /outFile_->ee_xstals.k_ch+1)/icChMeanEE_[currentRing];
+        outFile_->ee_xstals.ic_old = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
+        outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];            
+        outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
+        outFile_->ee_xstals.ic_ring_err = eeICRingErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ring);
+        outFile_->ee_xstals.Fill();
     }
 
     //---reset EB rings
@@ -595,41 +591,35 @@ void PhiSymCalibration::FillOutput()
     {
         EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
         int currentRing=calibRing_.getRingIndex(ebXstal);
-        if(goodXstalsEB_[currentRing][ebXstal.iphi()][0])
-        {
-            //---fill the output tree
-            outFile_->eb_xstals.n_events = nEvents_;
-            outFile_->eb_xstals.rec_hit = &ebXstals_[index];
-            outFile_->eb_xstals.ieta = ebXstal.ieta();
-            outFile_->eb_xstals.iphi = ebXstal.iphi();
-            outFile_->eb_xstals.Fill();
+        //---fill the output tree
+        outFile_->eb_xstals.n_events = nEvents_;
+        outFile_->eb_xstals.rec_hit = &ebXstals_[index];
+        outFile_->eb_xstals.ieta = ebXstal.ieta();
+        outFile_->eb_xstals.iphi = ebXstal.iphi();
+        outFile_->eb_xstals.Fill();
 
-            //---reset channel status and sum
-            ebXstals_[index].Reset();
-            for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-                goodXstalsEB_[currentRing][ebXstal.iphi()][iMis]=0;
-        }
+        //---reset channel status and sum
+        ebXstals_[index].Reset();
+        for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+            goodXstalsEB_[currentRing][ebXstal.iphi()][iMis]=0;
     }
     //---loop over the EE channels and store summed rechits
     for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
     {
         EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
         int currentRing=calibRing_.getRingIndex(eeXstal)-kNRingsEB;            
-        if(goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][0])
-        {
-            //---fill the output tree
-            outFile_->ee_xstals.n_events = nEvents_;
-            outFile_->ee_xstals.rec_hit = &eeXstals_[index];
-            outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
-            outFile_->ee_xstals.ix = eeXstal.ix();
-            outFile_->ee_xstals.iy = eeXstal.iy();
-            outFile_->ee_xstals.Fill();            
+        //---fill the output tree
+        outFile_->ee_xstals.n_events = nEvents_;
+        outFile_->ee_xstals.rec_hit = &eeXstals_[index];
+        outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
+        outFile_->ee_xstals.ix = eeXstal.ix();
+        outFile_->ee_xstals.iy = eeXstal.iy();
+        outFile_->ee_xstals.Fill();            
 
-            //---reset channel status and sum
-            eeXstals_[index].Reset();
-            for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-                goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][iMis]=0;
-        }
+        //---reset channel status and sum
+        eeXstals_[index].Reset();
+        for(int iMis=0; iMis<=nMisCalib_; ++iMis)
+            goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][iMis]=0;
     }
     
     //---reset counters and kFactor flag

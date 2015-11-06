@@ -3,8 +3,8 @@ import FWCore.ParameterSet.Config as cms
 process = cms.PSet()
 
 process.IOVBounds = cms.PSet(
-    startingIOV = cms.int32(56),
-    nIOVs       = cms.int32(23),
+    startingIOV = cms.int32(69),
+    nIOVs       = cms.int32(1),
     beginRuns   = cms.vint32(246908, 246912, 246919, 246920, 246923, 246926, 246930,
                              246933, 246936, 246951, 246958, 246959, 246960, 246963,
                              247068, 247070, 247073, 247078, 247081, 247243, 247244,

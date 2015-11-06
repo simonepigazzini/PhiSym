@@ -30,7 +30,7 @@ process.source = cms.Source("PoolSource",
 blocksToSum = 1000
 process.load('PhiSym.EcalCalibAlgos.PhiSymCalibration_cfi')
 process.PhiSymCalibration.blocksToSum = blocksToSum
-#process.PhiSymCalibration.computeICs = False
+process.PhiSymCalibration.computeICs = False
 process.PhiSymCalibration.oldCalibFile = ""
 process.PhiSymCalibration.absCalibFile = "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_7_4_1/src/PhiSym/EcalCalibAlgos/data/EcalIntercalibConstants_2015Abs.dat"
 
