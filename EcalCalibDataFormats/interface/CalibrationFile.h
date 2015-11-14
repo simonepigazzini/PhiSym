@@ -30,6 +30,7 @@ public:
     bool        NextEntry(int64_t entry=-1);
     
     //---branches variables---
+    double        avg_time;
     int           begin[2]={0};
     int           end[2]={0};
     int           block;
@@ -61,6 +62,7 @@ CrystalsEBTree::CrystalsEBTree()
 {
     tree_ = new TTree();
     //---init
+    avg_time=0;
     block=0;
     n_lumis=0;
     n_events=0;
@@ -80,6 +82,7 @@ CrystalsEBTree::CrystalsEBTree()
     ic_err_sys=0;
     
     //---create branches
+    tree_->Branch("avg_time", &avg_time, "avg_time/D");
     tree_->Branch("begin", &begin, "begin[2]/I");
     tree_->Branch("end", &end, "end[2]/I");
     tree_->Branch("block", &block, "block/I");
@@ -130,6 +133,7 @@ CrystalsEBTree::CrystalsEBTree(TTree* tree)
     ic_err_sys=0;
     
     //---create branches
+    tree_->SetBranchAddress("avg_time", &avg_time);
     tree_->SetBranchAddress("begin", &begin[0]);
     tree_->SetBranchAddress("end", &end[0]);
     tree_->SetBranchAddress("block", &block);
@@ -188,6 +192,7 @@ public:
     bool        NextEntry(int64_t entry=-1);
     
     //---branches variables---
+    double        avg_time;
     int           begin[2];
     int           end[2];
     int           block;
@@ -219,6 +224,7 @@ CrystalsEETree::CrystalsEETree()
 {
     tree_ = new TTree();    
     //---init
+    avg_time=0;
     block=0;
     n_lumis=0;
     n_events=0;
@@ -239,6 +245,7 @@ CrystalsEETree::CrystalsEETree()
     ic_err_sys=0;
     
     //---create branches
+    tree_->Branch("avg_time", &avg_time, "avg_time/D");
     tree_->Branch("begin", &begin, "begin[2]/I");
     tree_->Branch("end", &end, "end[2]/I");
     tree_->Branch("block", &block, "block/I");
@@ -269,6 +276,7 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     tree_ = tree;
     currentEntry_ = -1;
     //---init
+    avg_time=0;
     block=0;
     n_lumis=0;
     n_events=0;
@@ -289,6 +297,7 @@ CrystalsEETree::CrystalsEETree(TTree* tree)
     ic_err_sys=0;
     
     //---create branches
+    tree_->SetBranchAddress("avg_time", &avg_time);
     tree_->SetBranchAddress("begin", &begin[0]);
     tree_->SetBranchAddress("end", &end[0]);
     tree_->SetBranchAddress("block", &block);

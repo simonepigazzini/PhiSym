@@ -358,10 +358,7 @@ void ComputeICs()
     {
         //---if required normalized the absolute ICs
         for(int iRing=0; iRing<kNRingsEE; ++iRing)
-        {
             icAbsChMeanEE_[iRing] = icAbsChMeanEE_[iRing]/nGoodInRingEE_[iRing][0];
-            cout << iRing << "  " << icAbsChMeanEE_[iRing] << "  " << nGoodInRingEE_[iRing][0] << endl;
-        }
     }
     for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
     {
@@ -518,13 +515,34 @@ int main( int argc, char *argv[] )
     const edm::ParameterSet &filesOpt = process.getParameter<edm::ParameterSet>("ioFilesOpt");
     const edm::ParameterSet &IOVBounds = process.getParameter<edm::ParameterSet>("IOVBounds");
         
-    //---get IOV boundaries
-    vector<int> IOVBeginRuns = IOVBounds.getParameter<vector<int> >("beginRuns");
-    vector<int> IOVEndRuns = IOVBounds.getParameter<vector<int> >("endRuns");
-    vector<int> IOVBeginLumis = IOVBounds.getParameter<vector<int> >("beginLumis");
-    vector<int> IOVEndLumis = IOVBounds.getParameter<vector<int> >("endLumis");    
+    //---get IOV boundaries    
+    vector<int> IOVBeginRuns, IOVEndRuns;
+    vector<int> IOVBeginLumis, IOVEndLumis;
+    vector<double> IOVTimes;
+    vector<string> maps = IOVBounds.getParameter<vector<string> >("IOVmaps");
     int startingIOV = IOVBounds.getParameter<int>("startingIOV");
-    int nIOVs = IOVBounds.getParameter<int>("nIOVs");
+    int nIOVs = IOVBounds.getParameter<int>("nIOVs");    
+    for(auto fileName : maps)
+    {
+        TFile* file = TFile::Open(fileName.c_str(), "READ");
+        TTree* map = (TTree*)file->Get("outTree_barl");
+        int firstRun, lastRun;
+        int firstLumi, lastLumi;
+        double avg_time;
+        map->SetBranchAddress("firstRun", &firstRun);
+        map->SetBranchAddress("lastRun", &lastRun);
+        map->SetBranchAddress("firstLumi", &firstLumi);
+        map->SetBranchAddress("lastLumi", &lastLumi);
+        map->SetBranchAddress("unixTimeMean", &avg_time);
+        for(int iEntry=0; iEntry<map->GetEntriesFast(); ++iEntry)
+        {
+            IOVBeginRuns.push_back(firstRun);
+            IOVEndRuns.push_back(lastRun);
+            IOVBeginLumis.push_back(firstLumi);
+            IOVEndLumis.push_back(lastLumi);
+            IOVTimes.push_back(avg_time);
+        }
+    }
     
     //---get input/output files
     outputFileBase = filesOpt.getParameter<string>("outputFile");
@@ -545,7 +563,7 @@ int main( int argc, char *argv[] )
             {
                 if(ebTree.NextEntry(61200*iBlk+1))
                 {
-                    if(/*ebTree.begin[0] >= IOVBeginRuns[iIOV] &&*/ ebTree.end[0] <= IOVEndRuns[iIOV])
+                    if(ebTree.begin[0] >= IOVBeginRuns[iIOV] && ebTree.begin[0] <= IOVEndRuns[iIOV])
                         iovInputFiles[iIOV].push_back(fileName);
                 }
             }
@@ -671,7 +689,9 @@ int main( int argc, char *argv[] )
             while(ebTree.NextEntry())
             {
                 //---skip unwanted blocks
-                if(ebTree.begin[0] < IOVBeginRuns[iIOV] || ebTree.end[0] > IOVEndRuns[iIOV])
+                if(ebTree.begin[0] < IOVBeginRuns[iIOV] || ebTree.end[0] > IOVEndRuns[iIOV] ||
+                   (ebTree.begin[0] == IOVBeginRuns[iIOV] && ebTree.begin[1] < IOVBeginLumis[iIOV]) ||
+                   (ebTree.end[0] == IOVEndRuns[iIOV] && ebTree.end[1] > IOVEndLumis[iIOV]))
                     continue;
                 
                 //---counts summed lumis
@@ -704,7 +724,9 @@ int main( int argc, char *argv[] )
             while(eeTree.NextEntry())
             {
                 //---skip unwanted blocks
-                if(eeTree.begin[0] < IOVBeginRuns[iIOV] || eeTree.end[0] > IOVEndRuns[iIOV])
+                if(eeTree.begin[0] < IOVBeginRuns[iIOV] || eeTree.end[0] > IOVEndRuns[iIOV] ||
+                   (eeTree.begin[0] == IOVBeginRuns[iIOV] && eeTree.begin[1] < IOVBeginLumis[iIOV]) ||
+                   (eeTree.end[0] == IOVEndRuns[iIOV] && eeTree.end[1] > IOVEndLumis[iIOV]))
                     continue;
                 
                 int currentRing = eeTree.iring;

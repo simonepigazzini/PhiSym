@@ -51,7 +51,8 @@ if opts.type == "1D":
     plot = inFile.Get(opts.key)
 if opts.type == "2D":
     plot = ROOT.TH2F(inFile.Get(opts.key))
-    
+
+
 tokens_plot = str.split(plot.GetTitle(), ";")
 tokens_opts = str.split(opts.title, ";")
 for i in range(4):
