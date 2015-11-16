@@ -1,5 +1,5 @@
-#ifndef __PHISYM_CALIBRATION_LITE__
-#define __PHISYM_CALIBRATION_LITE__
+#ifndef __PHISYM_CALIBRATION__
+#define __PHISYM_CALIBRATION__
 
 #include <map>
 #include <vector>
@@ -23,6 +23,7 @@
 
 #include "Calibration/Tools/interface/EcalRingCalibrationTools.h"
 
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
 #include "PhiSym/EcalCalibAlgos/interface/utils.h"
@@ -516,33 +517,50 @@ int main( int argc, char *argv[] )
     const edm::ParameterSet &IOVBounds = process.getParameter<edm::ParameterSet>("IOVBounds");
         
     //---get IOV boundaries    
-    vector<int> IOVBeginRuns, IOVEndRuns;
-    vector<int> IOVBeginLumis, IOVEndLumis;
+    vector<PhiSymRunLumi> IOVBegins, IOVEnds;
     vector<double> IOVTimes;
-    vector<string> maps = IOVBounds.getParameter<vector<string> >("IOVmaps");
+    vector<string> maps = IOVBounds.getParameter<vector<string> >("IOVMaps");
     int startingIOV = IOVBounds.getParameter<int>("startingIOV");
-    int nIOVs = IOVBounds.getParameter<int>("nIOVs");    
-    for(auto fileName : maps)
+    int nIOVs = IOVBounds.getParameter<int>("nIOVs");
+    bool manualSplitting = IOVBounds.getParameter<bool>("manualSplitting");
+    //---search for manual definition of IOVs or get splitting from file
+    if(maps.size() == 0 || manualSplitting)
     {
-        TFile* file = TFile::Open(fileName.c_str(), "READ");
-        TTree* map = (TTree*)file->Get("outTree_barl");
-        int firstRun, lastRun;
-        int firstLumi, lastLumi;
-        double avg_time;
-        map->SetBranchAddress("firstRun", &firstRun);
-        map->SetBranchAddress("lastRun", &lastRun);
-        map->SetBranchAddress("firstLumi", &firstLumi);
-        map->SetBranchAddress("lastLumi", &lastLumi);
-        map->SetBranchAddress("unixTimeMean", &avg_time);
-        for(int iEntry=0; iEntry<map->GetEntriesFast(); ++iEntry)
+        vector<int> IOVBeginRuns = IOVBounds.getParameter<vector<int> >("beginRuns");
+        vector<int> IOVEndRuns = IOVBounds.getParameter<vector<int> >("endRuns");        
+        for(unsigned int iRun=0; iRun<IOVBeginRuns.size(); ++iRun)
         {
-            IOVBeginRuns.push_back(firstRun);
-            IOVEndRuns.push_back(lastRun);
-            IOVBeginLumis.push_back(firstLumi);
-            IOVEndLumis.push_back(lastLumi);
-            IOVTimes.push_back(avg_time);
+            IOVBegins.push_back(PhiSymRunLumi(IOVBeginRuns[iRun], 0));
+            IOVEnds.push_back(PhiSymRunLumi(IOVEndRuns[iRun], 1000000000));
+            IOVTimes.push_back(iRun);
         }
     }
+    else
+    {
+        for(auto fileName : maps)
+        {
+            TFile* file = TFile::Open(fileName.c_str(), "READ");
+            TTree* map = (TTree*)file->Get("outTree_barl");
+            int firstRun, lastRun;
+            int firstLumi, lastLumi;
+            double avg_time;
+            map->SetBranchAddress("firstRun", &firstRun);
+            map->SetBranchAddress("lastRun", &lastRun);
+            map->SetBranchAddress("firstLumi", &firstLumi);
+            map->SetBranchAddress("lastLumi", &lastLumi);
+            map->SetBranchAddress("unixTimeMean", &avg_time);
+            for(int iEntry=0; iEntry<map->GetEntriesFast(); ++iEntry)
+            {
+                map->GetEntry(iEntry);
+                IOVBegins.push_back(PhiSymRunLumi(firstRun, firstLumi));
+                IOVEnds.push_back(PhiSymRunLumi(lastRun, lastLumi));
+                IOVTimes.push_back(avg_time);
+            }
+            file->Close();
+        }
+    }
+    //---check the number of IOVs to be processed
+    nIOVs = nIOVs == -1 ? IOVBegins.size() : nIOVs;
     
     //---get input/output files
     outputFileBase = filesOpt.getParameter<string>("outputFile");
@@ -563,7 +581,9 @@ int main( int argc, char *argv[] )
             {
                 if(ebTree.NextEntry(61200*iBlk+1))
                 {
-                    if(ebTree.begin[0] >= IOVBeginRuns[iIOV] && ebTree.begin[0] <= IOVEndRuns[iIOV])
+                    PhiSymRunLumi thisBlkBegin(ebTree.begin[0], ebTree.begin[1]);
+                    PhiSymRunLumi thisBlkEnd(ebTree.end[0], ebTree.end[1]);
+                    if(thisBlkBegin >= IOVBegins[iIOV] && thisBlkEnd <= IOVEnds[iIOV])
                         iovInputFiles[iIOV].push_back(fileName);
                 }
             }
@@ -629,9 +649,16 @@ int main( int argc, char *argv[] )
         nMisCalib_ = -1;
         
         //---output file        
-        TFile* out = TFile::Open((outputFileBase+
-                                  to_string(IOVBeginRuns[iIOV])+"_"+
-                                  to_string(IOVEndRuns[iIOV])+".root").c_str(),
+        TFile* out;
+        if(manualSplitting)
+            out = TFile::Open((outputFileBase+
+                               to_string(IOVBegins[iIOV].run)+"_"+
+                               to_string(IOVEnds[iIOV].run)+".root").c_str(),
+                              "RECREATE");
+        else            
+            out = TFile::Open((outputFileBase+
+                                  to_string(IOVBegins[iIOV].run)+"-"+to_string(IOVBegins[iIOV].lumi)+"_"+
+                                  to_string(IOVEnds[iIOV].run)+"-"+to_string(IOVEnds[iIOV].lumi)+".root").c_str(),
                                  "RECREATE");
         outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(out));
 
@@ -654,8 +681,8 @@ int main( int argc, char *argv[] )
             CrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
 
             cout << "IOV: " << iIOV << endl;
-            cout << "Reading file: " << fileName.c_str() << "..." << endl;
-        
+            cout << "Reading file: " << fileName.c_str() << " / blk: " << ebTree.block << "..." << endl;
+            
             //---get miscalib values
             if(nMisCalib_ == -1)
             {
@@ -689,9 +716,9 @@ int main( int argc, char *argv[] )
             while(ebTree.NextEntry())
             {
                 //---skip unwanted blocks
-                if(ebTree.begin[0] < IOVBeginRuns[iIOV] || ebTree.end[0] > IOVEndRuns[iIOV] ||
-                   (ebTree.begin[0] == IOVBeginRuns[iIOV] && ebTree.begin[1] < IOVBeginLumis[iIOV]) ||
-                   (ebTree.end[0] == IOVEndRuns[iIOV] && ebTree.end[1] > IOVEndLumis[iIOV]))
+                PhiSymRunLumi thisBlkBegin(ebTree.begin[0], ebTree.begin[1]);
+                PhiSymRunLumi thisBlkEnd(ebTree.end[0], ebTree.end[1]);
+                if(thisBlkBegin < IOVBegins[iIOV] || thisBlkEnd > IOVEnds[iIOV])                    
                     continue;
                 
                 //---counts summed lumis
@@ -724,9 +751,9 @@ int main( int argc, char *argv[] )
             while(eeTree.NextEntry())
             {
                 //---skip unwanted blocks
-                if(eeTree.begin[0] < IOVBeginRuns[iIOV] || eeTree.end[0] > IOVEndRuns[iIOV] ||
-                   (eeTree.begin[0] == IOVBeginRuns[iIOV] && eeTree.begin[1] < IOVBeginLumis[iIOV]) ||
-                   (eeTree.end[0] == IOVEndRuns[iIOV] && eeTree.end[1] > IOVEndLumis[iIOV]))
+                PhiSymRunLumi thisBlkBegin(eeTree.begin[0], eeTree.begin[1]);
+                PhiSymRunLumi thisBlkEnd(eeTree.end[0], eeTree.end[1]);
+                if(thisBlkBegin < IOVBegins[iIOV] || thisBlkEnd > IOVEnds[iIOV])                    
                     continue;
                 
                 int currentRing = eeTree.iring;
@@ -769,7 +796,7 @@ int main( int argc, char *argv[] )
             {
                 pair<float, float> tmp = PhiSym::VectorMeanRMS(ebRingsSumEts[iRing],
                                                                iRm, ebRingsSumEts[iRing].size()-1-iRm);
-                if(mean == -1 || fabs(mean-tmp.first)/mean>0.0005)
+                if(mean == -1 || fabs(mean-tmp.first)/mean>0.001)
                 {
                     mean = tmp.first;
                     rms = tmp.second;

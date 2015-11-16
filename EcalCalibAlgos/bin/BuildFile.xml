@@ -8,8 +8,8 @@
 <flags EDM_PLUGIN="1"/>
 <environment>
   <bin
-      name="PhiSymCalibrationLite"
-      file="PhiSymCalibrationLite.cc">
+      name="PhiSymCalibration"
+      file="PhiSymCalibration.cc">
   </bin>
   <bin
       name="MaterialCorrection"
@@ -18,9 +18,5 @@
   <bin
       name="TimeEvolution"
       file="TimeEvolution.cc">
-  </bin>
-  <bin
-      name="fuckingEndcaps"
-      file="fuckingEndcaps.cc">
   </bin>
 </environment>

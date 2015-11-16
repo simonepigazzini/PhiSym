@@ -1,6 +1,8 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+using namespace std;
+
 namespace PhiSym
 {   
 //----------compute std::vector averages in a selected range------------------------------

@@ -65,21 +65,21 @@ int main(int argc, char *argv[])
         string runsRange(inputFile.end()-18, inputFile.end()-5);
 
         //---init
-        float sm_ic_mean[18][2];
-        float sm_ic_rms[18][2];    
-        float sm_ic_sum[18][2];
-        float sm_ic_sum2[18][2];    
-        int sm_n_alive[18][2];
+        float sm_ic_mean[18][2]={};
+        float sm_ic_rms[18][2]={};    
+        float sm_ic_sum[18][2]={};
+        float sm_ic_sum2[18][2]={};    
+        int sm_n_alive[18][2]={};
         vector<float> iphi_ic[361][2];
-        float sm_ic_mean_b60[18][2];
-        float sm_ic_rms_b60[18][2];    
-        float sm_ic_sum_b60[18][2];
-        float sm_ic_sum2_b60[18][2];    
-        int sm_n_alive_b60[18][2];
+        float sm_ic_mean_b60[18][2]={};
+        float sm_ic_rms_b60[18][2]={};    
+        float sm_ic_sum_b60[18][2]={};
+        float sm_ic_sum2_b60[18][2]={};    
+        int sm_n_alive_b60[18][2]={};
         vector<float> iphi_ic_b60[361][2];
         int n_hits[EBDetId::kSizeForDenseIndexing]={0};
         bool is_good[EBDetId::kSizeForDenseIndexing]={0};
-        float ic_uncorr[EBDetId::kSizeForDenseIndexing];
+        float ic_uncorr[EBDetId::kSizeForDenseIndexing]={0};
         float corrections[EBDetId::kSizeForDenseIndexing]={1};   
         pair<int, int> ebMap[EBDetId::kSizeForDenseIndexing];
 
@@ -102,6 +102,14 @@ int main(int argc, char *argv[])
         TFile* file = TFile::Open(inputFile.c_str(), "READ");
         CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
 
+        for(int iPhi=1; iPhi<=360; ++iPhi)
+        {
+            iphi_ic[iPhi][0].clear();
+            iphi_ic[iPhi][1].clear();
+            iphi_ic_b60[iPhi][0].clear();
+            iphi_ic_b60[iPhi][1].clear();
+        }
+        
         while(ebTree.NextEntry())
         {
             int index = EBDetId(ebTree.ieta, ebTree.iphi).hashedIndex();
@@ -116,7 +124,7 @@ int main(int argc, char *argv[])
             if(ebTree.ieta > -50 && ebTree.ieta < -44 && ebTree.iphi > 10 && ebTree.iphi < 16)
                 n_hits[index] = 0;
         }
-    
+
         for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
         {
             if(n_hits[index] == 0)
@@ -127,7 +135,7 @@ int main(int argc, char *argv[])
                 int sm = (ebMap[index].second-1) / 20;
                 int side = ebMap[index].first < 0 ? 0 : 1;
                 iphi_ic[ebMap[index].second][side].push_back(ic_uncorr[index]);
-                //---outliers rejection 
+                //---outliers rejection
                 if(!is_good[index])
                     continue;
                 //---SM boundries rejection
@@ -263,17 +271,17 @@ int main(int argc, char *argv[])
             if(abs(ieta) < 60)
             {
                 if(ieta < 0)
-                    corrections[index] = sm_ic_mean[(iphi-1)/20][0]/ebm_corr[iphi-1];
+                    corrections[index] = 1/ebm_corr[iphi-1];
                 if(ieta > 0)
-                    corrections[index] = sm_ic_mean[(iphi-1)/20][0]/ebp_corr[iphi-1];
+                    corrections[index] = 1/ebp_corr[iphi-1];
             }
             //---no TB
             else
             {
                 if(ieta < 0)
-                    corrections[index] = sm_ic_mean_b60[(iphi-1)/20][0]/ebm_corr_b60[iphi-1];
+                    corrections[index] = 1/ebm_corr_b60[iphi-1];
                 if(ieta > 0)
-                    corrections[index] = sm_ic_mean_b60[(iphi-1)/20][0]/ebp_corr_b60[iphi-1];
+                    corrections[index] = 1/ebp_corr_b60[iphi-1];
             }
         
             if((iphi-1)%20 == 0 || (iphi-1)%20 == 1)
@@ -357,6 +365,8 @@ int main(int argc, char *argv[])
         map_ic_uncorr->Write("map_ic_uncorr");
         map_ic_corr->Write("map_ic_corr");
         map_corrections->Write("map_corrections");
+
+        file->Close();
     }
 }
     
