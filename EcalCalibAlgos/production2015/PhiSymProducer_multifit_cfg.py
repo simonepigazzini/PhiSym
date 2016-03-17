@@ -45,7 +45,7 @@ process.source = cms.Source("PoolSource",
                                 'drop *_hltTriggerSummaryAOD_*_*'
                             ),
                             fileNames = cms.untracked.vstring(
-                                "/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root"
+                                "/store/data/Run2015D/AlCaPhiSym/RAW/v1/000/256/587/00000/C4E4637E-FF5B-E511-B847-02163E013735.root"
                                 #"root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root",
 ))
 
@@ -114,13 +114,38 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("phisym_spectra.root"))
 
 # GLOBAL-TAG
-process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v4')
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
-             connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL"),
-         ),
-)
+from CondCore.DBCommon.CondDBSetup_cfi import *
+process.GlobalTag = cms.ESSource("PoolDBESSource",
+                                 CondDBSetup,
+                                 connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+                                 globaltag = cms.string('74X_dataRun2_Prompt_v2'),
+                                 toGet = cms.VPSet(
+                                     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
+                                              tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
+                                              connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL"),
+                                          ),
+                                     cms.PSet(record = cms.string("EcalPulseShapesRcd"),
+                                              tag = cms.string("EcalPulseShapes_data"),
+                                              connect = cms.untracked.string("sqlite_file:ecaltemplates_popcon_weekly_best.db"),
+                                          ),
+                                     cms.PSet(record = cms.string("EcalPulseCovariancesRcd"),
+                                              tag = cms.string("EcalPulseCovariances_data"),
+                                              connect = cms.untracked.string("sqlite_file:ecalcovariances_popcon_weekly_best.db"),
+                                          ),
+                                     cms.PSet(record = cms.string("EBAlignmentRcd"),
+                                              tag = cms.string("EBAlignment_measured_v10_offline"),
+                                              connect = cms.untracked.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                          ),
+                                     cms.PSet(record = cms.string("EEAlignmentRcd"),
+                                              tag = cms.string("EEAlignment_measured_v10_offline"),
+                                              connect = cms.untracked.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                          ),
+                                     cms.PSet(record = cms.string("ESAlignmentRcd"), # only Bon!
+                                              tag = cms.string("ESAlignment_measured_v08_offline"),
+                                              connect = cms.untracked.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                          )
+                                 )
+                            )
 
 # SCHEDULE
 if (not runMultiFit):

@@ -46,9 +46,9 @@ process.source = cms.Source("PoolSource",
                                 #"/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/185B7750-433E-E211-8FA0-E0CB4E55365D.root"
                                 #"/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/185B7750-433E-E211-8FA0-E0CB4E55365D.root",
                                 "/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/7ABC81F3-543E-E211-A801-003048678098.root",
-                                "/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/8C50E001-423E-E211-BEDA-BCAEC5329716.root",
-                                "/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/B0BE6B16-423E-E211-B0CD-002481E0D90C.root",
-                                "/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/C628AB90-3F3E-E211-BC83-5404A63886A2.root"
+                                #"/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/8C50E001-423E-E211-BEDA-BCAEC5329716.root",
+                                #"/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/B0BE6B16-423E-E211-B0CD-002481E0D90C.root",
+                                #"/store/data/Run2012D/AlCaPhiSym/RAW/v1/000/208/538/C628AB90-3F3E-E211-BC83-5404A63886A2.root"
                             )
 )
 

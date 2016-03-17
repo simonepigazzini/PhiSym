@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
     vector<string> files = filesOpt.getParameter<vector<string> >("inputFiles");       
     vector<string> corrections_files = filesOpt.getParameter<vector<string> >("correctionsFiles");       
 
+    vector<double> times;
     map<string, map<int, vector<float> > > ebVar;
     map<string, map<int, vector<float> > > eeVar;
     pair<int, int> ebMap[EBDetId::kSizeForDenseIndexing];
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
             float corr;            
             ifstream corrections(corrections_files[iFile], ios::in);
             while(corrections.good())
-            {
+            {                
                 corrections >> ix1 >> ix2 >> side >> corr;
                 if(side==0)
                 {
@@ -121,6 +122,8 @@ int main(int argc, char *argv[])
         //---EB
         while(ebTree.NextEntry())
         {
+            if(times.size() < iFile)
+                times.push_back(ebTree.avg_time);
             if(ebTree.rec_hit->GetNhits() > 0)
                 tot_hits_EB += ebTree.rec_hit->GetNhits();
             index=EBDetId(ebTree.ieta, ebTree.iphi).hashedIndex();
@@ -232,8 +235,8 @@ int main(int argc, char *argv[])
             TH1F* tmpRelEB = new TH1F("tmpRelEB", "", 2000, 0.5, 1.5);
             TH1F* tmpAbsEE = new TH1F("tmpAbsEE", "", 1000, 0.5, 1.5);
             TH1F* tmpRelEE = new TH1F("tmpRelEE", "", 1000, 0.5, 1.5);
-            TH2F* mapAbsEB = new TH2F("mapAbsEB", "", 360, 0.5, 360.5, 171, -85, 85);        
-            TH2F* mapRelEB = new TH2F("mapRelEB", "", 360, 0.5, 360.5, 171, -85, 85);
+            TH2F* mapAbsEB = new TH2F("mapAbsEB", "", 360, 0.5, 360.5, 171, -85.5, 85.5);        
+            TH2F* mapRelEB = new TH2F("mapRelEB", "", 360, 0.5, 360.5, 171, -85.5, 85.5);
             TH2F* mapAbsEE = new TH2F("mapAbsEE", "", 200, 0.5, 200.5, 100, 0.5, 100.5);
             TH2F* mapRelEE = new TH2F("mapRelEE", "", 200, 0.5, 200.5, 100, 0.5, 100.5);
             mapAbsEB->SetContour(100000);
@@ -283,12 +286,12 @@ int main(int argc, char *argv[])
             fitFuncAbsEB->SetRange(mapAbsEB_range[0], mapAbsEB_range[1]);
             tmpAbsEB->Fit(fitFuncAbsEB, "QR");
             hAbsEB->Fill(fitFuncAbsEB->GetParameter(2));
-            grAbsEB->SetPoint(iFile-1, iFile, fitFuncAbsEB->GetParameter(2));
+            grAbsEB->SetPoint(iFile-1, times[iFile], fitFuncAbsEB->GetParameter(2));
             grAbsEB->SetPointError(iFile-1, 0, fitFuncAbsEB->GetParError(2));            
             fitFuncRelEB->SetRange(mapRelEB_range[0], mapRelEB_range[1]);
             tmpRelEB->Fit(fitFuncRelEB, "QR");
             hRelEB->Fill(fitFuncRelEB->GetParameter(2));
-            grRelEB->SetPoint(iFile-1, iFile, fitFuncRelEB->GetParameter(2));
+            grRelEB->SetPoint(iFile-1, times[iFile], fitFuncRelEB->GetParameter(2));
             grRelEB->SetPointError(iFile-1, 0, fitFuncRelEB->GetParError(2));
             tmpAbsEB->Write(string("AbsEB_"+to_string(iFile)).c_str());
             tmpRelEB->Write(string("RelEB_"+to_string(iFile)).c_str());        
@@ -304,12 +307,12 @@ int main(int argc, char *argv[])
             fitFuncAbsEE->SetRange(mapAbsEE_range[0], mapAbsEE_range[1]);
             tmpAbsEE->Fit(fitFuncAbsEE, "QR");
             hAbsEE->Fill(fitFuncAbsEE->GetParameter(2));
-            grAbsEE->SetPoint(iFile-1, iFile, fitFuncAbsEE->GetParameter(2));
+            grAbsEE->SetPoint(iFile-1, times[iFile], fitFuncAbsEE->GetParameter(2));
             grAbsEE->SetPointError(iFile-1, 0, fitFuncAbsEE->GetParError(2));            
             fitFuncRelEE->SetRange(mapRelEE_range[0], mapRelEE_range[1]);
             tmpRelEE->Fit(fitFuncRelEE, "QR");
             hRelEE->Fill(fitFuncRelEE->GetParameter(2));
-            grRelEE->SetPoint(iFile-1, iFile, fitFuncRelEE->GetParameter(1));
+            grRelEE->SetPoint(iFile-1, times[iFile], fitFuncRelEE->GetParameter(1));
             grRelEE->SetPointError(iFile-1, 0, fitFuncRelEE->GetParError(1));
             tmpAbsEE->Write(string("AbsEE_"+to_string(iFile)).c_str());
             tmpRelEE->Write(string("RelEE_"+to_string(iFile)).c_str());        
@@ -331,10 +334,14 @@ int main(int argc, char *argv[])
         grAbsEB->SetMarkerColor(kBlue);
         grAbsEB->SetMarkerStyle(20);
         grAbsEB->SetMarkerSize(0.7);
+        grAbsEB->GetXaxis()->SetTimeDisplay(1);
+        grAbsEB->GetXaxis()->SetTimeFormat("%d/%m");
+        grAbsEB->Write("grAbsEB");
         grRelEB->SetMarkerColor(kRed);
         grRelEB->SetMarkerStyle(20);
         grRelEB->SetMarkerSize(0.7);
-        grAbsEB->Write("grAbsEB");
+        grRelEB->GetXaxis()->SetTimeDisplay(1);
+        grRelEB->GetXaxis()->SetTimeFormat("%d/%m");
         grRelEB->Write("grRelEB");
         //---EE
         hAbsEE->SetFillColor(kBlue-4);
@@ -344,10 +351,14 @@ int main(int argc, char *argv[])
         grAbsEE->SetMarkerColor(kBlue);
         grAbsEE->SetMarkerStyle(20);
         grAbsEE->SetMarkerSize(0.7);
+        grAbsEE->GetXaxis()->SetTimeDisplay(1);
+        grAbsEE->GetXaxis()->SetTimeFormat("%d/%m");
+        grAbsEE->Write("grAbsEE");
         grRelEE->SetMarkerColor(kRed);
         grRelEE->SetMarkerStyle(20);
         grRelEE->SetMarkerSize(0.7);
-        grAbsEE->Write("grAbsEE");
+        grRelEE->GetXaxis()->SetTimeDisplay(1);
+        grRelEE->GetXaxis()->SetTimeFormat("%d/%m");
         grRelEE->Write("grRelEE");
     
         outFile->Close();

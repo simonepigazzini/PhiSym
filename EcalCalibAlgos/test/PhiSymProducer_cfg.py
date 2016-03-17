@@ -29,7 +29,7 @@ process.MessageLogger.cerr.default = cms.untracked.PSet(
 
 # import of standard configurations
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(300000)
+    input = cms.untracked.int32(50000)
 )
 
 # skip bad events

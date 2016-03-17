@@ -55,13 +55,17 @@ int main(int argc, char *argv[])
     //---get the python configuration
     const edm::ParameterSet &process = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
     const edm::ParameterSet &filesOpt = process.getParameter<edm::ParameterSet>("ioFilesOpt");
-    
+
+    bool userOutputName = filesOpt.getParameter<bool>("userOutputName");
     string outputFileBase = filesOpt.getParameter<string>("outputFileBase");
+    vector<string> outputFiles = filesOpt.getParameter<vector<string> >("outputFiles");
     vector<string> inputFiles = filesOpt.getParameter<vector<string> >("inputFiles");
 
     //---loop over input files (one input -> one output)
+    int iFile=-1;
     for(auto& inputFile: inputFiles)
     {
+        ++iFile;
         string runsRange(inputFile.end()-18, inputFile.end()-5);
 
         //---init
@@ -98,7 +102,7 @@ int main(int argc, char *argv[])
         TH2F* map_ic_uncorr = new TH2F("map_ic_uncorr", "PhiSym uncorrected ICs map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
         TH2F* map_ic_corr = new TH2F("map_ic_corr", "PhiSym corrected ICs map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
         TH2F* map_corrections = new TH2F("map_corrections", "Corrections map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
-    
+
         TFile* file = TFile::Open(inputFile.c_str(), "READ");
         CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
 
@@ -159,6 +163,9 @@ int main(int argc, char *argv[])
                 if((ebMap[index].second % 20 == 0 && ebMap[index].first > 0) ||
                    (ebMap[index].second % 20 == 1 && ebMap[index].first < 0))
                     continue;
+                // sm_ic_sum[sm][side] += ic_uncorr[index];
+                // sm_ic_sum2[sm][side] += ic_uncorr[index]*ic_uncorr[index];
+                // ++sm_n_alive[sm][side];
                 sm_ic_sum_b60[sm][side] += ic_uncorr[index];
                 sm_ic_sum2_b60[sm][side] += ic_uncorr[index]*ic_uncorr[index];
                 ++sm_n_alive_b60[sm][side];
@@ -173,6 +180,11 @@ int main(int argc, char *argv[])
             sm_ic_rms[iSM][0] = sqrt(sm_ic_sum2[iSM][0]/sm_n_alive[iSM][0]-pow(sm_ic_sum[iSM][0]/sm_n_alive[iSM][0], 2));
             sm_ic_rms[iSM][1] = sqrt(sm_ic_sum2[iSM][1]/sm_n_alive[iSM][1]-pow(sm_ic_sum[iSM][1]/sm_n_alive[iSM][1], 2));
             //---no TB
+            // sm_ic_mean_b60[iSM][0] = sm_ic_mean[iSM][0];
+            // sm_ic_mean_b60[iSM][1] = sm_ic_mean[iSM][1];
+            // sm_ic_rms_b60[iSM][0] = sqrt(sm_ic_sum2[iSM][0]/sm_n_alive[iSM][0]-pow(sm_ic_sum[iSM][0]/sm_n_alive[iSM][0], 2));
+            // sm_ic_rms_b60[iSM][1] = sqrt(sm_ic_sum2[iSM][1]/sm_n_alive[iSM][1]-pow(sm_ic_sum[iSM][1]/sm_n_alive[iSM][1], 2));
+                                    
             sm_ic_mean_b60[iSM][0] = sm_ic_sum_b60[iSM][0]/sm_n_alive_b60[iSM][0];
             sm_ic_mean_b60[iSM][1] = sm_ic_sum_b60[iSM][1]/sm_n_alive_b60[iSM][1];        
             sm_ic_rms_b60[iSM][0] = sqrt(sm_ic_sum2_b60[iSM][0]/sm_n_alive_b60[iSM][0]-
@@ -309,7 +321,11 @@ int main(int argc, char *argv[])
         outTxtFile.close();
 
         //---output plots
-        TFile* outFile = TFile::Open((outputFileBase+runsRange+".root").c_str(), "RECREATE");
+        TFile* outFile;
+        if(!userOutputName)
+            outFile = TFile::Open((outputFileBase+runsRange+".root").c_str(), "RECREATE");
+        else
+            outFile = TFile::Open((outputFileBase+outputFiles[iFile]).c_str(), "RECREATE");
         outFile->cd();
         //---style
         gr_uncorr_EBm->SetTitle("PhiSym IC vs phi - uncorrectred;#it{i#phi};#it{IC}");

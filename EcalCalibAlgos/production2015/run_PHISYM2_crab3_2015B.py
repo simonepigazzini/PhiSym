@@ -1,7 +1,7 @@
 from WMCore.Configuration import Configuration
 
-recoType = "weights"
-#recoType = "multifit"
+#recoType = "weights"
+ecoType = "multifit"
 
 config = Configuration()
 
@@ -23,7 +23,7 @@ config.section_('Data')
 if recoType == "weights":
     config.Data.inputDataset   = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_7415-weights-74X_dataRun2_Prompt_v4-Run2015B_v1-ad7dc4f8513717010b7a46f581acebfc/USER'
 else:
-    config.Data.inputDataset   = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_7415-multifit-74X_dataRun2_Prompt_v4-Run2015B_v1-061eda953a68cc845be7755e34a53a56/USER'
+    config.Data.inputDataset   = '/AlCaPhiSym/spigazzi-crab_PHISYM-CMSSW_7415-multifit-74X_dataRun2_Prompt_v4-Run2015B_v2-ca39ed7216e45a0f07881f94873e4197/USER'
 
 #config.Data.useParent = True
 config.Data.inputDBS           = 'phys03'

@@ -329,7 +329,13 @@ void PhiSymMerger::SearchLumiIOV(PhiSymRunLumi current)
 {
     for(unsigned int iIOV=0; iIOV<IOVEnds_.size(); ++iIOV)
         if(current >= IOVBegins_[iIOV] && current <= IOVEnds_[iIOV])
+        {
             IOV_ = iIOV;
+            return;
+        }
+
+    IOV_ = 0;
+    return;
 }    
 
 DEFINE_FWK_MODULE(PhiSymMerger);

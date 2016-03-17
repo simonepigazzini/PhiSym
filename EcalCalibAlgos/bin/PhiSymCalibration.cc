@@ -506,7 +506,7 @@ int main( int argc, char *argv[] )
     vector<string> inputFiles;
     string outputFileBase;
     vector<string> oldICsFiles;
-    normalizeAbsIC=true;
+    normalizeAbsIC=false;
     kFactorsComputed_=false;
     nLumis_=0;
     nEvents_=0;
@@ -661,6 +661,8 @@ int main( int argc, char *argv[] )
                                   to_string(IOVEnds[iIOV].run)+"-"+to_string(IOVEnds[iIOV].lumi)+".root").c_str(),
                                  "RECREATE");
         outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(out));
+        outFile_->eb_xstals.avg_time = IOVTimes[iIOV];
+        outFile_->ee_xstals.avg_time = IOVTimes[iIOV];
 
         //---read old ICs (maybe IOV dependent)
         Read2012ICs(oldICsFiles[0]);
@@ -796,7 +798,7 @@ int main( int argc, char *argv[] )
             {
                 pair<float, float> tmp = PhiSym::VectorMeanRMS(ebRingsSumEts[iRing],
                                                                iRm, ebRingsSumEts[iRing].size()-1-iRm);
-                if(mean == -1 || fabs(mean-tmp.first)/mean>0.001)
+                if(mean == -1 || fabs(mean-tmp.first)/mean>0.0005 || tmp.second/tmp.first<0.01)
                 {
                     mean = tmp.first;
                     rms = tmp.second;
@@ -825,7 +827,7 @@ int main( int argc, char *argv[] )
             {
                 pair<float, float> tmp = PhiSym::VectorMeanRMS(eeRingsSumEts[iRing],
                                                                iRm, eeRingsSumEts[iRing].size()-1-iRm);
-                if(mean == -1 || fabs(mean-tmp.first)/mean>0.001)
+                if(mean == -1 || fabs(mean-tmp.first)/mean>0.001 || tmp.second/tmp.first<0.01)
                 {
                     mean = tmp.first;
                     rms = tmp.second;
