@@ -19,8 +19,4 @@
       name="TimeEvolution"
       file="TimeEvolution.cc">
   </bin>
-  <bin
-      name="fuckingEndcaps"
-      file="fuckingEndcaps.cc">
-  </bin>
 </environment>

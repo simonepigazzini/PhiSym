@@ -64,9 +64,9 @@ private:
     edm::Handle<PhiSymInfoCollection> infoHandle_;
     edm::Handle<PhiSymRecHitCollection> recHitEBHandle_;
     edm::Handle<PhiSymRecHitCollection> recHitEEHandle_;
-    edm::InputTag infoTag_;
-    edm::InputTag recHitEBTag_;
-    edm::InputTag recHitEETag_;
+    edm::EDGetTokenT<PhiSymInfoCollection> infoToken_;
+    edm::EDGetTokenT<PhiSymRecHitCollection> recHitEBToken_;
+    edm::EDGetTokenT<PhiSymRecHitCollection> recHitEEToken_;
     int    blocksToSum_;
     int    nSummedLumis_;
     int    nMisCalib_;
@@ -96,9 +96,9 @@ private:
 };
 
 PhiSymMerger::PhiSymMerger(const edm::ParameterSet& pSet):    
-    infoTag_(pSet.getUntrackedParameter<edm::InputTag>("infoTag")),
-    recHitEBTag_(pSet.getUntrackedParameter<edm::InputTag>("recHitEBTag")),
-    recHitEETag_(pSet.getUntrackedParameter<edm::InputTag>("recHitEETag")),
+    infoToken_(consumes<PhiSymInfoCollection>(pSet.getUntrackedParameter<edm::InputTag>("infoTag"))),
+    recHitEBToken_(consumes<PhiSymRecHitCollection>(pSet.getUntrackedParameter<edm::InputTag>("recHitEBTag"))),
+    recHitEEToken_(consumes<PhiSymRecHitCollection>(pSet.getUntrackedParameter<edm::InputTag>("recHitEETag"))),
     blocksToSum_(pSet.getUntrackedParameter<int>("blocksToSum")),
     nSummedLumis_(1),
     nMisCalib_(-1),
@@ -216,9 +216,9 @@ void PhiSymMerger::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Eve
     }
     
     //---get PHISYM collections (skip void lumis)
-    lumi.getByLabel(infoTag_, infoHandle_);
-    lumi.getByLabel(recHitEBTag_, recHitEBHandle_);
-    lumi.getByLabel(recHitEETag_, recHitEEHandle_);
+    lumi.getByToken(infoToken_, infoHandle_);
+    lumi.getByToken(recHitEBToken_, recHitEBHandle_);
+    lumi.getByToken(recHitEEToken_, recHitEEHandle_);
     if(!infoHandle_.isValid())
         return;
     //---if good block count it and record first run
