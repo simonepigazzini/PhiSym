@@ -5,7 +5,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 # parse commad line options
 options = VarParsing('analysis')
 options.maxEvents = -1
-options.outputFile = 'phisym_weights_1lumis.root'
+options.outputFile = 'phisym_multifit_1lumis.root'
 options.parseArguments()
 
 process=cms.Process("PHISYM")
@@ -39,13 +39,13 @@ process.options = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-                            inputCommands = cms.untracked.vstring(
-                                'keep *',
-                                'drop *_hltEcalDigis_*_*',
-                                'drop *_hltTriggerSummaryAOD_*_*'
-                            ),
+#                             inputCommands = cms.untracked.vstring(
+#                                 'keep *',
+#                                 'drop *_hltEcalDigis_*_*',
+#                                 'drop *_hltTriggerSummaryAOD_*_*'
+#                             ),
                             fileNames = cms.untracked.vstring(
-                                "/store/data/Run2015D/AlCaPhiSym/RAW/v1/000/256/587/00000/C4E4637E-FF5B-E511-B847-02163E013735.root"
+                                "/store/data/Commissioning2016/AlCaPhiSym/RAW/v1/000/268/930/00000/D624B590-A2FD-E511-B7AD-02163E011AEE.root"
                                 #"root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root",
 ))
 
@@ -118,34 +118,8 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('74X_dataRun2_Prompt_v2'),
-                                 toGet = cms.VPSet(
-                                     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-                                              tag = cms.string("EcalIntercalibConstants_2012ABCD_offline"),
-                                              connect = cms.untracked.string("frontier://FrontierProd/CMS_COND_31X_ECAL"),
-                                          ),
-                                     cms.PSet(record = cms.string("EcalPulseShapesRcd"),
-                                              tag = cms.string("EcalPulseShapes_data"),
-                                              connect = cms.untracked.string("sqlite_file:ecaltemplates_popcon_weekly_best.db"),
-                                          ),
-                                     cms.PSet(record = cms.string("EcalPulseCovariancesRcd"),
-                                              tag = cms.string("EcalPulseCovariances_data"),
-                                              connect = cms.untracked.string("sqlite_file:ecalcovariances_popcon_weekly_best.db"),
-                                          ),
-                                     cms.PSet(record = cms.string("EBAlignmentRcd"),
-                                              tag = cms.string("EBAlignment_measured_v10_offline"),
-                                              connect = cms.untracked.string("frontier://FrontierProd/CMS_CONDITIONS"),
-                                          ),
-                                     cms.PSet(record = cms.string("EEAlignmentRcd"),
-                                              tag = cms.string("EEAlignment_measured_v10_offline"),
-                                              connect = cms.untracked.string("frontier://FrontierProd/CMS_CONDITIONS"),
-                                          ),
-                                     cms.PSet(record = cms.string("ESAlignmentRcd"), # only Bon!
-                                              tag = cms.string("ESAlignment_measured_v08_offline"),
-                                              connect = cms.untracked.string("frontier://FrontierProd/CMS_CONDITIONS"),
-                                          )
-                                 )
-                            )
+                                 globaltag = cms.string('80X_dataRun2_Prompt_v4')
+)
 
 # SCHEDULE
 if (not runMultiFit):

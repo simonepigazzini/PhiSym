@@ -112,7 +112,7 @@ PhiSymMerger::PhiSymMerger(const edm::ParameterSet& pSet):
 
 void PhiSymMerger::beginJob()
 {
-    //---red list of IOV and add underflow and overflow IOVs
+    //---read list of IOV and add underflow and overflow IOVs
     TFile* file;
     if(!(file = TFile::Open(iovFile_.c_str(), "READ")))
         cout << "ERROR: IOVmap file not found" << endl;

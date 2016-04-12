@@ -64,7 +64,7 @@ parser.add_option("-d", "--dataset", dest="dataset", type="string", default="")
 parser.add_option("-o", "--output", dest="output", type="string", default="readMap.root")
 parser.add_option("-p", "--prefix", dest="prefix", type="string", default="root://xrootd-cms.infn.it/")
 parser.add_option("-t","--maxTime", dest="maxTime", type = "int", default=86400)
-parser.add_option("-j","--jsonFile", dest="jsonFile", type = "string", default="default.json")
+parser.add_option("-j","--jsonFile", dest="jsonFile", type = "string", default="")
 (options, args) = parser.parse_args()
 
 if options.dataset != "":
@@ -92,13 +92,14 @@ labelPhiSymInfo = ("PhiSymProducer")
 
 timeMap={}
 
-lumiList = LumiList(os.path.expandvars(options.jsonFile))
+if options.jsonFile != "":
+    lumiList = LumiList(os.path.expandvars(options.jsonFile))
 
 for i,lumi in enumerate(lumis):
     lumi.getByLabel (labelPhiSymInfo,handlePhiSymInfo)
     phiSymInfo = handlePhiSymInfo.product()
     #skipping BAD lumiSections
-    if not lumiList.contains(phiSymInfo.back().getStartLumi().run(),phiSymInfo.back().getStartLumi().luminosityBlock()):
+    if options.jsonFile != "" and not lumiList.contains(phiSymInfo.back().getStartLumi().run(),phiSymInfo.back().getStartLumi().luminosityBlock()):
         continue
 
     beginTime=lumi.luminosityBlockAuxiliary().beginTime().unixTime()
