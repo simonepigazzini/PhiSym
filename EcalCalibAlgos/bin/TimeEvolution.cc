@@ -15,7 +15,7 @@
 #include "TH2F.h"
 #include "TGraphErrors.h"
 
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 
@@ -33,7 +33,7 @@ using namespace std;
 //**********MAIN**************************************************************************
 int main(int argc, char *argv[])
 {
-    AutoLibraryLoader::enable();        
+    FWLiteEnabler::enable();
     gSystem->Load("libFWCoreFWLite.so"); 
     gSystem->Load("libDataFormatsFWLite.so");
     gSystem->Load("libDataFormatsEcalDetId.so");

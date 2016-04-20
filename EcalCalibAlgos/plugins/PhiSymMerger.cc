@@ -11,6 +11,7 @@
 #include "TGraphErrors.h"
 #include "TF1.h"
 
+#include "FWCore/Utilities/interface/BranchType.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -96,9 +97,9 @@ private:
 };
 
 PhiSymMerger::PhiSymMerger(const edm::ParameterSet& pSet):    
-    infoToken_(consumes<PhiSymInfoCollection>(pSet.getUntrackedParameter<edm::InputTag>("infoTag"))),
-    recHitEBToken_(consumes<PhiSymRecHitCollection>(pSet.getUntrackedParameter<edm::InputTag>("recHitEBTag"))),
-    recHitEEToken_(consumes<PhiSymRecHitCollection>(pSet.getUntrackedParameter<edm::InputTag>("recHitEETag"))),
+    infoToken_(consumes<PhiSymInfoCollection, edm::BranchType::InLumi>(pSet.getUntrackedParameter<edm::InputTag>("infoTag"))),
+    recHitEBToken_(consumes<PhiSymRecHitCollection, edm::BranchType::InLumi>(pSet.getUntrackedParameter<edm::InputTag>("recHitEBTag"))),
+    recHitEEToken_(consumes<PhiSymRecHitCollection, edm::BranchType::InLumi>(pSet.getUntrackedParameter<edm::InputTag>("recHitEETag"))),
     blocksToSum_(pSet.getUntrackedParameter<int>("blocksToSum")),
     nSummedLumis_(1),
     nMisCalib_(-1),

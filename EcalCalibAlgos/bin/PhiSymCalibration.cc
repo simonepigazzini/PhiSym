@@ -14,7 +14,7 @@
 #include "TF1.h"
 #include "TGraphErrors.h"
 
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 
@@ -486,9 +486,9 @@ void ReadAbsICs(string name)
 //**********MAIN**************************************************************************
 int main( int argc, char *argv[] )
 {
+    FWLiteEnabler::enable();
     gSystem->Load("libFWCoreFWLite");
     gSystem->Load("libPhiSymEcalCalibDataFormats.so");
-    AutoLibraryLoader::enable();
 
     if(argc < 2)
     {

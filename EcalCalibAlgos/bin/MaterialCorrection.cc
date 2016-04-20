@@ -15,7 +15,7 @@
 #include "TH2F.h"
 #include "TGraphErrors.h"
 
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 
@@ -33,7 +33,7 @@ using namespace std;
 //**********MAIN**************************************************************************
 int main(int argc, char *argv[])
 {
-    AutoLibraryLoader::enable();        
+    FWLiteEnabler::enable();
     gSystem->Load("libFWCoreFWLite.so"); 
     gSystem->Load("libDataFormatsFWLite.so");
     gSystem->Load("libDataFormatsEcalDetId.so");
@@ -71,18 +71,16 @@ int main(int argc, char *argv[])
         //---init
         float sm_ic_mean[18][2]={};
         float sm_ic_rms[18][2]={};    
-        float sm_ic_sum[18][2]={};
-        float sm_ic_sum2[18][2]={};    
         int sm_n_alive[18][2]={};
+        vector<float> sm_ics[18][2];
         vector<float> iphi_ic[361][2];
         float sm_ic_mean_b60[18][2]={};
-        float sm_ic_rms_b60[18][2]={};    
-        float sm_ic_sum_b60[18][2]={};
-        float sm_ic_sum2_b60[18][2]={};    
+        float sm_ic_rms_b60[18][2]={};
         int sm_n_alive_b60[18][2]={};
+        vector<float> sm_ics_b60[18][2];
         vector<float> iphi_ic_b60[361][2];
         int n_hits[EBDetId::kSizeForDenseIndexing]={0};
-        bool is_good[EBDetId::kSizeForDenseIndexing]={0};
+        // bool is_good[EBDetId::kSizeForDenseIndexing]={0};
         float ic_uncorr[EBDetId::kSizeForDenseIndexing]={0};
         float corrections[EBDetId::kSizeForDenseIndexing]={1};   
         pair<int, int> ebMap[EBDetId::kSizeForDenseIndexing];
@@ -102,7 +100,7 @@ int main(int argc, char *argv[])
         TH2F* map_ic_uncorr = new TH2F("map_ic_uncorr", "PhiSym uncorrected ICs map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
         TH2F* map_ic_corr = new TH2F("map_ic_corr", "PhiSym corrected ICs map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
         TH2F* map_corrections = new TH2F("map_corrections", "Corrections map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
-
+        
         TFile* file = TFile::Open(inputFile.c_str(), "READ");
         CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
 
@@ -117,8 +115,8 @@ int main(int argc, char *argv[])
         while(ebTree.NextEntry())
         {
             int index = EBDetId(ebTree.ieta, ebTree.iphi).hashedIndex();
-            is_good[index] = ebTree.rec_hit->GetSumEt() > ebTree.bounds[0] &&
-                ebTree.rec_hit->GetSumEt() < ebTree.bounds[1];
+            // is_good[index] = ebTree.rec_hit->GetSumEt() > ebTree.bounds[0] &&
+            //     ebTree.rec_hit->GetSumEt() < ebTree.bounds[1];
             n_hits[index] = ebTree.rec_hit->GetNhits();
             ic_uncorr[index] = ebTree.ic_ch;
             ebMap[index] = make_pair(ebTree.ieta, ebTree.iphi);
@@ -129,68 +127,55 @@ int main(int argc, char *argv[])
                 n_hits[index] = 0;
         }
 
+        //---SM averages
         for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
         {
             if(n_hits[index] == 0)
                 continue;
-            //---inside Tracker Barrel
             if(abs(ebMap[index].first) < 60)
             {
                 int sm = (ebMap[index].second-1) / 20;
                 int side = ebMap[index].first < 0 ? 0 : 1;
                 iphi_ic[ebMap[index].second][side].push_back(ic_uncorr[index]);
-                //---outliers rejection
-                if(!is_good[index])
-                    continue;
+                // //---outliers rejection
+                // if(!is_good[index])
+                //     continue;
                 //---SM boundries rejection
-                if((ebMap[index].second % 20 == 0 && ebMap[index].first > 0) ||
-                   (ebMap[index].second % 20 == 1 && ebMap[index].first < 0))
-                    continue;
-                sm_ic_sum[sm][side] += ic_uncorr[index];
-                sm_ic_sum2[sm][side] += ic_uncorr[index]*ic_uncorr[index];
-                ++sm_n_alive[sm][side];
-            }
-            //---outside Tracker Barrel
-            else
-            {            
-                int sm = (ebMap[index].second-1) / 20;
-                int side = ebMap[index].first < 0 ? 0 : 1;
-                iphi_ic_b60[ebMap[index].second][side].push_back(ic_uncorr[index]);
-                //---outliers rejection 
-                if(!is_good[index])
-                    continue;
-                //---SM boundries rejection
-                if((ebMap[index].second % 20 == 0 && ebMap[index].first > 0) ||
-                   (ebMap[index].second % 20 == 1 && ebMap[index].first < 0))
-                    continue;
-                // sm_ic_sum[sm][side] += ic_uncorr[index];
-                // sm_ic_sum2[sm][side] += ic_uncorr[index]*ic_uncorr[index];
-                // ++sm_n_alive[sm][side];
-                sm_ic_sum_b60[sm][side] += ic_uncorr[index];
-                sm_ic_sum2_b60[sm][side] += ic_uncorr[index]*ic_uncorr[index];
-                ++sm_n_alive_b60[sm][side];
+                if(!(ebMap[index].second % 20 == 0 && ebMap[index].first > 0) &&
+                   !(ebMap[index].second % 20 == 1 && ebMap[index].first < 0))
+                {
+                    //---inside Tracker Barrel
+                    if(abs(ebMap[index].first) < 60)
+                        sm_ics[sm][side].push_back(ic_uncorr[index]);
+                    //---outside Tracker Barrel
+                    else
+                        sm_ics_b60[sm][side].push_back(ic_uncorr[index]);
+                }
             }
         }
     
         for(int iSM=0; iSM<18; ++iSM)
         {
-            //---with TB
-            sm_ic_mean[iSM][0] = sm_ic_sum[iSM][0]/sm_n_alive[iSM][0];
-            sm_ic_mean[iSM][1] = sm_ic_sum[iSM][1]/sm_n_alive[iSM][1];        
-            sm_ic_rms[iSM][0] = sqrt(sm_ic_sum2[iSM][0]/sm_n_alive[iSM][0]-pow(sm_ic_sum[iSM][0]/sm_n_alive[iSM][0], 2));
-            sm_ic_rms[iSM][1] = sqrt(sm_ic_sum2[iSM][1]/sm_n_alive[iSM][1]-pow(sm_ic_sum[iSM][1]/sm_n_alive[iSM][1], 2));
-            //---no TB
-            // sm_ic_mean_b60[iSM][0] = sm_ic_mean[iSM][0];
-            // sm_ic_mean_b60[iSM][1] = sm_ic_mean[iSM][1];
-            // sm_ic_rms_b60[iSM][0] = sqrt(sm_ic_sum2[iSM][0]/sm_n_alive[iSM][0]-pow(sm_ic_sum[iSM][0]/sm_n_alive[iSM][0], 2));
-            // sm_ic_rms_b60[iSM][1] = sqrt(sm_ic_sum2[iSM][1]/sm_n_alive[iSM][1]-pow(sm_ic_sum[iSM][1]/sm_n_alive[iSM][1], 2));
-                                    
-            sm_ic_mean_b60[iSM][0] = sm_ic_sum_b60[iSM][0]/sm_n_alive_b60[iSM][0];
-            sm_ic_mean_b60[iSM][1] = sm_ic_sum_b60[iSM][1]/sm_n_alive_b60[iSM][1];        
-            sm_ic_rms_b60[iSM][0] = sqrt(sm_ic_sum2_b60[iSM][0]/sm_n_alive_b60[iSM][0]-
-                                         pow(sm_ic_sum_b60[iSM][0]/sm_n_alive_b60[iSM][0], 2));
-            sm_ic_rms_b60[iSM][1] = sqrt(sm_ic_sum2_b60[iSM][1]/sm_n_alive_b60[iSM][1]-
-                                         pow(sm_ic_sum_b60[iSM][1]/sm_n_alive_b60[iSM][1], 2));
+            for(int iSide=0; iSide<2; ++iSide)
+            {
+                //---with TB
+                sort(sm_ics[iSM][iSide].begin(), sm_ics[iSM][iSide].end());
+                pair<float, float> itCutResults = PhiSym::IterativeCut(sm_ics[iSM][iSide], 0, sm_ics[iSM][iSide].size(), 0.001);
+                for(auto& ic : sm_ics[iSM][iSide])
+                    if(ic > itCutResults.first-2*itCutResults.second && ic < itCutResults.first+2*itCutResults.second)
+                        ++sm_n_alive[iSM][iSide];
+                sm_ic_mean[iSM][iSide] = itCutResults.first;
+                sm_ic_rms[iSM][iSide] = itCutResults.second;
+
+                //---no TB
+                sort(sm_ics_b60[iSM][iSide].begin(), sm_ics_b60[iSM][iSide].end());
+                itCutResults = PhiSym::IterativeCut(sm_ics_b60[iSM][iSide], 0, sm_ics_b60[iSM][iSide].size(), 0.001);
+                for(auto& ic : sm_ics_b60[iSM][iSide])
+                    if(ic > itCutResults.first-2*itCutResults.second && ic < itCutResults.first+2*itCutResults.second)
+                        ++sm_n_alive_b60[iSM][iSide];
+                sm_ic_mean_b60[iSM][iSide] = itCutResults.first;
+                sm_ic_rms_b60[iSM][iSide] = itCutResults.second;
+            }
         }
 
         for(int iPhi=1; iPhi<=360; ++iPhi)
@@ -381,7 +366,7 @@ int main(int argc, char *argv[])
         map_ic_uncorr->Write("map_ic_uncorr");
         map_ic_corr->Write("map_ic_corr");
         map_corrections->Write("map_corrections");
-
+        
         file->Close();
     }
 }
