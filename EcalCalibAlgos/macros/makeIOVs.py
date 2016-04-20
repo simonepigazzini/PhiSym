@@ -69,23 +69,14 @@ parser.add_option("-j","--jsonFile", dest="jsonFile", type = "string", default="
 
 if options.dataset != "":
     print "Getting files from DAS for dataset "+options.dataset
-    if getstatusoutput("das_client.py --query='file dataset="+options.dataset+" instance=prod/phys03' --limit 0 | grep '/store/' >> /tmp/${USER}/filelist.dat"):
-        options.fileList = "/tmp/"+os.environ['USER']+"/filelist.dat"
+    if getstatusoutput("das_client.py --query='file dataset="+options.dataset+" instance=prod/phys03' --limit 0 | grep '/store/' > /tmp/filelist.dat"):
+        options.fileList = "/tmp/filelist.dat"
 
 with open(options.fileList,'r') as textfile:
     files = [line.strip() for line in textfile]
 
-fullpath_files = []
-
 if options.debug:
     print "Reading files: "
-
-for aline in files:
-    fullpath_files.append( options.prefix+aline )
-    if options.debug:
-        print options.prefix+aline
-
-lumis = Lumis(fullpath_files)
 
 handlePhiSymInfo  = Handle ("std::vector<PhiSymInfo>")
 labelPhiSymInfo = ("PhiSymProducer")
@@ -95,22 +86,32 @@ timeMap={}
 if options.jsonFile != "":
     lumiList = LumiList(os.path.expandvars(options.jsonFile))
 
-for i,lumi in enumerate(lumis):
-    lumi.getByLabel (labelPhiSymInfo,handlePhiSymInfo)
-    phiSymInfo = handlePhiSymInfo.product()
-    #skipping BAD lumiSections
-    if options.jsonFile != "" and not lumiList.contains(phiSymInfo.back().getStartLumi().run(),phiSymInfo.back().getStartLumi().luminosityBlock()):
-        continue
-
-    beginTime=lumi.luminosityBlockAuxiliary().beginTime().unixTime()
-    timeMap[beginTime]={"run":phiSymInfo.back().getStartLumi().run(),"lumi":phiSymInfo.back().getStartLumi().luminosityBlock(),"totHitsEB":phiSymInfo.back().GetTotHitsEB()}
-
+for aline in files:
+    fullpath_file = options.prefix+aline
     if options.debug:
-        print "====>"
-        print "Run "+str(phiSymInfo.back().getStartLumi().run())+" Lumi "+str(phiSymInfo.back().getStartLumi().luminosityBlock())+" beginTime "+str(beginTime)
-        print "NEvents in this LS "+str(phiSymInfo.back().GetNEvents())
-        print "TotHits EB "+str(phiSymInfo.back().GetTotHitsEB())+" Avg occ EB "+str(float(phiSymInfo.back().GetTotHitsEB())/phiSymInfo.back().GetNEvents()) 
-        print "TotHits EE "+str(phiSymInfo.back().GetTotHitsEE())+" Avg occ EE "+str(float(phiSymInfo.back().GetTotHitsEE())/phiSymInfo.back().GetNEvents()) 
+        print options.prefix+aline
+
+    lumis = Lumis(fullpath_file)
+
+    for i,lumi in enumerate(lumis):
+        lumi.getByLabel(labelPhiSymInfo,handlePhiSymInfo)
+        phiSymInfo = handlePhiSymInfo.product()
+        # skipping BAD lumiSections
+        if options.jsonFile != "" and not lumiList.contains(phiSymInfo.back().getStartLumi().run(),phiSymInfo.back().getStartLumi().luminosityBlock()):
+            continue
+
+        beginTime=lumi.luminosityBlockAuxiliary().beginTime().unixTime()
+        timeMap[beginTime]={"run":phiSymInfo.back().getStartLumi().run(),"lumi":phiSymInfo.back().getStartLumi().luminosityBlock(),"totHitsEB":phiSymInfo.back().GetTotHitsEB()}
+
+        if options.debug:
+            print "====>"
+            print "Run "+str(phiSymInfo.back().getStartLumi().run())+" Lumi "+str(phiSymInfo.back().getStartLumi().luminosityBlock())+" beginTime "+str(beginTime)
+            print "NEvents in this LS "+str(phiSymInfo.back().GetNEvents())
+            print "TotHits EB "+str(phiSymInfo.back().GetTotHitsEB())+" Avg occ EB "+str(float(phiSymInfo.back().GetTotHitsEB())/phiSymInfo.back().GetNEvents()) 
+            print "TotHits EE "+str(phiSymInfo.back().GetTotHitsEE())+" Avg occ EE "+str(float(phiSymInfo.back().GetTotHitsEE())/phiSymInfo.back().GetNEvents()) 
+    
+    # close current file
+    lumis._tfile.Close()
 
 
 nMaxHits=options.maxHit
