@@ -506,7 +506,7 @@ int main( int argc, char *argv[] )
     vector<string> inputFiles;
     string outputFileBase;
     vector<string> oldICsFiles;
-    normalizeAbsIC=false;
+    //normalizeAbsIC=false;
     kFactorsComputed_=false;
     nLumis_=0;
     nEvents_=0;

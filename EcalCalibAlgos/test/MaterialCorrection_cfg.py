@@ -24,9 +24,15 @@ process.ioFilesOpt = cms.PSet(
         #"$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015D_7415/summed_256843_256843.root"
 
         # Comm2016
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/Comm2016_weights/summed_268930-1_269000-30.root",
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/Comm2016_weights/summed_269012-1_269073-68.root"
+        # "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/Comm2016_weights/summed_268930-1_269000-30.root",
+        # "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/Comm2016_weights/summed_269012-1_269073-68.root"
         
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015D_history/summed_259862-434_259891-108.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272760-72_272776-22.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272776-23_272784-193.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272784-194_272798-255.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272798-256_272798-730.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272798-731_272798-1194.root"
     )
 )
         

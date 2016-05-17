@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
     
     //---get the python configuration
     const edm::ParameterSet &process = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");    
+    bool absoluteICs = process.getParameter<bool>("absoluteICs");
     bool applyCorr = process.getParameter<bool >("applyCorrections");
     vector<string> types = process.getParameter<vector<string> >("variables");
 
@@ -122,7 +123,7 @@ int main(int argc, char *argv[])
         //---EB
         while(ebTree.NextEntry())
         {
-            if(times.size() < iFile)
+            if(times.size() < iFile+1)
                 times.push_back(ebTree.avg_time);
             if(ebTree.rec_hit->GetNhits() > 0)
                 tot_hits_EB += ebTree.rec_hit->GetNhits();
@@ -131,7 +132,9 @@ int main(int argc, char *argv[])
             {
                 if(type == "IC")
                 {
-                    ebVar[type][iFile][index] = ebTree.ic_abs*ebTree.ic_ch;
+                    ebVar[type][iFile][index] = ebTree.ic_ch;
+                    if(absoluteICs)
+                        ebVar[type][iFile][index] *= ebTree.ic_abs;
                     if(applyCorr)
                         ebVar[type][iFile][index] *= ebCorr[index];
                 }
@@ -159,7 +162,9 @@ int main(int argc, char *argv[])
             {
                 if(type == "IC")
                 {
-                    eeVar[type][iFile][index] = eeTree.ic_abs*eeTree.ic_ch;
+                    eeVar[type][iFile][index] = eeTree.ic_ch;
+                    if(absoluteICs)
+                        eeVar[type][iFile][index] *= eeTree.ic_abs;
                     if(applyCorr)
                         eeVar[type][iFile][index] *= eeCorr[index];
                 }
@@ -199,7 +204,7 @@ int main(int argc, char *argv[])
         // }
         
         cout << iFile << ": " << files[iFile]
-             << " nhits/crystal (EB/EE): " << tot_hits_EB/71200. << "  " << tot_hits_EE/14000. << endl;
+             << " nhits/crystal (EB/EE): " << tot_hits_EB/61200. << "  " << tot_hits_EE/14000. << endl;
         file->Close();
     }
 

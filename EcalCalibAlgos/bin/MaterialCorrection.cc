@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
     //---get the python configuration
     const edm::ParameterSet &process = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
     const edm::ParameterSet &filesOpt = process.getParameter<edm::ParameterSet>("ioFilesOpt");
-
+    
+    bool absoluteICs = process.getParameter<bool>("absoluteICs");
     bool userOutputName = filesOpt.getParameter<bool>("userOutputName");
     string outputFileBase = filesOpt.getParameter<string>("outputFileBase");
     vector<string> outputFiles = filesOpt.getParameter<vector<string> >("outputFiles");
@@ -66,7 +67,8 @@ int main(int argc, char *argv[])
     for(auto& inputFile: inputFiles)
     {
         ++iFile;
-        string runsRange(inputFile.end()-18, inputFile.end()-5);
+        string runsRange(inputFile.begin()+inputFile.find_first_of("_", inputFile.find_last_of("/"))+1,
+                         inputFile.end()-5);
 
         //---init
         float sm_ic_mean[18][2]={};
@@ -117,8 +119,11 @@ int main(int argc, char *argv[])
             int index = EBDetId(ebTree.ieta, ebTree.iphi).hashedIndex();
             // is_good[index] = ebTree.rec_hit->GetSumEt() > ebTree.bounds[0] &&
             //     ebTree.rec_hit->GetSumEt() < ebTree.bounds[1];
-            n_hits[index] = ebTree.rec_hit->GetNhits();
-            ic_uncorr[index] = ebTree.ic_ch;
+            n_hits[index] = ebTree.rec_hit->GetNhits();            
+            if(absoluteICs)
+                ic_uncorr[index] = ebTree.ic_abs*ebTree.ic_ch;
+            else
+                ic_uncorr[index] = ebTree.ic_ch;
             ebMap[index] = make_pair(ebTree.ieta, ebTree.iphi);
             //---skip a couple of bad TT (probably recovered from 2012 --- TO BE CHECKED)
             if(ebTree.ieta > 35 && ebTree.ieta < 41 && ebTree.iphi > 310 && ebTree.iphi < 316)
