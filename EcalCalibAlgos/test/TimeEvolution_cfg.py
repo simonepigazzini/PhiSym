@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.PSet()
 
+process.absoluteICs = cms.bool(False)
 process.applyCorrections = cms.bool(True)
 process.variables = cms.vstring("IC", "LC", "Nhits")
 process.ioFilesOpt = cms.PSet(    

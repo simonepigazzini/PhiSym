@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.PSet()
 
+process.absoluteICs = cms.bool(False)
 process.ioFilesOpt = cms.PSet(
     getRunsFromFileName = cms.bool(True),
     userOutputName = cms.bool(False),

@@ -141,10 +141,10 @@ int main(int argc, char *argv[])
             {
                 int sm = (ebMap[index].second-1) / 20;
                 int side = ebMap[index].first < 0 ? 0 : 1;
-                iphi_ic[ebMap[index].second][side].push_back(ic_uncorr[index]);
-                // //---outliers rejection
-                // if(!is_good[index])
-                //     continue;
+                if(abs(ebMap[index].first) < 60)
+                    iphi_ic[ebMap[index].second][side].push_back(ic_uncorr[index]);
+                else
+                    iphi_ic_b60[ebMap[index].second][side].push_back(ic_uncorr[index]);
                 //---SM boundries rejection
                 if(!(ebMap[index].second % 20 == 0 && ebMap[index].first > 0) &&
                    !(ebMap[index].second % 20 == 1 && ebMap[index].first < 0))
