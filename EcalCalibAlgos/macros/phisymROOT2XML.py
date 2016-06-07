@@ -4,13 +4,14 @@ import sys
 import re
 import time
 import argparse
+import math
 oldargv = sys.argv[:]
 sys.argv = [ '-b-' ]
 import ROOT
 ROOT.gROOT.SetBatch(True)
 sys.argv = oldargv
 
-from PhiSym.EcalCalibAlgos.EcalCalibAnalysis import *
+#from PhiSym.EcalCalibAlgos.EcalCalibAnalysis import *
 
 parser = argparse.ArgumentParser (description = 'Dump PhiSym IC correction from a ROOT file')
 parser.add_argument('inputfile' , default="phisym_intercalibs.root", help='analyze this file')
@@ -131,7 +132,7 @@ for index in range(61200):
     if ebICerr[index] == 999:
         err = 999
     else:
-        err = sqrt(ebICerr[index]*ebICerr[index] + ebICsys[index]*ebICsys[index])
+        err = math.sqrt(ebICerr[index]*ebICerr[index] + ebICsys[index]*ebICsys[index])
 
     cell = ET.SubElement(container, "cell", iEta=str(ieta), iPhi=str(iphi))
     ET.SubElement(cell, "Value").text = str(ebIC[index]*ebCorr[index])
@@ -148,7 +149,7 @@ for index in range(14648):
     if eeICerr[index] == 999:
         err = 999
     else:
-        err = sqrt(eeICerr[index]*eeICerr[index] + eeICsys[index]*eeICsys[index])
+        err = math.sqrt(eeICerr[index]*eeICerr[index] + eeICsys[index]*eeICsys[index])
 
     cell = ET.SubElement(container, "cell", ix=str(ix), iy=str(iy), zside=str(zside))
     ET.SubElement(cell, "Value").text = str(eeIC[index]*eeCorr[index])

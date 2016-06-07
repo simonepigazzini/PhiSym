@@ -2,8 +2,8 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.PSet()
 
-process.absoluteICs = cms.bool(False)
-process.applyCorrections = cms.bool(True)
+process.absoluteICs = cms.bool(True)
+process.applyCorrections = cms.bool(False)
 process.variables = cms.vstring("IC", "LC", "Nhits")
 process.ioFilesOpt = cms.PSet(    
     inputFiles = cms.vstring(
@@ -44,12 +44,18 @@ process.ioFilesOpt = cms.PSet(
 
         # Run2016B
         "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2015D_history/summed_259862-434_259891-108.root",
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272760-72_272776-22.root",
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272776-23_272784-193.root",
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272784-194_272798-255.root",
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272798-256_272798-730.root",
-        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/summed_272798-731_272798-1194.root"
-        
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272760-72_272775-138.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272775-139_272784-52.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272784-53_272786-15.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272786-16_272798-436.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272798-1309_272811-106.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272798-437_272798-854.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272798-855_272798-1308.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272811-107_272812-313.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272812-314_272818-362.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272818-363_272827-104.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272930-1_273013-254.root",
+        "$CMSSW_BASE/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_273013-255_273017-703.root"        
     ),
 
     correctionsFiles = cms.vstring(
@@ -66,12 +72,18 @@ process.ioFilesOpt = cms.PSet(
 
         # Run2016B
         "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2015D_history/corrections_259862-434_259891-108.txt",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/corrections_272760-72_272776-22.txt",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/corrections_272776-23_272784-193.txt",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/corrections_272784-194_272798-255.txt",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/corrections_272798-256_272798-730.txt",
-        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v1/corrections_272798-731_272798-1194.txt"
-
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272760-72_272775-138.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272775-139_272784-52.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272784-53_272786-15.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272786-16_272798-436.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272798-1309_272811-106.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272798-437_272798-854.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272798-855_272798-1308.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272811-107_272812-313.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272812-314_272818-362.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272818-363_272827-104.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_272930-1_273013-254.root",
+        "/afs/cern.ch/user/s/spigazzi/work/ECAL/CMSSW_8_0_7/src/PhiSym/EcalCalibAlgos/ntuples/2016B_v2/summed_273013-255_273017-703.root"
     )
 )
 

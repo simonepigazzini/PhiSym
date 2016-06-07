@@ -3,13 +3,14 @@ from __future__ import division
 import sys
 import re
 import argparse
+import math
 oldargv = sys.argv[:]
 sys.argv = [ '-b-' ]
 import ROOT
 ROOT.gROOT.SetBatch(True)
 sys.argv = oldargv
 
-from PhiSym.EcalCalibAlgos.EcalCalibAnalysis import *
+#from PhiSym.EcalCalibAlgos.EcalCalibAnalysis import *
 
 parser = argparse.ArgumentParser (description = 'Dump PhiSym IC correction from a ROOT file')
 parser.add_argument('inputfile' , default="phisym_intercalibs.root", help='analyze this file')
@@ -126,7 +127,7 @@ for index in range(61200):
     if ebICerr[index] == 999:
         err = 999
     else:
-        err = sqrt(ebICerr[index]*ebICerr[index] + ebICsys[index]*ebICsys[index])
+        err = math.sqrt(ebICerr[index]*ebICerr[index] + ebICsys[index]*ebICsys[index])
     print ieta, iphi, 0, "%.5f" % (ebIC[index]*ebCorr[index]), "%.7f" % err, "%.7f" % ebICerr[index], "%.7f" % ebICsys[index],
     print status, ebN[index], ebK[index]
 
@@ -145,7 +146,7 @@ for index in range(14648):
     if eeICerr[index] == 999:
         err = 999
     else:
-        err = sqrt(eeICerr[index]*eeICerr[index] + eeICsys[index]*eeICsys[index])
+        err = math.sqrt(eeICerr[index]*eeICerr[index] + eeICsys[index]*eeICsys[index])
     print ix, iy, zside, "%.5f" % (eeIC[index]*eeCorr[index]), "%.7f" % err, "%.7f" % eeICerr[index], "%.7f" % eeICsys[index],
     print status, eeN[index], eeK[index]
 
