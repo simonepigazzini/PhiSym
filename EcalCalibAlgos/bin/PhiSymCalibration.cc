@@ -299,7 +299,7 @@ void ComputeICs()
             continue;
 
         icChEB[index] = 1/(((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                            /GetChannelKfactor(index, 0).first+1)/icChMeanEB_[currentRing]);
+                            /GetChannelKfactor(index, 0).first+1));//icChMeanEB_[currentRing]);
         if(normalizeAbsIC)
             icAbsChMeanEB_[currentRing] += icChEB[index]*ebAbsICs_[currentRing][ebXstal.iphi()];
     }
@@ -351,7 +351,7 @@ void ComputeICs()
             continue;
         
         icChEE[index] = 1/(((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                            /GetChannelKfactor(index, 1).first+1)/icChMeanEE_[currentRing]);        
+                            /GetChannelKfactor(index, 1).first+1));//icChMeanEE_[currentRing]);        
         if(normalizeAbsIC)
             icAbsChMeanEE_[currentRing] += icChEE[index]*eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
     }
