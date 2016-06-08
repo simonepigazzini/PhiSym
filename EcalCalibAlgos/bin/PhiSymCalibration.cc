@@ -827,7 +827,7 @@ int main( int argc, char *argv[] )
             {
                 pair<float, float> tmp = PhiSym::VectorMeanRMS(eeRingsSumEts[iRing],
                                                                iRm, eeRingsSumEts[iRing].size()-1-iRm);
-                if(mean == -1 || fabs(mean-tmp.first)/mean>0.001 || tmp.second/tmp.first<0.01)
+                if(mean == -1 || fabs(mean-tmp.first)/mean>0.005 || tmp.second/tmp.first<0.01)
                 {
                     mean = tmp.first;
                     rms = tmp.second;
@@ -841,6 +841,8 @@ int main( int argc, char *argv[] )
         }
 
         //---remove bad crystals from the ring sums
+        //---NOTE: crystal are added by default and the goodXstal flag is set to 1
+        //---      so now we need to set it to 0 and subtract the channel from the sums
         //---EB
         for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
         {
@@ -852,7 +854,7 @@ int main( int argc, char *argv[] )
                 EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
                 ebRingsSumEt2_[currentRing] -= ebXstals_[index].GetSumEt2();
                 for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-                {
+                {                    
                     if(ebXstals_[index].GetSumEt(iMis) > 0)
                     {
                         ebRingsSumEt_[currentRing][iMis] -= ebXstals_[index].GetSumEt(iMis);
