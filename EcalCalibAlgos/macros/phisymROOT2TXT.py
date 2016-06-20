@@ -25,7 +25,7 @@ opts = parser.parse_args ()
 # Load the CalibrationFile format
 ROOT.gSystem.Load("libDataFormatsEcalDetId.so");
 ROOT.gSystem.Load("libPhiSymEcalCalibDataFormats.so");
-ROOT.AutoLibraryLoader.enable()
+ROOT.FWLiteEnabler.enable()
 
 # Get the crystals trees
 inFile = ROOT.TFile(opts.inputfile)
@@ -48,14 +48,15 @@ ebCorr=[1 for i in range(61200)]
 eeCorr=[1 for i in range(14648)]
 
 # read correction file if specified
-with open(opts.correctionsFile) as corrections:
-    channels = corrections.readlines()
-    for channel in channels:
-        tokens = channel.split()
-        if int(tokens[2]) == 0:
-            ebCorr[ROOT.EBDetId(int(tokens[0]), int(tokens[1])).hashedIndex()] = float(tokens[3])
-        elif ROOT.EEDetId.validDetId(int(tokens[0]), int(tokens[1]), int(tokens[2])):
-            eeCorr[ROOT.EEDetId(int(tokens[0]), int(tokens[1]), int(tokens[2])).hashedIndex()] = float(tokens[3])
+if opts.correctionsFile != "":
+    with open(opts.correctionsFile) as corrections:
+        channels = corrections.readlines()
+        for channel in channels:
+            tokens = channel.split()
+            if int(tokens[2]) == 0:
+                ebCorr[ROOT.EBDetId(int(tokens[0]), int(tokens[1])).hashedIndex()] = float(tokens[3])
+            elif ROOT.EEDetId.validDetId(int(tokens[0]), int(tokens[1]), int(tokens[2])):
+                eeCorr[ROOT.EEDetId(int(tokens[0]), int(tokens[1]), int(tokens[2])).hashedIndex()] = float(tokens[3])
 
 #EB
 while ebTree.NextEntry():

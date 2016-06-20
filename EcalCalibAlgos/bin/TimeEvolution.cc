@@ -317,8 +317,8 @@ int main(int argc, char *argv[])
             fitFuncRelEE->SetRange(mapRelEE_range[0], mapRelEE_range[1]);
             tmpRelEE->Fit(fitFuncRelEE, "QR");
             hRelEE->Fill(fitFuncRelEE->GetParameter(2));
-            grRelEE->SetPoint(iFile-1, times[iFile], fitFuncRelEE->GetParameter(1));
-            grRelEE->SetPointError(iFile-1, 0, fitFuncRelEE->GetParError(1));
+            grRelEE->SetPoint(iFile-1, times[iFile], fitFuncRelEE->GetParameter(2));
+            grRelEE->SetPointError(iFile-1, 0, fitFuncRelEE->GetParError(2));
             tmpAbsEE->Write(string("AbsEE_"+to_string(iFile)).c_str());
             tmpRelEE->Write(string("RelEE_"+to_string(iFile)).c_str());        
             mapAbsEE->SetAxisRange(mapAbsEE_range[0], mapAbsEE_range[1], "Z");
