@@ -71,6 +71,8 @@ process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit",
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 #process.PhiSymProducer.makeSpectraTreeEB = True
 #process.PhiSymProducer.makeSpectraTreeEE = True
+# process.PhiSymProducer.eThreshold_barrel = 1200.
+# process.PhiSymProducer.thrEEmod = 20.
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
@@ -91,7 +93,7 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('80X_dataRun2_Prompt_v4')
+                                 globaltag = cms.string('80X_dataRun2_Prompt_v8')
 )
 
 # SCHEDULE
