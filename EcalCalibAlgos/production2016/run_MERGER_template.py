@@ -35,4 +35,4 @@ config.Data.outLFNDirBase      =  '/store/group/dpg_ecal/alca_ecalcalib/phiSymme
 config.section_('Site')
 # Where the output files will be transmitted to
 config.Site.storageSite        = 'T3_IT_MIB'
-config.Site.whitelist          = ['T1_IT_CNAF']
+config.Site.whitelist          = ['T3_CH_CERN_CAF']
