@@ -10,7 +10,7 @@ PhiSymProducer = cms.EDProducer(
     etCut_endcap = cms.double(1), #this is actually summed to eThr in order to define the upper bound    
     A = cms.vdouble(4.87, 35.42), # B + A*ring 2016 thr are defined as two linear cut (one for iring<30 and one above)
     B = cms.vdouble(98.12, -787.79),
-    thrEEmod = cms.double(10.),
+    thrEEmod = cms.double(12.),
     nMisCalib = cms.int32(10), # <= 10; even; central value does not count
     misCalibRangeEB = cms.vdouble(0.95, 1.05),
     misCalibRangeEE = cms.vdouble(0.90, 1.10),

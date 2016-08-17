@@ -50,7 +50,7 @@ echo "---------------"
 
 if [ $dryrun != 1 ]; then
     if [ $merger == 0 ]; then
-        crab submit --proxy ${proxy} ${template} General.requestName="PHISYM-${CMSSW_VERSION}-${reco}-${globaltag}-${mod}_D1" JobType.psetName="PhiSymProducer_${reco}_cfg.py" Site.storageSite="${storage}" Data.inputDataset="${dataset}" Data.lumiMask="${lumijson}"
+        crab submit --proxy ${proxy} ${template} General.requestName="PHISYM-${CMSSW_VERSION}-${reco}-${globaltag}-${mod}" JobType.psetName="PhiSymProducer_${reco}_cfg.py" Site.storageSite="${storage}" Data.inputDataset="${dataset}" Data.lumiMask="${lumijson}"
     else
         if [ $user_tmpl == 0 ]; then
            template='run_MERGER_template.py'

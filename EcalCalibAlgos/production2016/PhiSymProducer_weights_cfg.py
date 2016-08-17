@@ -71,8 +71,8 @@ process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit",
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 #process.PhiSymProducer.makeSpectraTreeEB = True
 #process.PhiSymProducer.makeSpectraTreeEE = True
-# process.PhiSymProducer.eThreshold_barrel = 1200.
-# process.PhiSymProducer.thrEEmod = 20.
+# process.PhiSymProducer.eThreshold_barrel = 1.0
+# process.PhiSymProducer.thrEEmod = 12.
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
