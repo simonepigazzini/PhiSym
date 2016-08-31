@@ -52,6 +52,8 @@ public:
     inline uint32_t GetNEvents()         const {return nEvents_;};
     float           GetMean(char k)      const;
     float           GetMeanSigma(char k) const;
+    float           GetSum(char k)       const;
+    float           GetSumSigma(char k)  const;
     inline edm::LuminosityBlockID getStartLumi() const {return startLumi_;};
     inline edm::LuminosityBlockID getEndLumi() const {return endLumi_;};
     inline const std::map<uint32_t, short>* GetBadChannels() const {return &badChannels_;}

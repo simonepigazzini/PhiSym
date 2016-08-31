@@ -47,6 +47,30 @@ float PhiSymInfo::GetMeanSigma(char k) const
     return -999;
 }
 
+float PhiSymInfo::GetSum(char k) const
+{
+    if(k == 'X')
+        return sumX_;
+    if(k == 'Y')
+        return sumY_;
+    if(k == 'Z')
+        return sumZ_;
+
+    return -999;
+}
+
+float PhiSymInfo::GetSumSigma(char k) const
+{
+    if(k == 'X')
+        return sumSigmaX_;
+    if(k == 'Y')
+        return sumSigmaY_;
+    if(k == 'Z')
+        return sumSigmaZ_;
+
+    return -999;
+}
+
 void PhiSymInfo::SetStartLumi(edm::LuminosityBlock const& lumi)
 {
   startLumi_=lumi.luminosityBlockAuxiliary().id();
