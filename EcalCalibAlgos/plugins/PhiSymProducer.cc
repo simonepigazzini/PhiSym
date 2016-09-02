@@ -169,9 +169,9 @@ void PhiSymProducer::endJob()
     if(makeSpectraTreeEB_ || makeSpectraTreeEE_)
         outFile_->cd();
     if(makeSpectraTreeEB_)
-        outFile_->ebTree.Write("eb_xstals");
+        outFile_->ebTree.GetTTreePtr()->Write("eb_xstals");
     if(makeSpectraTreeEE_)
-        outFile_->eeTree.Write("ee_xstals");
+        outFile_->eeTree.GetTTreePtr()->Write("ee_xstals");
 }
 
 void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
@@ -333,7 +333,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             outFile_->ebTree.ieta = ebHit.ieta();
             outFile_->ebTree.iphi = ebHit.iphi();
             outFile_->ebTree.et = recHit.energy()/cosh(eta);
-            outFile_->ebTree.Fill();
+            outFile_->ebTree.GetTTreePtr()->Fill();
         }
     }
 
@@ -392,7 +392,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             outFile_->eeTree.ix = eeHit.ix();
             outFile_->eeTree.iy = eeHit.iy();
             outFile_->eeTree.et = recHit.energy()/cosh(eta);
-            outFile_->eeTree.Fill();
+            outFile_->eeTree.GetTTreePtr()->Fill();
         }
     }
 

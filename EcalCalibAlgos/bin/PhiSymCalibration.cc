@@ -337,7 +337,7 @@ void ComputeICs()
             outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
             outFile_->eb_xstals.ic_ch_err = outFile_->eb_xstals.ic_ch_err/pow(outFile_->eb_xstals.ic_ch, 2);
             outFile_->eb_xstals.ic_err_sys = ebOldICsErr_[currentRing][ebXstal.iphi()];
-            outFile_->eb_xstals.Fill();
+            outFile_->eb_xstals.GetTTreePtr()->Fill();
         }
     }
     
@@ -389,7 +389,7 @@ void ComputeICs()
             outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
             outFile_->ee_xstals.ic_ch_err = outFile_->ee_xstals.ic_ch_err/pow(outFile_->ee_xstals.ic_ch, 2);
             outFile_->ee_xstals.ic_err_sys = eeOldICsErr_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
-            outFile_->ee_xstals.Fill();
+            outFile_->ee_xstals.GetTTreePtr()->Fill();
         }
     }
 }
@@ -889,8 +889,8 @@ int main( int argc, char *argv[] )
 
         //---finalize outputs
         outFile_->cd();
-        outFile_->eb_xstals.Write("eb_xstals");
-        outFile_->ee_xstals.Write("ee_xstals");
+        outFile_->eb_xstals.GetTTreePtr()->Write("eb_xstals");
+        outFile_->ee_xstals.GetTTreePtr()->Write("ee_xstals");
         out->Close();
     }    
 }

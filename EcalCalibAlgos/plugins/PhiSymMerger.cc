@@ -161,8 +161,8 @@ void PhiSymMerger::endJob()
     }
     //---finalize outputs
     outFile_->cd();
-    outFile_->eb_xstals.Write("eb_xstals");
-    outFile_->ee_xstals.Write("ee_xstals");
+    outFile_->eb_xstals.GetTTreePtr()->Write("eb_xstals");
+    outFile_->ee_xstals.GetTTreePtr()->Write("ee_xstals");
 }
 
 void PhiSymMerger::endRun(edm::Run const& run, edm::EventSetup const& setup)
@@ -320,7 +320,7 @@ void PhiSymMerger::FillOutput()
         outFile_->eb_xstals.mean_bs_sigmay /= nEvents_;
         outFile_->eb_xstals.mean_bs_z /= nEvents_;
         outFile_->eb_xstals.mean_bs_sigmaz /= nEvents_;
-        outFile_->eb_xstals.Fill();
+        outFile_->eb_xstals.GetTTreePtr()->Fill();
 
         //---reset channel status and sum
         ebXstals_[index].Reset();
@@ -342,7 +342,7 @@ void PhiSymMerger::FillOutput()
         outFile_->ee_xstals.mean_bs_sigmay = outFile_->eb_xstals.mean_bs_sigmay;
         outFile_->ee_xstals.mean_bs_z = outFile_->eb_xstals.mean_bs_z;
         outFile_->ee_xstals.mean_bs_sigmaz = outFile_->eb_xstals.mean_bs_sigmaz;
-        outFile_->ee_xstals.Fill();            
+        outFile_->ee_xstals.GetTTreePtr()->Fill();            
 
         //---reset channel status and sum
         eeXstals_[index].Reset();
