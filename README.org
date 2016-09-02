@@ -1,8 +1,9 @@
 * PhiSym
 ** Setup:
-   : cmsrel CMSSW_7_4_X (X>1)
-   : cd CMSSW_7_4_X/src/
+   : cmsrel CMSSW_8_0_X
+   : cd CMSSW_8_0_X/src/
    : git clone https://github.com/ECALELFS/PhiSym
+   : git clone git@github.com:simonepigazzini/DynamicTTree.git ExternalTools/DynamicTTree
    : scram b -j
    : cmsenv
 
