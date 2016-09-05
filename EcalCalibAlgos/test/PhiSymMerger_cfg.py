@@ -16,20 +16,21 @@ process.options = cms.untracked.PSet(
 
 # Global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag = GlobalTag(process.GlobalTag, '74X_dataRun2_Prompt_v4')
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Prompt_v10')
 
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-                                #'/store/user/spigazzi/AlCaPhiSym/crab_PHISYM-CMSSW_746-weights-74X_dataRun2_Prompt_v0-Run2015B_v1/150716_200712/0000/phisym_weights_1lumis_1.root'
-                                'root://xrootd-cms.infn.it:1194//store/user/spigazzi/AlCaPhiSym/crab_PHISYM-CMSSW_7415-weights-74X_dataRun2_Prompt_v4-Run2015B_v1/151109_102420/0000/phisym_weights_1lumis_219.root'
+                                "root://eoscms.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_Prompt_v10-Run2016F/160830_091917/0000/phisym_weights_1lumis_1.root"
+                                #"root://xrootd-cms.infn.it:1194//store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_803-multifit-80X_dataRun2_Prompt_v4-Commisioning2016_v2/160411_124756/0000/phisym_multifit_1lumis_1.root"
+                                #'root://xrootd-cms.infn.it:1194//store/user/spigazzi/AlCaPhiSym/crab_PHISYM-CMSSW_7415-weights-74X_dataRun2_Prompt_v4-Run2015B_v1/151109_102420/0000/phisym_weights_1lumis_219.root'
                             )
 )                                
 
 # PHISYM Calib
 process.load('PhiSym.EcalCalibAlgos.PhiSymMerger_cfi')
 process.PhiSymMerger.blocksToSum = 1000
-process.PhiSymMerger.IOVfile = cms.untracked.string("production2015/IOVmap.root")
+process.PhiSymMerger.IOVfile = cms.untracked.string("IOVmap.root")
 
 # Output TFile
 process.TFileService = cms.Service("TFileService",

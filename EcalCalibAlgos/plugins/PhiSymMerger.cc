@@ -140,7 +140,7 @@ void PhiSymMerger::beginJob()
     IOVEnds_.push_back(PhiSymRunLumi(10000000, 10000000));
     IOVTimes_.insert(IOVTimes_.begin(), 0);
     IOVTimes_.push_back(-1);
-    
+
     //---output file
     outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(&fs_->file()));    
 }
@@ -282,18 +282,12 @@ void PhiSymMerger::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Eve
     //---BeamSpot info---
     //---update current sum, each bs lumi value is weighted by the number of events.
     //---the means will be computed in FillOutput()
-    outFile_->eb_xstals.mean_bs_x +=
-        infoHandle_.product()->back().GetSum('X')*infoHandle_.product()->back().GetNEvents();
-    outFile_->eb_xstals.mean_bs_sigmax +=
-        infoHandle_.product()->back().GetSumSigma('X')*infoHandle_.product()->back().GetNEvents();
-    outFile_->eb_xstals.mean_bs_y +=
-        infoHandle_.product()->back().GetSum('Y')*infoHandle_.product()->back().GetNEvents();
-    outFile_->eb_xstals.mean_bs_sigmay +=
-        infoHandle_.product()->back().GetSumSigma('Y')*infoHandle_.product()->back().GetNEvents();
-    outFile_->eb_xstals.mean_bs_z +=
-        infoHandle_.product()->back().GetSum('Z')*infoHandle_.product()->back().GetNEvents();
-    outFile_->eb_xstals.mean_bs_sigmaz +=
-        infoHandle_.product()->back().GetSumSigma('Z')*infoHandle_.product()->back().GetNEvents();
+    outFile_->eb_xstals.mean_bs_x += infoHandle_.product()->back().GetSum('X');
+    outFile_->eb_xstals.mean_bs_sigmax += infoHandle_.product()->back().GetSumSigma('X');
+    outFile_->eb_xstals.mean_bs_y += infoHandle_.product()->back().GetSum('Y');
+    outFile_->eb_xstals.mean_bs_sigmay += infoHandle_.product()->back().GetSumSigma('Y');
+    outFile_->eb_xstals.mean_bs_z += infoHandle_.product()->back().GetSum('Z');
+    outFile_->eb_xstals.mean_bs_sigmaz += infoHandle_.product()->back().GetSumSigma('Z');
     
     //---keep track of the current lumi as last lumi of the block
     outFile_->eb_xstals.end[0] = thisRunLumi.run;
@@ -305,6 +299,20 @@ void PhiSymMerger::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Eve
 //---do not compute k-factors and IC, just add up lumis
 void PhiSymMerger::FillOutput()
 {
+    //---compute beamspot position and spread means
+    outFile_->eb_xstals.mean_bs_x /= nEvents_;
+    outFile_->eb_xstals.mean_bs_sigmax /= nEvents_;
+    outFile_->eb_xstals.mean_bs_y /= nEvents_;
+    outFile_->eb_xstals.mean_bs_sigmay /= nEvents_;
+    outFile_->eb_xstals.mean_bs_z /= nEvents_;
+    outFile_->eb_xstals.mean_bs_sigmaz /= nEvents_;
+    outFile_->ee_xstals.mean_bs_x = outFile_->eb_xstals.mean_bs_x;
+    outFile_->ee_xstals.mean_bs_sigmax = outFile_->eb_xstals.mean_bs_sigmax;
+    outFile_->ee_xstals.mean_bs_y = outFile_->eb_xstals.mean_bs_y;
+    outFile_->ee_xstals.mean_bs_sigmay = outFile_->eb_xstals.mean_bs_sigmay;
+    outFile_->ee_xstals.mean_bs_z = outFile_->eb_xstals.mean_bs_z;
+    outFile_->ee_xstals.mean_bs_sigmaz = outFile_->eb_xstals.mean_bs_sigmaz;
+
     //---loop over the EB channels and store summed rechits
     for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
@@ -314,12 +322,6 @@ void PhiSymMerger::FillOutput()
         outFile_->eb_xstals.rec_hit = &ebXstals_[index];
         outFile_->eb_xstals.ieta = ebXstal.ieta();
         outFile_->eb_xstals.iphi = ebXstal.iphi();
-        outFile_->eb_xstals.mean_bs_x /= nEvents_;
-        outFile_->eb_xstals.mean_bs_sigmax /= nEvents_;
-        outFile_->eb_xstals.mean_bs_y /= nEvents_;
-        outFile_->eb_xstals.mean_bs_sigmay /= nEvents_;
-        outFile_->eb_xstals.mean_bs_z /= nEvents_;
-        outFile_->eb_xstals.mean_bs_sigmaz /= nEvents_;
         outFile_->eb_xstals.GetTTreePtr()->Fill();
 
         //---reset channel status and sum
@@ -336,12 +338,6 @@ void PhiSymMerger::FillOutput()
         outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
         outFile_->ee_xstals.ix = eeXstal.ix();
         outFile_->ee_xstals.iy = eeXstal.iy();
-        outFile_->ee_xstals.mean_bs_x = outFile_->eb_xstals.mean_bs_x;
-        outFile_->ee_xstals.mean_bs_sigmax = outFile_->eb_xstals.mean_bs_sigmax;
-        outFile_->ee_xstals.mean_bs_y = outFile_->eb_xstals.mean_bs_y;
-        outFile_->ee_xstals.mean_bs_sigmay = outFile_->eb_xstals.mean_bs_sigmay;
-        outFile_->ee_xstals.mean_bs_z = outFile_->eb_xstals.mean_bs_z;
-        outFile_->ee_xstals.mean_bs_sigmaz = outFile_->eb_xstals.mean_bs_sigmaz;
         outFile_->ee_xstals.GetTTreePtr()->Fill();            
 
         //---reset channel status and sum
