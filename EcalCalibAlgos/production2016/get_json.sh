@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATASET=/AlCaPhiSym/Run2015B-v1/RAW
+DATASET=/AlCaPhiSym/Run2016G-v1/RAW
 INSTANCE=global
 if [ ! -z "${2}" ]; then    
     DATASET=${2}
