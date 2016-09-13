@@ -8,89 +8,404 @@
 #include "TTree.h"
 #include "TH1F.h"
 
-#include "ExternalTools/DynamicTTree/interface/DynamicTTreeBase.h"
-
 using namespace std;
 
 //**********IC EB TREE********************************************************************
 
-#define DYNAMIC_TREE_NAME CrystalsEBTree
-//---create branches
-#define DATA_TABLE                              \
-    DATA(double, avg_time)                      \
-    DATA(char, iov_flag)                        \
-    DATA(int, block)                            \
-    DATA(int, n_lumis)                          \
-    DATA(Long64_t, n_events)                    \
-    DATA(float, mean_bs_x)                      \
-    DATA(float, mean_bs_sigmax)                 \
-    DATA(float, mean_bs_y)                      \
-    DATA(float, mean_bs_sigmay)                 \
-    DATA(float, mean_bs_z)                      \
-    DATA(float, mean_bs_sigmaz)                 \
-    DATA(int, ieta)                             \
-    DATA(int, iphi)                             \
-    DATA(float, k_ring)                         \
-    DATA(float, k_ring_err)                     \
-    DATA(float, k_ch)                           \
-    DATA(float, k_ch_err)                       \
-    DATA(float, ic_ring)                        \
-    DATA(float, ic_ch)                          \
-    DATA(float, ic_old)                         \
-    DATA(float, ic_abs)                         \
-    DATA(double, ic_ring_err)                   \
-    DATA(double, ic_ch_err)                     \
-    DATA(double, ic_err_sys)                    
+class CrystalsEBTree
+{
+public: 
 
-#define DATA_VECT_TABLE                         \
-    DATA(int, begin, 2)                         \
-    DATA(int, end, 2)                           \
-    DATA(float, bounds, 2) 
+    //---ctors---
+    CrystalsEBTree();
+    CrystalsEBTree(TTree* tree);
+    //---dtor---
+    ~CrystalsEBTree() {};
+    //---wrappers
+    inline void Fill() {tree_->Fill();};
+    inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
+    inline void Write(const char* name) {tree_->Write(name);};
+    inline void Write(string name) {tree_->Write(name.c_str());};
+    inline void Draw(const char* var, const char* cut, Option_t* opt="") {tree_->Draw(var, cut, opt);};
+    bool        NextEntry(int64_t entry=-1);
+    
+    //---branches variables---
+    double        avg_time;
+    char          iov_flag;
+    int           begin[2]={0};
+    int           end[2]={0};
+    int           block;
+    int           n_lumis;
+    Long64_t      n_events;
+    float         bounds[2]={0};
+    float         mean_bs_x;
+    float         mean_bs_sigmax;
+    float         mean_bs_y;
+    float         mean_bs_sigmay;
+    float         mean_bs_z;
+    float         mean_bs_sigmaz;
+    PhiSymRecHit* rec_hit;
+    int           ieta;
+    int           iphi;
+    float         k_ring;
+    float         k_ring_err;
+    float         k_ch;
+    float         k_ch_err;
+    float         ic_ring;
+    float         ic_ch;
+    float         ic_old;
+    float         ic_abs;
+    double        ic_ring_err;
+    double        ic_ch_err;
+    double        ic_err_sys;
+    
+private:
+    
+    TTree* tree_;
+    int64_t currentEntry_;
+};
 
-#define DATA_CLASS_TABLE                        \
-    DATA(PhiSymRecHit, rec_hit) 
+CrystalsEBTree::CrystalsEBTree()
+{
+    tree_ = new TTree();
+    //---init
+    avg_time=0;
+    iov_flag='V';
+    block=0;
+    n_lumis=0;
+    n_events=0;
+    mean_bs_x=0;
+    mean_bs_sigmax=0;
+    mean_bs_y=0;
+    mean_bs_sigmay=0;
+    mean_bs_z=0;
+    mean_bs_sigmaz=0;
+    rec_hit=new PhiSymRecHit();
+    ieta=0;
+    iphi=0;
+    k_ring=0;
+    k_ring_err=0;
+    k_ch=0;
+    k_ch_err=0;
+    ic_ring=0;
+    ic_ch=0;
+    ic_old=0;
+    ic_abs=0;
+    ic_ring_err=0;
+    ic_ch_err=0;
+    ic_err_sys=0;
+    
+    //---create branches
+    tree_->Branch("avg_time", &avg_time, "avg_time/D");
+    tree_->Branch("iov_flag", &iov_flag, "iov_flag/C");
+    tree_->Branch("begin", &begin, "begin[2]/I");
+    tree_->Branch("end", &end, "end[2]/I");
+    tree_->Branch("block", &block, "block/I");
+    tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
+    tree_->Branch("n_events", &n_events, "n_events/L");    
+    tree_->Branch("bounds", &bounds, "bounds[2]/F");
+    tree_->Branch("mean_bs_x", &mean_bs_x, "mean_bs_x/F");
+    tree_->Branch("mean_bs_sigmax", &mean_bs_sigmax, "mean_bs_sigmax/F");
+    tree_->Branch("mean_bs_y", &mean_bs_y, "mean_bs_y/F");
+    tree_->Branch("mean_bs_sigmay", &mean_bs_sigmay, "mean_bs_sigmay/F");
+    tree_->Branch("mean_bs_z", &mean_bs_z, "mean_bs_z/F");
+    tree_->Branch("mean_bs_sigmaz", &mean_bs_sigmaz, "mean_bs_sigmaz/F");
+    tree_->Branch("rec_hit", &rec_hit);
+    tree_->Branch("ieta", &ieta, "ieta/I");
+    tree_->Branch("iphi", &iphi, "iphi/I");
+    tree_->Branch("k_ring", &k_ring, "k_ring/F");
+    tree_->Branch("k_ring_err", &k_ring_err, "k_ring_err/F");
+    tree_->Branch("k_ch", &k_ch, "k_ch/F");
+    tree_->Branch("k_ch_err", &k_ch_err, "k_ch_err/F");
+    tree_->Branch("ic_ring", &ic_ring, "ic_ring/F");
+    tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
+    tree_->Branch("ic_old", &ic_old, "ic_old/F");
+    tree_->Branch("ic_abs", &ic_abs, "ic_abs/F");
+    tree_->Branch("ic_ring_err", &ic_ring_err, "ic_ring_err/D");
+    tree_->Branch("ic_ch_err", &ic_ch_err, "ic_ch_err/D");
+    tree_->Branch("ic_err_sys", &ic_err_sys, "ic_err_sys/D");
+}
 
-#include "ExternalTools/DynamicTTree/interface/DynamicTTreeInterface.h"
+
+CrystalsEBTree::CrystalsEBTree(TTree* tree)
+{
+    if(!tree)
+        return;
+    
+    tree_ = tree;
+    currentEntry_ = -1;
+    //---init
+    avg_time=0;
+    iov_flag='V';
+    block=0;
+    n_lumis=0;
+    n_events=0;
+    mean_bs_x=0;
+    mean_bs_sigmax=0;
+    mean_bs_y=0;
+    mean_bs_sigmay=0;
+    mean_bs_z=0;
+    mean_bs_sigmaz=0;
+    rec_hit=new PhiSymRecHit();
+    ieta=0;
+    iphi=0;
+    k_ring=0;
+    k_ring_err=0;
+    k_ch=0;
+    k_ch_err=0;
+    ic_ring=0;
+    ic_ch=0;
+    ic_old=0;
+    ic_abs=0;
+    ic_ring_err=0;
+    ic_ch_err=0;
+    ic_err_sys=0;
+    
+    //---create branches
+    tree_->SetBranchAddress("avg_time", &avg_time);
+    tree_->SetBranchAddress("iov_flag", &iov_flag);
+    tree_->SetBranchAddress("begin", &begin[0]);
+    tree_->SetBranchAddress("end", &end[0]);
+    tree_->SetBranchAddress("block", &block);
+    tree_->SetBranchAddress("n_lumis", &n_lumis);
+    tree_->SetBranchAddress("n_events", &n_events);
+    tree_->SetBranchAddress("bounds", &bounds[0]);
+    tree_->SetBranchAddress("mean_bs_x", &mean_bs_x);
+    tree_->SetBranchAddress("mean_bs_sigmax", &mean_bs_sigmax);
+    tree_->SetBranchAddress("mean_bs_y", &mean_bs_y);
+    tree_->SetBranchAddress("mean_bs_sigmay", &mean_bs_sigmay);
+    tree_->SetBranchAddress("mean_bs_z", &mean_bs_z);
+    tree_->SetBranchAddress("mean_bs_sigmaz", &mean_bs_sigmaz);
+    tree_->SetBranchAddress("rec_hit", &rec_hit);
+    tree_->SetBranchAddress("ieta", &ieta);
+    tree_->SetBranchAddress("iphi", &iphi);
+    tree_->SetBranchAddress("k_ring", &k_ring);
+    tree_->SetBranchAddress("k_ring_err", &k_ring_err);
+    tree_->SetBranchAddress("k_ch", &k_ch);
+    tree_->SetBranchAddress("k_ch_err", &k_ch_err);
+    tree_->SetBranchAddress("ic_ring", &ic_ring);
+    tree_->SetBranchAddress("ic_ch", &ic_ch);
+    tree_->SetBranchAddress("ic_old", &ic_old);
+    tree_->SetBranchAddress("ic_abs", &ic_abs);
+    tree_->SetBranchAddress("ic_ring_err", &ic_ring_err);
+    tree_->SetBranchAddress("ic_ch_err", &ic_ch_err);
+    tree_->SetBranchAddress("ic_err_sys", &ic_err_sys);
+}
+
+bool CrystalsEBTree::NextEntry(int64_t entry)
+{
+    if(entry > -1)
+        currentEntry_ = entry;
+
+    ++currentEntry_;    
+    if(currentEntry_ < tree_->GetEntriesFast())
+    {
+        tree_->GetEntry(currentEntry_);
+        return true;
+    }
+    
+    currentEntry_=-1;
+    return false;
+}
 
 //**********IC EE TREE********************************************************************
 
-#define DYNAMIC_TREE_NAME CrystalsEETree
-//---create branches
-#define DATA_TABLE                              \
-    DATA(double, avg_time)                      \
-    DATA(char, iov_flag)                        \
-    DATA(int, block)                            \
-    DATA(int, n_lumis)                          \
-    DATA(Long64_t, n_events)                    \
-    DATA(float, mean_bs_x)                      \
-    DATA(float, mean_bs_sigmax)                 \
-    DATA(float, mean_bs_y)                      \
-    DATA(float, mean_bs_sigmay)                 \
-    DATA(float, mean_bs_z)                      \
-    DATA(float, mean_bs_sigmaz)                 \
-    DATA(int, iring)                            \
-    DATA(int, ix)                               \
-    DATA(int, iy)                               \
-    DATA(float, k_ring)                         \
-    DATA(float, k_ring_err)                     \
-    DATA(float, k_ch)                           \
-    DATA(float, k_ch_err)                       \
-    DATA(float, ic_ring)                        \
-    DATA(float, ic_ch)                          \
-    DATA(float, ic_old)                         \
-    DATA(float, ic_abs)                         \
-    DATA(double, ic_ring_err)                   \
-    DATA(double, ic_ch_err)                     \
-    DATA(double, ic_err_sys) 
+class CrystalsEETree
+{
+public: 
 
-#define DATA_VECT_TABLE                         \
-    DATA(int, begin, 2)                         \
-    DATA(int, end, 2)
+    //---ctors---
+    CrystalsEETree();
+    CrystalsEETree(TTree* tree);
+    //---dtor---
+    ~CrystalsEETree() {};
+    //---wrappers
+    inline void Fill() {tree_->Fill();};
+    inline void SetMaxVirtualSize(uint64_t size) {tree_->SetMaxVirtualSize(size);};
+    inline void Write(const char* name) {tree_->Write(name);};
+    inline void Write(string name) {tree_->Write(name.c_str());};
+    inline void Draw(const char* var, const char* cut, Option_t* opt="") {tree_->Draw(var, cut, opt);};
+    bool        NextEntry(int64_t entry=-1);
+    
+    //---branches variables---
+    double        avg_time;
+    char          iov_flag;
+    int           begin[2];
+    int           end[2];
+    int           block;
+    int           n_lumis;
+    Long64_t      n_events;
+    float         mean_bs_x;
+    float         mean_bs_sigmax;
+    float         mean_bs_y;
+    float         mean_bs_sigmay;
+    float         mean_bs_z;
+    float         mean_bs_sigmaz;
+    PhiSymRecHit* rec_hit;
+    int           iring;
+    int           ix;
+    int           iy;
+    float         k_ring;
+    float         k_ring_err;
+    float         k_ch;
+    float         k_ch_err;
+    float         ic_ring;
+    float         ic_ch;
+    float         ic_old;
+    float         ic_abs;
+    double        ic_ring_err;
+    double        ic_ch_err;
+    double        ic_err_sys;
+    
+private:
 
-#define DATA_CLASS_TABLE                        \
-    DATA(PhiSymRecHit, rec_hit) 
+    TTree* tree_;
+    int64_t currentEntry_;
+};
 
-#include "ExternalTools/DynamicTTree/interface/DynamicTTreeInterface.h"
+CrystalsEETree::CrystalsEETree()
+{
+    tree_ = new TTree();    
+    //---init
+    avg_time=0;
+    iov_flag='V';
+    block=0;
+    n_lumis=0;
+    n_events=0;
+    mean_bs_x=0;
+    mean_bs_sigmax=0;
+    mean_bs_y=0;
+    mean_bs_sigmay=0;
+    mean_bs_z=0;
+    mean_bs_sigmaz=0;
+    rec_hit=new PhiSymRecHit();
+    iring=0;
+    ix=0;
+    iy=0;
+    k_ring=0;
+    k_ring_err=0;
+    k_ch=0;
+    k_ch_err=0;
+    ic_ring=0;
+    ic_ch=0;
+    ic_old=0;
+    ic_abs=0;
+    ic_ring_err=0;
+    ic_ch_err=0;
+    ic_err_sys=0;
+    
+    //---create branches
+    tree_->Branch("avg_time", &avg_time, "avg_time/D");
+    tree_->Branch("iov_flag", &iov_flag, "iov_flag/C");
+    tree_->Branch("begin", &begin, "begin[2]/I");
+    tree_->Branch("end", &end, "end[2]/I");
+    tree_->Branch("block", &block, "block/I");
+    tree_->Branch("n_lumis", &n_lumis, "n_lumis/I");
+    tree_->Branch("n_events", &n_events, "n_events/L");
+    tree_->Branch("mean_bs_x", &mean_bs_x, "mean_bs_x/F");
+    tree_->Branch("mean_bs_sigmax", &mean_bs_sigmax, "mean_bs_sigmax/F");
+    tree_->Branch("mean_bs_y", &mean_bs_y, "mean_bs_y/F");
+    tree_->Branch("mean_bs_sigmay", &mean_bs_sigmay, "mean_bs_sigmay/F");
+    tree_->Branch("mean_bs_z", &mean_bs_z, "mean_bs_z/F");
+    tree_->Branch("mean_bs_sigmaz", &mean_bs_sigmaz, "mean_bs_sigmaz/F");
+    tree_->Branch("rec_hit", &rec_hit);
+    tree_->Branch("iring", &iring, "iring/I");
+    tree_->Branch("ix", &ix, "ix/I");
+    tree_->Branch("iy", &iy, "iy/I");
+    tree_->Branch("k_ring", &k_ring, "k_ring/F");
+    tree_->Branch("k_ring_err", &k_ring_err, "k_ring_err/F");
+    tree_->Branch("k_ch", &k_ch, "k_ch/F");
+    tree_->Branch("k_ch_err", &k_ch_err, "k_ch_err/F");
+    tree_->Branch("ic_ring", &ic_ring, "ic_ring/F");
+    tree_->Branch("ic_ch", &ic_ch, "ic_ch/F");
+    tree_->Branch("ic_old", &ic_old, "ic_old/F");
+    tree_->Branch("ic_abs", &ic_abs, "ic_abs/F");
+    tree_->Branch("ic_ring_err", &ic_ring_err, "ic_ring_err/D");
+    tree_->Branch("ic_ch_err", &ic_ch_err, "ic_ch_err/D");
+    tree_->Branch("ic_err_sys", &ic_err_sys, "ic_err_sys/D");
+}
+
+CrystalsEETree::CrystalsEETree(TTree* tree)
+{
+    if(!tree)
+        return;
+    
+    tree_ = tree;
+    currentEntry_ = -1;
+    //---init
+    avg_time=0;
+    iov_flag='V';
+    block=0;
+    n_lumis=0;
+    n_events=0;
+    mean_bs_x=0;
+    mean_bs_sigmax=0;
+    mean_bs_y=0;
+    mean_bs_sigmay=0;
+    mean_bs_z=0;
+    mean_bs_sigmaz=0;
+    rec_hit=new PhiSymRecHit();
+    iring=0;
+    ix=0;
+    iy=0;
+    k_ring=0;
+    k_ring_err=0;
+    k_ch=0;
+    k_ch_err=0;
+    ic_ring=0;
+    ic_ch=0;
+    ic_old=0;
+    ic_abs=0;
+    ic_ring_err=0;
+    ic_ch_err=0;
+    ic_err_sys=0;
+    
+    //---create branches
+    tree_->SetBranchAddress("avg_time", &avg_time);
+    tree_->SetBranchAddress("iov_flag", &iov_flag);
+    tree_->SetBranchAddress("begin", &begin[0]);
+    tree_->SetBranchAddress("end", &end[0]);
+    tree_->SetBranchAddress("block", &block);
+    tree_->SetBranchAddress("n_lumis", &n_lumis);
+    tree_->SetBranchAddress("n_events", &n_events);
+    tree_->SetBranchAddress("mean_bs_x", &mean_bs_x);
+    tree_->SetBranchAddress("mean_bs_sigmax", &mean_bs_sigmax);
+    tree_->SetBranchAddress("mean_bs_y", &mean_bs_y);
+    tree_->SetBranchAddress("mean_bs_sigmay", &mean_bs_sigmay);
+    tree_->SetBranchAddress("mean_bs_z", &mean_bs_z);
+    tree_->SetBranchAddress("mean_bs_sigmaz", &mean_bs_sigmaz);
+    tree_->SetBranchAddress("rec_hit", &rec_hit);
+    tree_->SetBranchAddress("iring", &iring);
+    tree_->SetBranchAddress("ix", &ix);
+    tree_->SetBranchAddress("iy", &iy);
+    tree_->SetBranchAddress("k_ring", &k_ring);
+    tree_->SetBranchAddress("k_ring_err", &k_ring_err);
+    tree_->SetBranchAddress("k_ch", &k_ch);
+    tree_->SetBranchAddress("k_ch_err", &k_ch_err);
+    tree_->SetBranchAddress("ic_ring", &ic_ring);
+    tree_->SetBranchAddress("ic_ch", &ic_ch);
+    tree_->SetBranchAddress("ic_old", &ic_old);
+    tree_->SetBranchAddress("ic_abs", &ic_abs);
+    tree_->SetBranchAddress("ic_ring_err", &ic_ring_err);
+    tree_->SetBranchAddress("ic_ch_err", &ic_ch_err);
+    tree_->SetBranchAddress("ic_err_sys", &ic_err_sys);
+}
+
+bool CrystalsEETree::NextEntry(int64_t entry)
+{
+    if(entry > -1)
+        currentEntry_ = entry;
+   
+    ++currentEntry_;
+    if(currentEntry_ < tree_->GetEntriesFast())
+    {
+        tree_->GetEntry(currentEntry_);
+        return true;
+    }
+    
+    currentEntry_=-1;
+    return false;
+}
 
 //**********FILE**************************************************************************
 
@@ -122,8 +437,8 @@ CalibrationFile::CalibrationFile(TFile* file)
 {
     file_ = file;
     file_->cd();
-    eb_xstals.GetTTreePtr()->SetMaxVirtualSize(50);
-    ee_xstals.GetTTreePtr()->SetMaxVirtualSize(50);
+    eb_xstals.SetMaxVirtualSize(50);
+    ee_xstals.SetMaxVirtualSize(50);
 }
 
 bool CalibrationFile::StoreMisCalibs(vector<float>& eb, vector<float>& ee)

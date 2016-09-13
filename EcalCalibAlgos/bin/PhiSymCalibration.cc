@@ -337,7 +337,7 @@ void ComputeICs()
             outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
             outFile_->eb_xstals.ic_ch_err = outFile_->eb_xstals.ic_ch_err/pow(outFile_->eb_xstals.ic_ch, 2);
             outFile_->eb_xstals.ic_err_sys = ebOldICsErr_[currentRing][ebXstal.iphi()];
-            outFile_->eb_xstals.GetTTreePtr()->Fill();
+            outFile_->eb_xstals.Fill();
         }
     }
     
@@ -389,7 +389,7 @@ void ComputeICs()
             outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
             outFile_->ee_xstals.ic_ch_err = outFile_->ee_xstals.ic_ch_err/pow(outFile_->ee_xstals.ic_ch, 2);
             outFile_->ee_xstals.ic_err_sys = eeOldICsErr_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
-            outFile_->ee_xstals.GetTTreePtr()->Fill();
+            outFile_->ee_xstals.Fill();
         }
     }
 }
@@ -519,6 +519,7 @@ int main( int argc, char *argv[] )
     //---get IOV boundaries    
     vector<PhiSymRunLumi> IOVBegins, IOVEnds;
     vector<double> IOVTimes;
+    vector<char> IOVFlags;
     vector<string> maps = IOVBounds.getParameter<vector<string> >("IOVMaps");
     int startingIOV = IOVBounds.getParameter<int>("startingIOV");
     int nIOVs = IOVBounds.getParameter<int>("nIOVs");
@@ -533,6 +534,7 @@ int main( int argc, char *argv[] )
             IOVBegins.push_back(PhiSymRunLumi(IOVBeginRuns[iRun], 0));
             IOVEnds.push_back(PhiSymRunLumi(IOVEndRuns[iRun], 1000000000));
             IOVTimes.push_back(iRun);
+            IOVFlags.push_back('M');
         }
     }
     else
@@ -541,9 +543,11 @@ int main( int argc, char *argv[] )
         {
             TFile* file = TFile::Open(fileName.c_str(), "READ");
             TTree* map = (TTree*)file->Get("outTree_barl");
+            char flag;
             int firstRun, lastRun;
             int firstLumi, lastLumi;
             double avg_time;
+            map->SetBranchAddress("flag", &flag);
             map->SetBranchAddress("firstRun", &firstRun);
             map->SetBranchAddress("lastRun", &lastRun);
             map->SetBranchAddress("firstLumi", &firstLumi);
@@ -555,6 +559,7 @@ int main( int argc, char *argv[] )
                 IOVBegins.push_back(PhiSymRunLumi(firstRun, firstLumi));
                 IOVEnds.push_back(PhiSymRunLumi(lastRun, lastLumi));
                 IOVTimes.push_back(avg_time);
+                IOVFlags.push_back(flag);
             }
             file->Close();
         }
@@ -660,9 +665,11 @@ int main( int argc, char *argv[] )
                                   to_string(IOVBegins[iIOV].run)+"-"+to_string(IOVBegins[iIOV].lumi)+"_"+
                                   to_string(IOVEnds[iIOV].run)+"-"+to_string(IOVEnds[iIOV].lumi)+".root").c_str(),
                                  "RECREATE");
-        outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(out));
+        outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(out));        
         outFile_->eb_xstals.avg_time = IOVTimes[iIOV];
         outFile_->ee_xstals.avg_time = IOVTimes[iIOV];
+        outFile_->eb_xstals.iov_flag = IOVFlags[iIOV];
+        outFile_->ee_xstals.iov_flag = IOVFlags[iIOV];
 
         //---read old ICs (maybe IOV dependent)
         Read2012ICs(oldICsFiles[0]);
@@ -889,8 +896,8 @@ int main( int argc, char *argv[] )
 
         //---finalize outputs
         outFile_->cd();
-        outFile_->eb_xstals.GetTTreePtr()->Write("eb_xstals");
-        outFile_->ee_xstals.GetTTreePtr()->Write("ee_xstals");
+        outFile_->eb_xstals.Write("eb_xstals");
+        outFile_->ee_xstals.Write("ee_xstals");
         out->Close();
     }    
 }

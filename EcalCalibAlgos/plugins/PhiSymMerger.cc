@@ -142,7 +142,7 @@ void PhiSymMerger::beginJob()
     IOVTimes_.push_back(-1);
 
     //---output file
-    outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(&fs_->file()));    
+    outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(&fs_->file()));
 }
 
 void PhiSymMerger::endJob()
@@ -161,8 +161,8 @@ void PhiSymMerger::endJob()
     }
     //---finalize outputs
     outFile_->cd();
-    outFile_->eb_xstals.GetTTreePtr()->Write("eb_xstals");
-    outFile_->ee_xstals.GetTTreePtr()->Write("ee_xstals");
+    outFile_->eb_xstals.Write("eb_xstals");
+    outFile_->ee_xstals.Write("ee_xstals");
 }
 
 void PhiSymMerger::endRun(edm::Run const& run, edm::EventSetup const& setup)
@@ -322,7 +322,7 @@ void PhiSymMerger::FillOutput()
         outFile_->eb_xstals.rec_hit = &ebXstals_[index];
         outFile_->eb_xstals.ieta = ebXstal.ieta();
         outFile_->eb_xstals.iphi = ebXstal.iphi();
-        outFile_->eb_xstals.GetTTreePtr()->Fill();
+        outFile_->eb_xstals.Fill();
 
         //---reset channel status and sum
         ebXstals_[index].Reset();
@@ -338,7 +338,7 @@ void PhiSymMerger::FillOutput()
         outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
         outFile_->ee_xstals.ix = eeXstal.ix();
         outFile_->ee_xstals.iy = eeXstal.iy();
-        outFile_->ee_xstals.GetTTreePtr()->Fill();            
+        outFile_->ee_xstals.Fill();            
 
         //---reset channel status and sum
         eeXstals_[index].Reset();
