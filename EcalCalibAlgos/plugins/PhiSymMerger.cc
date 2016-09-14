@@ -113,34 +113,42 @@ PhiSymMerger::PhiSymMerger(const edm::ParameterSet& pSet):
 
 void PhiSymMerger::beginJob()
 {
-    //---read list of IOV and add underflow and overflow IOVs
-    TFile* file;
-    if(!(file = TFile::Open(iovFile_.c_str(), "READ")))
-        cout << "ERROR: IOVmap file not found" << endl;
-    TTree* map = (TTree*)file->Get("outTree_barl");
-    int firstRun, lastRun;
-    int firstLumi, lastLumi;
-    double avg_time;
-    map->SetBranchAddress("firstRun", &firstRun);
-    map->SetBranchAddress("lastRun", &lastRun);
-    map->SetBranchAddress("firstLumi", &firstLumi);
-    map->SetBranchAddress("lastLumi", &lastLumi);
-    map->SetBranchAddress("unixTimeMean", &avg_time);
-    for(int iEntry=0; iEntry<map->GetEntriesFast(); ++iEntry)
+    //---read list of IOV and add underflow and overflow IOVs if file exist
+    //---otherwise make only one IOV (data will still be split in runs).
+    TFile* file = TFile::Open(iovFile_.c_str(), "READ");
+    if(file->IsOpen())
     {
-        map->GetEntry(iEntry);
-        IOVBegins_.push_back(PhiSymRunLumi(firstRun, firstLumi));
-        IOVEnds_.push_back(PhiSymRunLumi(lastRun, lastLumi));
-        IOVTimes_.push_back(avg_time);
+        TTree* map = (TTree*)file->Get("outTree_barl");
+        int firstRun, lastRun;
+        int firstLumi, lastLumi;
+        double avg_time;
+        map->SetBranchAddress("firstRun", &firstRun);
+        map->SetBranchAddress("lastRun", &lastRun);
+        map->SetBranchAddress("firstLumi", &firstLumi);
+        map->SetBranchAddress("lastLumi", &lastLumi);
+        map->SetBranchAddress("unixTimeMean", &avg_time);
+        for(int iEntry=0; iEntry<map->GetEntriesFast(); ++iEntry)
+        {
+            map->GetEntry(iEntry);
+            IOVBegins_.push_back(PhiSymRunLumi(firstRun, firstLumi));
+            IOVEnds_.push_back(PhiSymRunLumi(lastRun, lastLumi));
+            IOVTimes_.push_back(avg_time);
+        }
+        file->Close();    
+        IOVBegins_.insert(IOVBegins_.begin(), PhiSymRunLumi(0, 0));
+        IOVEnds_.insert(IOVEnds_.begin(), PhiSymRunLumi(IOVBegins_[1].run, IOVBegins_[1].lumi-1));    
+        IOVBegins_.push_back(PhiSymRunLumi(IOVEnds_.back().run, IOVEnds_.back().lumi+1));
+        IOVEnds_.push_back(PhiSymRunLumi(10000000, 10000000));
+        IOVTimes_.insert(IOVTimes_.begin(), 0);
+        IOVTimes_.push_back(-1);
     }
-    file->Close();    
-    IOVBegins_.insert(IOVBegins_.begin(), PhiSymRunLumi(0, 0));
-    IOVEnds_.insert(IOVEnds_.begin(), PhiSymRunLumi(IOVBegins_[1].run, IOVBegins_[1].lumi-1));    
-    IOVBegins_.push_back(PhiSymRunLumi(IOVEnds_.back().run, IOVEnds_.back().lumi+1));
-    IOVEnds_.push_back(PhiSymRunLumi(10000000, 10000000));
-    IOVTimes_.insert(IOVTimes_.begin(), 0);
-    IOVTimes_.push_back(-1);
-
+    else
+    {
+        IOVBegins_.push_back(PhiSymRunLumi(0, 0));
+        IOVEnds_.push_back(PhiSymRunLumi(10000000, 10000000));
+        IOVTimes_.push_back(-1);
+    }
+    
     //---output file
     outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(&fs_->file()));
 }

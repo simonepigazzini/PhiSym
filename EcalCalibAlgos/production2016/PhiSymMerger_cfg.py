@@ -16,7 +16,7 @@ process.options = cms.untracked.PSet(
 
 # Global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Prompt_v10')
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Prompt_v11')
 
 # Input source
 process.source = cms.Source("PoolSource",

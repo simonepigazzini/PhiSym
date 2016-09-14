@@ -93,7 +93,18 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('80X_dataRun2_Prompt_v10')
+                                 globaltag = cms.string('80X_dataRun2_Prompt_v11')
+)
+
+process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
+             tag = cms.string("EcalADCToGeVConstant_2016_Bon"),
+             connect = cms.string("sqlite_file:EcalADCToGeVConstant_2016_Bon.db")
+         ),
+    cms.PSet(record = cms.string("EcalLaserAPDPNRatiosRcd"),
+             tag = cms.string("EcalLaserAPDPNRatios_offline_2016"),
+             connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
+         )
 )
 
 # SCHEDULE

@@ -12,6 +12,7 @@ config.JobType.pluginName        = 'Analysis'
 
 # Name of the CMSSW configuration file
 config.JobType.psetName          = 'PhiSymProducer_cfg.py'
+config.JobType.inputFiles        = ['EcalADCToGeVConstant_2016_Bon.db']
 config.JobType.priority          = 30
 
 config.section_('Data')
