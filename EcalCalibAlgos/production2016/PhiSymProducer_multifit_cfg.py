@@ -14,10 +14,11 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 process.load('Configuration.Geometry.GeometryExtended2015Reco_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
+process.load('RecoLuminosity.LumiProducer.bunchSpacingProducer_cfi')
 process.load('RecoLocalCalo.EcalRecProducers.ecalMultiFitUncalibRecHit_cfi')
 process.load('RecoLocalCalo.EcalRecProducers.ecalUncalibRecHit_cfi')
 process.load('RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi')
-process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
+process.load('RecoVertex.BeamSpotProducer.BeamSpot_cff')
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
 
@@ -46,7 +47,6 @@ process.source = cms.Source("PoolSource",
 #                             ),
                             fileNames = cms.untracked.vstring(
                                 "/store/data/Commissioning2016/AlCaPhiSym/RAW/v1/000/268/930/00000/D624B590-A2FD-E511-B7AD-02163E011AEE.root"
-                                #"root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root",
 ))
 
 # Production Info
@@ -56,31 +56,9 @@ process.configurationMetadata = cms.untracked.PSet(
     name = cms.untracked.string('PhiSymProducer')
 )
 
-isStream=True
-runMultiFit=True
-isBX50ns=False
-
-if (runMultiFit):
-    if (isBX50ns):
-        process.ecalMultiFitUncalibRecHit.algoPSet = cms.PSet(
-            useLumiInfoRunHeader = cms.bool(False),
-            activeBXs = cms.vint32(-4,-2,0,2,4)
-        )
-    else:
-        process.ecalMultiFitUncalibRecHit.algoPSet = cms.PSet(
-            useLumiInfoRunHeader = cms.bool(False),
-            activeBXs = cms.vint32(-5,-4,-3,-2,-1,0,1,2,3,4)
-        ) 
-
-#ecalUncalibRecHit
-if (isStream):
-    process.ecalUncalibRecHit.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
-    process.ecalUncalibRecHit.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
-
 #ecalMultiFitUncalibRecHit
-if (isStream):
-    process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
-    process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
+process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
+process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEE")
 
 #ecalRecHit (no ricovery)
 process.ecalRecHit.killDeadChannels = cms.bool( False )
@@ -90,9 +68,6 @@ process.ecalRecHit.recoverEBFE = cms.bool( False )
 process.ecalRecHit.recoverEEFE = cms.bool( False )
 process.ecalRecHit.recoverEEIsolatedChannels = cms.bool( False )
 process.ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
-if (not runMultiFit):
-    process.ecalRecHit.EBuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEB")
-    process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit","EcalUncalibRecHitsEE")
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
@@ -118,25 +93,22 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('80X_dataRun2_Prompt_v4')
+                                 globaltag = cms.string('80X_dataRun2_Prompt_v8')
 )
 
-# SCHEDULE
-if (not runMultiFit):
-    process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
-else:
-    process.reconstruction_step = cms.Sequence( process.ecalMultiFitUncalibRecHit + process.ecalRecHit )
+process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(record = cms.string("EcalPulseShapesRcd"),
+             tag = cms.string("EcalPulseShapes_data"),
+             connect = cms.string("sqlite_file:ecaltemplates_popcon_data_Run2016B_since_271983.db")
+         )
+    )
 
-if (isStream):
-    process.p = cms.Path(process.reconstruction_step)
-    process.p *= process.offlineBeamSpot
-    process.p *= process.PhiSymProducer
-else:
-    process.p = cms.Path(process.RawToDigi) 
-    process.p *= process.L1Reco
-    process.p *= process.reconstruction_step
-    process.p *= process.offlineBeamSpot
-    process.p *= process.PhiSymProducer
+# SCHEDULE
+process.reconstruction_step = cms.Sequence( process.bunchSpacingProducer * (process.ecalMultiFitUncalibRecHit + process.ecalRecHit) )
+
+process.p = cms.Path(process.reconstruction_step)
+process.p *= process.offlineBeamSpot
+process.p *= process.PhiSymProducer
 
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 process.schedule = cms.Schedule(process.p, process.RECOSIMoutput_step)

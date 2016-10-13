@@ -40,7 +40,8 @@ process.options = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-                                "/store/data/Commissioning2016/AlCaPhiSym/RAW/v1/000/268/930/00000/D624B590-A2FD-E511-B7AD-02163E011AEE.root"
+                                "root://cmsxrootd-site.fnal.gov//store/data/Run2016G/AlCaPhiSym/RAW/v1/000/278/820/00000/02005FC8-5E62-E611-A5ED-FA163EC4B7FA.root"
+                                #"/store/data/Commissioning2016/AlCaPhiSym/RAW/v1/000/268/930/00000/D624B590-A2FD-E511-B7AD-02163E011AEE.root"
                                 #"/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root"
                                 #"root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root",
 ))
@@ -69,8 +70,8 @@ process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit",
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
-#process.PhiSymProducer.makeSpectraTreeEB = True
-#process.PhiSymProducer.makeSpectraTreeEE = True
+# process.PhiSymProducer.makeSpectraTreeEB = True
+# process.PhiSymProducer.makeSpectraTreeEE = True
 # process.PhiSymProducer.eThreshold_barrel = 1.0
 # process.PhiSymProducer.thrEEmod = 12.
 
@@ -93,19 +94,19 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('80X_dataRun2_Prompt_v11')
+                                 globaltag = cms.string('80X_dataRun2_2016SeptRepro_v3')
 )
 
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
-             tag = cms.string("EcalADCToGeVConstant_2016_Bon"),
-             connect = cms.string("sqlite_file:EcalADCToGeVConstant_2016_Bon.db")
-         ),
-    cms.PSet(record = cms.string("EcalLaserAPDPNRatiosRcd"),
-             tag = cms.string("EcalLaserAPDPNRatios_offline_2016"),
-             connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
-         )
-)
+# process.GlobalTag.toGet = cms.VPSet(
+#     cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
+#              tag = cms.string("EcalADCToGeVConstant_2016_Bon"),
+#              connect = cms.string("sqlite_file:EcalADCToGeVConstant_2016_Bon.db")
+#          ),
+#     # cms.PSet(record = cms.string("EcalLaserAPDPNRatiosRcd"),
+#     #          tag = cms.string("EcalLaserAPDPNRatios_offline_2016"),
+#     #          connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
+#     #      )
+# )
 
 # SCHEDULE
 process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
