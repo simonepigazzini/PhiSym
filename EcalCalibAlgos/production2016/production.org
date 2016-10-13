@@ -1,0 +1,17 @@
+| Date     | Produced dataset* | git-tag          | json | release      |
+|----------+-------------------+------------------+------+--------------|
+| 13/10/16 | Run2016 BCDEFGH   | Run2016SeptRepro |      | CMSSW_8_0_17 |
+|          |                   |                  |      |              |
+
+* Produced dataset <-> DAS entry
+** Run2016SeptRepro:
+   Prompt conditions + offline laser tag ("v3") + offline ADCtoGeV (1 IOV only)
+   - /AlCaPhiSym/dpg_ecal-crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_Prompt_v11-Run2016B_v3-a3b4f0d7708c2a7e5f46f8abca331a3a/USER
+   - /AlCaPhiSym/dpg_ecal-crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_Prompt_v11-Run2016C_v3-a3b4f0d7708c2a7e5f46f8abca331a3a/USER
+   - /AlCaPhiSym/dpg_ecal-crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_Prompt_v11-Run2016D_v3-a3b4f0d7708c2a7e5f46f8abca331a3a/USER
+   - /AlCaPhiSym/dpg_ecal-crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_Prompt_v11-Run2016E_v3-a3b4f0d7708c2a7e5f46f8abca331a3a/USER
+   - /AlCaPhiSym/dpg_ecal-crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_Prompt_v11-Run2016F_v3-a3b4f0d7708c2a7e5f46f8abca331a3a/USER
+   - /AlCaPhiSym/dpg_ecal-crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_Prompt_v11-Run2016G_v3-a3b4f0d7708c2a7e5f46f8abca331a3a/USER
+   - 
+   -
+
