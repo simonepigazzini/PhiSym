@@ -421,7 +421,11 @@ public:
     bool        StoreMisCalibs(vector<float>& eb, vector<float>& ee);
     
     CrystalsEBTree eb_xstals;
+    CrystalsEBTree eb_xstals_even;
+    CrystalsEBTree eb_xstals_odd;
     CrystalsEETree ee_xstals;
+    CrystalsEETree ee_xstals_even;
+    CrystalsEETree ee_xstals_odd;
     TH1F*          eb_miscalib;
     TH1F*          ee_miscalib;
     
@@ -438,7 +442,11 @@ CalibrationFile::CalibrationFile(TFile* file)
     file_ = file;
     file_->cd();
     eb_xstals.SetMaxVirtualSize(50);
+    eb_xstals_even.SetMaxVirtualSize(50);
+    eb_xstals_odd.SetMaxVirtualSize(50);
     ee_xstals.SetMaxVirtualSize(50);
+    ee_xstals_even.SetMaxVirtualSize(50);
+    ee_xstals_odd.SetMaxVirtualSize(50);
 }
 
 bool CalibrationFile::StoreMisCalibs(vector<float>& eb, vector<float>& ee)

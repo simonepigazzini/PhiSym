@@ -1,6 +1,6 @@
 {
-	gSystem->Load("libFWCoreFWLite.so"); 
-	AutoLibraryLoader::enable();
+	gSystem->Load("libFWCoreFWLite.so");
+        FWLiteEnabler::enable();
 	gSystem->Load("libDataFormatsFWLite.so");
 	gSystem->Load("libDataFormatsPatCandidates.so");
         gSystem->Load("libPhiSymEcalCalibDataFormats.so");        

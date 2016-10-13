@@ -50,40 +50,44 @@ float eeAbsICs_[EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][2];
 //---ring based
 //---EB
 double ebRingsSumEt_[kNRingsEB][11];
+double ebRingsSumEtEven_[kNRingsEB]={0};
+double ebRingsSumEtOdd_[kNRingsEB]={0};
 double ebRingsSumEt2_[kNRingsEB]={0};
-double kFactorsEB_[kNRingsEB]={0};
-double kFactorsErrEB_[kNRingsEB]={0};
-float  icRMeanEB_[kNRingsEB];
-double ebICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
 float  ebSumEtCuts_[kNRingsEB][2];
 //---EE
 double eeRingsSumEt_[kNRingsEE][11];
+double eeRingsSumEtEven_[kNRingsEE]={0};
+double eeRingsSumEtOdd_[kNRingsEE]={0};
 double eeRingsSumEt2_[kNRingsEE]={0};
-double kFactorsEE_[kNRingsEE]={0};
-double kFactorsErrEE_[kNRingsEE]={0};
-float  icRMeanEE_[kNRingsEE];
-double eeICRingErr_[EEDetId::kSizeForDenseIndexing]={0};
 float  eeSumEtCuts_[kNRingsEE][2];
 //---crystal based
 //---EB
 map<int, int> ebRingsMap_;
 PhiSymRecHit ebXstals_[EBDetId::kSizeForDenseIndexing];
+PhiSymRecHit ebXstalsEven_[EBDetId::kSizeForDenseIndexing];
+PhiSymRecHit ebXstalsOdd_[EBDetId::kSizeForDenseIndexing];
 bool   goodXstalsEB_[kNRingsEB][361][11];
 float  nGoodInRingEB_[kNRingsEB][11];
 double kFactorsChEB_[EBDetId::kSizeForDenseIndexing];
 double kFactorsChErrEB_[EBDetId::kSizeForDenseIndexing];
 double ebICChErr_[EBDetId::kSizeForDenseIndexing]={0};
 float  icChMeanEB_[kNRingsEB];
+float  icChEvenMeanEB_[kNRingsEB];
+float  icChOddMeanEB_[kNRingsEB];
 float  icAbsChMeanEB_[kNRingsEB];
 //---EE
 map<int, int> eeRingsMap_;
 PhiSymRecHit eeXstals_[EEDetId::kSizeForDenseIndexing];
+PhiSymRecHit eeXstalsEven_[EEDetId::kSizeForDenseIndexing];
+PhiSymRecHit eeXstalsOdd_[EEDetId::kSizeForDenseIndexing];
 bool   goodXstalsEE_[kNRingsEE][EEDetId::IX_MAX+1][EEDetId::IY_MAX+1][11];
 float  nGoodInRingEE_[kNRingsEE][11];
 double kFactorsChEE_[EEDetId::kSizeForDenseIndexing]={0};
 double kFactorsChErrEE_[EEDetId::kSizeForDenseIndexing]={0};
 double eeICChErr_[EEDetId::kSizeForDenseIndexing]={0};
 float  icChMeanEE_[kNRingsEE];
+float  icChEvenMeanEE_[kNRingsEE];
+float  icChOddMeanEE_[kNRingsEE];
 float  icAbsChMeanEE_[kNRingsEE];
 
 bool kFactorsComputed_;
@@ -105,25 +109,6 @@ void ComputeKfactors()
     kFactFitFunc->SetParameter(0, 1);
     TGraphErrors* kFactorGraph = new TGraphErrors();
     //---EB---
-    //---ring-averaged k-factors
-    for(int iRing=0; iRing<kNRingsEB; ++iRing)
-    {
-        if(ebRingsSumEt_[iRing][0] == 0)
-            continue;
-        ebICRingErr_[iRing] = sqrt(ebRingsSumEt2_[iRing]/nGoodInRingEB_[iRing][0]-
-                                   pow(ebRingsSumEt_[iRing][0]/nGoodInRingEB_[iRing][0], 2));
-        float error = ebICRingErr_[iRing]/ebRingsSumEt_[iRing][0];
-        for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-        {
-            float point = ebRingsSumEt_[iRing][iMis]/ebRingsSumEt_[iRing][0]-1;
-            float p_error = error*sqrt(pow(point, 2)+1);
-            kFactorGraph->SetPoint(iMis, misCalibValuesEB_->at(iMis)-1, point);
-            kFactorGraph->SetPointError(iMis, 0, p_error);
-        }
-        kFactorGraph->Fit(kFactFitFunc, "Q");
-        kFactorsEB_[iRing]=kFactorGraph->GetFunction("kFFF")->GetParameter(0);
-        kFactorsErrEB_[iRing]=kFactorGraph->GetFunction("kFFF")->GetParError(0);
-    }
     //---channel-based k-factors
     for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
@@ -142,22 +127,6 @@ void ComputeKfactors()
         kFactorsChErrEB_[index]=kFactorGraph->GetFunction("kFFF")->GetParError(0);
     }
     //---EE---
-    for(int iRing=0; iRing<kNRingsEE; ++iRing)
-    {
-        eeICRingErr_[iRing] = sqrt(eeRingsSumEt2_[iRing]/nGoodInRingEE_[iRing][0]-
-                                   pow(eeRingsSumEt_[iRing][0]/nGoodInRingEE_[iRing][0], 2));
-        float error = eeICRingErr_[iRing]/eeRingsSumEt_[iRing][0];
-        for(int iMis=0; iMis<=nMisCalib_; ++iMis)
-        {
-            float point = eeRingsSumEt_[iRing][iMis]/eeRingsSumEt_[iRing][0]-1;
-            float p_error = error*sqrt(pow(point, 2)+1);
-            kFactorGraph->SetPoint(iMis, misCalibValuesEE_->at(iMis)-1, point);
-            kFactorGraph->SetPointError(iMis, 0, p_error);
-        }
-        kFactorGraph->Fit(kFactFitFunc, "Q");
-        kFactorsEE_[iRing]=kFactorGraph->GetFunction("kFFF")->GetParameter(0);
-        kFactorsErrEE_[iRing]=kFactorGraph->GetFunction("kFFF")->GetParError(0);
-    }
     //---channel-based k-factors
     for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
     {
@@ -182,17 +151,6 @@ void ComputeKfactors()
     kFactorsComputed_=true;
 }
 
-//----------return the ring-based k-factor --- sub_det: 0->EB, 1->EE----------------------
-pair<float, float> GetRingKfactor(int ring, int sub_det)
-{
-    if(!kFactorsComputed_)
-        ComputeKfactors();
-    if(sub_det == 0)
-        return make_pair(kFactorsEB_[ring], kFactorsErrEB_[ring]);
-    else
-        return make_pair(kFactorsEE_[ring], kFactorsErrEE_[ring]);
-}
-
 //----------return the channel-based k-factor --- sub_det: 0->EB, 1->EE-------------------
 pair<float, float> GetChannelKfactor(int index, int sub_det)
 {
@@ -207,6 +165,13 @@ pair<float, float> GetChannelKfactor(int index, int sub_det)
 //----------cumpute phisym ICs for both EB and EE and fill the output tree----------------
 void ComputeICs()
 {
+    float icChEB[EBDetId::kSizeForDenseIndexing];
+    float icChEvenEB[EBDetId::kSizeForDenseIndexing];
+    float icChOddEB[EBDetId::kSizeForDenseIndexing];
+    float icChEE[EEDetId::kSizeForDenseIndexing];
+    float icChEvenEE[EEDetId::kSizeForDenseIndexing];
+    float icChOddEE[EEDetId::kSizeForDenseIndexing];
+    
     //---increment block output trees counters
     outFile_->eb_xstals.block++;
     outFile_->eb_xstals.n_lumis = nLumis_;
@@ -215,7 +180,7 @@ void ComputeICs()
 
     //---compute EB rings averages
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
-    {        
+    {
         for(int iMis=0; iMis<=nMisCalib_; ++iMis)
         {
             for(int iPhi=0; iPhi<=360; ++iPhi)
@@ -223,7 +188,11 @@ void ComputeICs()
             if(nGoodInRingEB_[iRing][iMis] > 0)
             {
                 if(iMis==0)
+                {
                     ebRingsSumEt2_[iRing] = ebRingsSumEt2_[iRing] / nGoodInRingEB_[iRing][iMis];
+                    ebRingsSumEtEven_[iRing] = ebRingsSumEtEven_[iRing] / nGoodInRingEB_[iRing][iMis];
+                    ebRingsSumEtOdd_[iRing] = ebRingsSumEtOdd_[iRing] / nGoodInRingEB_[iRing][iMis];
+                }
                 ebRingsSumEt_[iRing][iMis] = ebRingsSumEt_[iRing][iMis] / nGoodInRingEB_[iRing][iMis];
             }
         }
@@ -239,157 +208,164 @@ void ComputeICs()
             if(nGoodInRingEE_[iRing][iMis] > 0)
             {
                 if(iMis==0)
+                {
                     eeRingsSumEt2_[iRing] = eeRingsSumEt2_[iRing] / nGoodInRingEE_[iRing][iMis];
+                    eeRingsSumEtEven_[iRing] = eeRingsSumEtEven_[iRing] / nGoodInRingEE_[iRing][iMis];
+                    eeRingsSumEtOdd_[iRing] = eeRingsSumEtOdd_[iRing] / nGoodInRingEE_[iRing][iMis];
+                }
                 eeRingsSumEt_[iRing][iMis] = eeRingsSumEt_[iRing][iMis] / nGoodInRingEE_[iRing][iMis];
             }
         }
     }
     ComputeKfactors();
 
-    //---normalize ICs ring by ring---
-    //---compute averages
+    //---loop over the EB channels and compute the ICs
     for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
         EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
         int currentRing = ebRingsMap_[index];
-        if(currentRing == -1 || !goodXstalsEB_[currentRing][ebXstal.iphi()][0])
-            continue;
+        icChEB[index] = 1/((ebXstals_[index].GetSumEt(0)/
+                            ebRingsSumEt_[currentRing][0]-1)/GetChannelKfactor(index, 0).first+1);
+        icChEvenEB[index] = 1/((ebXstalsEven_[index].GetSumEt(0)/
+                                ebRingsSumEtEven_[currentRing]-1)/GetChannelKfactor(index, 0).first+1);
+        icChOddEB[index] = 1/((ebXstalsOdd_[index].GetSumEt(0)/
+                               ebRingsSumEtOdd_[currentRing]-1)/GetChannelKfactor(index, 0).first+1);
+        if(currentRing != -1 && goodXstalsEB_[currentRing][ebXstal.iphi()][0])
         {
-            float currentICCh = (ebXstals_[index].GetSumEt(0)/
-                                 ebRingsSumEt_[currentRing][0]-1)/GetChannelKfactor(index, 0).first+1;
-            icChMeanEB_[currentRing] += currentICCh;
-            icRMeanEB_[currentRing] += (ebXstals_[index].GetSumEt(0)/
-                                        ebRingsSumEt_[currentRing][0]-1)/GetRingKfactor(currentRing, 0).first+1;
+            icChMeanEB_[currentRing] += icChEB[index];
+            icChEvenMeanEB_[currentRing] += icChEvenEB[index];
+            icChOddMeanEB_[currentRing] += icChOddEB[index];
         }
     }
     //---compute normalization EB 
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
     {
         icChMeanEB_[iRing] = icChMeanEB_[iRing]/nGoodInRingEB_[iRing][0];
-        icRMeanEB_[iRing] = icRMeanEB_[iRing]/nGoodInRingEB_[iRing][0];            
-    }    
-    //---compute averages EE
-    for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
-    {
-        EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
-        int currentRing = eeRingsMap_[index];
-        if(currentRing == -1 || !goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][0])
-            continue;
-        {
-            icChMeanEE_[currentRing] += (eeXstals_[index].GetSumEt(0)/
-                                         eeRingsSumEt_[currentRing][0]-1)/GetChannelKfactor(index, 1).first+1;
-            icRMeanEE_[currentRing] += (eeXstals_[index].GetSumEt(0)/
-                                        eeRingsSumEt_[currentRing][0]-1)/GetRingKfactor(currentRing, 1).first+1;
-        }
-    }    
-    //---compute normalization EE
-    for(int iRing=0; iRing<kNRingsEE; ++iRing)
-    {
-        icChMeanEE_[iRing] = icChMeanEE_[iRing]/nGoodInRingEE_[iRing][0];
-        icRMeanEE_[iRing] = icRMeanEE_[iRing]/nGoodInRingEE_[iRing][0];            
-    }    
-    
-    //---loop over the EB channels and compute the IC
-    float icChEB[EBDetId::kSizeForDenseIndexing];        
-    for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
-    {
-        EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
-        int currentRing = ebRingsMap_[index];
-        if(currentRing == -1 || !goodXstalsEB_[currentRing][ebXstal.iphi()][0])
-            continue;
-
-        icChEB[index] = 1/(((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                            /GetChannelKfactor(index, 0).first+1));//icChMeanEB_[currentRing]);
-        if(normalizeAbsIC)
-            icAbsChMeanEB_[currentRing] += icChEB[index]*ebAbsICs_[currentRing][ebXstal.iphi()];
+        icChEvenMeanEB_[iRing] = icChEvenMeanEB_[iRing]/nGoodInRingEB_[iRing][0];
+        icChOddMeanEB_[iRing] = icChOddMeanEB_[iRing]/nGoodInRingEB_[iRing][0];
     }
+    
+    //---if required normalized the absolute ICs
     if(normalizeAbsIC)
     {
-        //---if required normalized the absolute ICs
+        for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
+        {
+            EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
+            int currentRing = ebRingsMap_[index];
+            if(currentRing == -1 || !goodXstalsEB_[currentRing][ebXstal.iphi()][0])
+                continue;
+
+            icAbsChMeanEB_[currentRing] += icChEB[index]/icChMeanEB_[currentRing]*ebAbsICs_[currentRing][ebXstal.iphi()];
+        }
+        
         for(int iRing=0; iRing<kNRingsEB; ++iRing)
             icAbsChMeanEB_[iRing] = icAbsChMeanEB_[iRing]/nGoodInRingEB_[iRing][0];
     }
+
+    //---Fill EB tree
     for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
         EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
         int currentRing = ebRingsMap_[index];
         if(currentRing > -1)
         {
-            //---fill the output tree
+            //---main tree
             outFile_->eb_xstals.n_events = nEvents_;
             outFile_->eb_xstals.bounds[0] = ebSumEtCuts_[currentRing][0];
             outFile_->eb_xstals.bounds[1] = ebSumEtCuts_[currentRing][1];
             outFile_->eb_xstals.rec_hit = &ebXstals_[index];
             outFile_->eb_xstals.ieta = ebXstal.ieta();
             outFile_->eb_xstals.iphi = ebXstal.iphi();
-            outFile_->eb_xstals.k_ring = GetRingKfactor(currentRing, 0).first;
-            outFile_->eb_xstals.k_ring_err = GetRingKfactor(currentRing, 0).second;
             outFile_->eb_xstals.k_ch = GetChannelKfactor(index, 0).first;
             outFile_->eb_xstals.k_ch_err = GetChannelKfactor(index, 0).second;
-            outFile_->eb_xstals.ic_ring = 1/(((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                                              /outFile_->eb_xstals.k_ring+1)/icRMeanEB_[currentRing]);
-            outFile_->eb_xstals.ic_ch = 1/(((ebXstals_[index].GetSumEt(0)/ebRingsSumEt_[currentRing][0]-1)
-                                            /outFile_->eb_xstals.k_ch+1)/icChMeanEB_[currentRing]);
+            outFile_->eb_xstals.ic_ch = icChEB[index]/icChMeanEB_[currentRing];
             outFile_->eb_xstals.ic_old = ebOldICs_[currentRing][ebXstal.iphi()];
             outFile_->eb_xstals.ic_abs = ebAbsICs_[currentRing][ebXstal.iphi()]/icAbsChMeanEB_[currentRing];
-            outFile_->eb_xstals.ic_ring_err = ebICRingErr_[currentRing]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ring);
-            outFile_->eb_xstals.ic_ring_err = outFile_->eb_xstals.ic_ring_err/pow(outFile_->eb_xstals.ic_ring, 2);
             outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
             outFile_->eb_xstals.ic_ch_err = outFile_->eb_xstals.ic_ch_err/pow(outFile_->eb_xstals.ic_ch, 2);
             outFile_->eb_xstals.ic_err_sys = ebOldICsErr_[currentRing][ebXstal.iphi()];
             outFile_->eb_xstals.Fill();
+            //---even lumis tree
+            outFile_->eb_xstals_even.ic_ch = icChEvenEB[index]/icChEvenMeanEB_[currentRing];
+            outFile_->eb_xstals_even.Fill();
+            //---odd lumis tree
+            outFile_->eb_xstals_odd.ic_ch = icChOddEB[index]/icChOddMeanEB_[currentRing];
+            outFile_->eb_xstals_odd.Fill();
         }
     }
     
-    //---loop over the EE channels and compute the IC
-    float icChEE[EEDetId::kSizeForDenseIndexing];
+    //---loop over the EE channels and compute the ICs
     for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
     {
         EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
         int currentRing = eeRingsMap_[index];
-        if(currentRing == -1 || !goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][0])
-            continue;
-        
-        icChEE[index] = 1/(((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                            /GetChannelKfactor(index, 1).first+1));//icChMeanEE_[currentRing]);        
-        if(normalizeAbsIC)
-            icAbsChMeanEE_[currentRing] += icChEE[index]*eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
+        icChEE[index] = 1/((eeXstals_[index].GetSumEt(0)/
+                            eeRingsSumEt_[currentRing][0]-1)/GetChannelKfactor(index, 1).first+1);
+        icChEvenEE[index] = 1/((eeXstalsEven_[index].GetSumEt(0)/
+                                eeRingsSumEtEven_[currentRing]-1)/GetChannelKfactor(index, 0).first+1);
+        icChOddEE[index] = 1/((eeXstalsOdd_[index].GetSumEt(0)/
+                               eeRingsSumEtOdd_[currentRing]-1)/GetChannelKfactor(index, 0).first+1);
+        if(currentRing != -1 && goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][0])
+        {
+            icChMeanEE_[currentRing] += icChEE[index];
+            icChEvenMeanEE_[currentRing] += icChEvenEE[index];
+            icChOddMeanEE_[currentRing] += icChOddEE[index];
+        }
+    }    
+    //---compute normalization EE
+    for(int iRing=0; iRing<kNRingsEE; ++iRing)
+    {
+        icChMeanEE_[iRing] = icChMeanEE_[iRing]/nGoodInRingEE_[iRing][0];
+        icChEvenMeanEE_[iRing] = icChEvenMeanEE_[iRing]/nGoodInRingEE_[iRing][0];
+        icChOddMeanEE_[iRing] = icChOddMeanEE_[iRing]/nGoodInRingEE_[iRing][0];
     }
+
+    //---if required normalized the absolute ICs
     if(normalizeAbsIC)
     {
-        //---if required normalized the absolute ICs
+        for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
+        {
+            EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
+            int currentRing = eeRingsMap_[index];
+            if(currentRing == -1 || !goodXstalsEE_[currentRing][eeXstal.ix()][eeXstal.iy()][0])
+                continue;
+        
+            icAbsChMeanEE_[currentRing] += icChEE[index]*eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
+        }
+        
         for(int iRing=0; iRing<kNRingsEE; ++iRing)
             icAbsChMeanEE_[iRing] = icAbsChMeanEE_[iRing]/nGoodInRingEE_[iRing][0];
     }
+
+    //---Fill EB tree
     for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
     {
         EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
         int currentRing = eeRingsMap_[index];
         if(currentRing > -1)
         {
-            //---fill the output tree
+            //---main tree
             outFile_->ee_xstals.n_events = nEvents_;
             outFile_->ee_xstals.rec_hit = &eeXstals_[index];
             outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
             outFile_->ee_xstals.ix = eeXstal.ix();
             outFile_->ee_xstals.iy = eeXstal.iy();
-            outFile_->ee_xstals.k_ring = GetRingKfactor(currentRing, 1).first;
-            outFile_->ee_xstals.k_ring_err = GetRingKfactor(currentRing, 1).second;
             outFile_->ee_xstals.k_ch = GetChannelKfactor(index, 1).first;
             outFile_->ee_xstals.k_ch_err = GetChannelKfactor(index, 1).second;
-            outFile_->ee_xstals.ic_ring = 1/(((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                                              /outFile_->ee_xstals.k_ring+1)/icRMeanEE_[currentRing]);
-            outFile_->ee_xstals.ic_ch = 1/(((eeXstals_[index].GetSumEt(0)/eeRingsSumEt_[currentRing][0]-1)
-                                            /outFile_->ee_xstals.k_ch+1)/icChMeanEE_[currentRing]);
+            outFile_->ee_xstals.ic_ch = icChEB[index]/icChMeanEB_[currentRing];
             outFile_->ee_xstals.ic_old = eeOldICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
             outFile_->ee_xstals.ic_abs = eeAbsICs_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1]
                 /icAbsChMeanEE_[currentRing];            
-            outFile_->ee_xstals.ic_ring_err = eeICRingErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ring);
-            outFile_->ee_xstals.ic_ring_err = outFile_->ee_xstals.ic_ring_err/pow(outFile_->ee_xstals.ic_ring, 2);
             outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
             outFile_->ee_xstals.ic_ch_err = outFile_->ee_xstals.ic_ch_err/pow(outFile_->ee_xstals.ic_ch, 2);
             outFile_->ee_xstals.ic_err_sys = eeOldICsErr_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
             outFile_->ee_xstals.Fill();
+            //---even lumis tree
+            outFile_->ee_xstals_even.ic_ch = icChEvenEE[index]/icChEvenMeanEE_[currentRing];
+            outFile_->ee_xstals_even.Fill();
+            //---odd lumis tree
+            outFile_->ee_xstals_odd.ic_ch = icChOddEE[index]/icChOddMeanEE_[currentRing];
+            outFile_->ee_xstals_odd.Fill();
         }
     }
 }
@@ -613,8 +589,11 @@ int main( int argc, char *argv[] )
         for(int iRing=0; iRing<kNRingsEB; ++iRing)
         {
             ebRingsSumEt2_[iRing] = 0;
+            ebRingsSumEtEven_[iRing] = 0;
+            ebRingsSumEtOdd_[iRing] = 0;
             icChMeanEB_[iRing] = 0;
-            icRMeanEB_[iRing] = 0;
+            icChEvenMeanEB_[iRing] = 0;
+            icChOddMeanEB_[iRing] = 0;
             icAbsChMeanEB_[iRing] = !normalizeAbsIC;
             for(int iMis=0; iMis<=nMisCalib_; ++iMis)
             {
@@ -627,14 +606,19 @@ int main( int argc, char *argv[] )
         for(int index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
         {
             ebXstals_[index] = PhiSymRecHit();
+            ebXstalsEven_[index] = PhiSymRecHit();
+            ebXstalsOdd_[index] = PhiSymRecHit();
             ebRingsMap_[index] = -1;
         }
         //---EE
         for(int iRing=0; iRing<kNRingsEE; ++iRing)
         {
             eeRingsSumEt2_[iRing] = 0;
+            eeRingsSumEtEven_[iRing] = 0;
+            eeRingsSumEtOdd_[iRing] = 0;
             icChMeanEE_[iRing] = 0;
-            icRMeanEE_[iRing] = 0;
+            icChEvenMeanEE_[iRing] = 0;
+            icChOddMeanEE_[iRing] = 0;
             icAbsChMeanEE_[iRing] = !normalizeAbsIC;
             for(int iMis=0; iMis<=nMisCalib_; ++iMis)
             {
@@ -648,6 +632,8 @@ int main( int argc, char *argv[] )
         for(int index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
         {
             eeXstals_[index] = PhiSymRecHit();
+            eeXstalsEven_[index] = PhiSymRecHit();
+            eeXstalsOdd_[index] = PhiSymRecHit();
             eeRingsMap_[index] = -1;
         }
 
@@ -687,7 +673,11 @@ int main( int argc, char *argv[] )
             //---open the next file
             TFile* file = TFile::Open(fileName.c_str());
             CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
+            CrystalsEBTree ebTreeEven((TTree*)file->Get("eb_even"));
+            CrystalsEBTree ebTreeOdd((TTree*)file->Get("eb_odd"));
             CrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
+            CrystalsEETree eeTreeEven((TTree*)file->Get("ee_even"));
+            CrystalsEETree eeTreeOdd((TTree*)file->Get("ee_odd"));
 
             cout << "IOV: " << iIOV << endl;
             cout << "Reading file: " << fileName.c_str() << " / blk: " << ebTree.block << "..." << endl;
@@ -722,7 +712,7 @@ int main( int argc, char *argv[] )
 
             int currentBlock=-1;
             //---EB
-            while(ebTree.NextEntry())
+            while(ebTree.NextEntry() && ebTreeEven.NextEntry() && ebTreeOdd.NextEntry())
             {
                 //---skip unwanted blocks
                 PhiSymRunLumi thisBlkBegin(ebTree.begin[0], ebTree.begin[1]);
@@ -741,12 +731,16 @@ int main( int argc, char *argv[] )
                 int index = EBDetId(ebTree.ieta, ebTree.iphi).denseIndex();
                 int currentRing = ebTree.ieta<0 ? ebTree.ieta + 85 : ebTree.ieta + 84;
                 ebXstals_[index] += *ebTree.rec_hit;
+                ebXstalsEven_[index] += *ebTreeEven.rec_hit;
+                ebXstalsOdd_[index] += *ebTreeOdd.rec_hit;
                 //---no geometry available, thus fill a hashedIndex->ring map
                 if(ebRingsMap_[index] == -1)
                     ebRingsMap_[index] = currentRing;
 
                 //---increase all the sums
-                ebRingsSumEt2_[currentRing] += ebTree.rec_hit->GetSumEt2(); 
+                ebRingsSumEt2_[currentRing] += ebTree.rec_hit->GetSumEt2();
+                ebRingsSumEtEven_[currentRing] += ebTreeEven.rec_hit->GetSumEt();
+                ebRingsSumEtOdd_[currentRing] += ebTreeOdd.rec_hit->GetSumEt();
                 for(int iMis=0; iMis<=nMisCalib_; ++iMis)
                 {
                     if(ebTree.rec_hit->GetSumEt(iMis) > 0)
@@ -754,10 +748,10 @@ int main( int argc, char *argv[] )
                         ebRingsSumEt_[currentRing][iMis] += ebTree.rec_hit->GetSumEt(iMis);
                         goodXstalsEB_[currentRing][ebTree.iphi][iMis]=1;
                     }
-                }
+                }                
             }
             //---EE
-            while(eeTree.NextEntry())
+            while(eeTree.NextEntry() && eeTreeEven.NextEntry() && eeTreeOdd.NextEntry())
             {
                 //---skip unwanted blocks
                 PhiSymRunLumi thisBlkBegin(eeTree.begin[0], eeTree.begin[1]);
@@ -769,12 +763,16 @@ int main( int argc, char *argv[] )
                 currentRing = currentRing<0 ? currentRing+kNRingsEE/2 : currentRing-1+kNRingsEE/2;
                 int index = EEDetId(eeTree.ix, eeTree.iy, eeTree.iring>0?1:-1).denseIndex();
                 eeXstals_[index] += *eeTree.rec_hit;
+                eeXstalsEven_[index] += *eeTreeEven.rec_hit;
+                eeXstalsOdd_[index] += *eeTreeOdd.rec_hit;
                 //---no geometry available, thus fill a hashedIndex->ring map
                 if(eeRingsMap_[index] == -1)
                     eeRingsMap_[index] = currentRing;
 
                 //---increase all the sums
                 eeRingsSumEt2_[currentRing] += eeTree.rec_hit->GetSumEt2();
+                eeRingsSumEtEven_[currentRing] += eeTreeEven.rec_hit->GetSumEt();
+                eeRingsSumEtOdd_[currentRing] += eeTreeOdd.rec_hit->GetSumEt();
                 for(int iMis=0; iMis<=nMisCalib_; ++iMis)
                 {
                     if(eeTree.rec_hit->GetSumEt(iMis) > 0)
@@ -782,7 +780,7 @@ int main( int argc, char *argv[] )
                         eeRingsSumEt_[currentRing][iMis] += eeTree.rec_hit->GetSumEt(iMis);
                         goodXstalsEE_[currentRing][eeTree.ix][eeTree.iy][iMis]=1;
                     }
-                }
+                }                
             }
             file->Close();
         }
@@ -860,6 +858,8 @@ int main( int argc, char *argv[] )
             {
                 EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
                 ebRingsSumEt2_[currentRing] -= ebXstals_[index].GetSumEt2();
+                ebRingsSumEtEven_[currentRing] -= ebXstalsEven_[index].GetSumEt();
+                ebRingsSumEtOdd_[currentRing] -= ebXstalsOdd_[index].GetSumEt();
                 for(int iMis=0; iMis<=nMisCalib_; ++iMis)
                 {                    
                     if(ebXstals_[index].GetSumEt(iMis) > 0)
@@ -880,6 +880,8 @@ int main( int argc, char *argv[] )
             {
                 EEDetId eeXstal = EEDetId::detIdFromDenseIndex(index);
                 eeRingsSumEt2_[currentRing] -= eeXstals_[index].GetSumEt2();
+                eeRingsSumEtEven_[currentRing] -= eeXstalsEven_[index].GetSumEt();
+                eeRingsSumEtOdd_[currentRing] -= eeXstalsOdd_[index].GetSumEt();
                 for(int iMis=0; iMis<=nMisCalib_; ++iMis)
                 {
                     if(eeXstals_[index].GetSumEt(iMis) > 0)
@@ -897,7 +899,11 @@ int main( int argc, char *argv[] )
         //---finalize outputs
         outFile_->cd();
         outFile_->eb_xstals.Write("eb_xstals");
+        outFile_->eb_xstals_even.Write("eb_even");
+        outFile_->eb_xstals_odd.Write("eb_odd");
         outFile_->ee_xstals.Write("ee_xstals");
+        outFile_->ee_xstals_even.Write("ee_even");
+        outFile_->ee_xstals_odd.Write("ee_odd");
         out->Close();
     }    
 }

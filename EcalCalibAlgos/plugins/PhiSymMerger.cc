@@ -88,7 +88,11 @@ private:
     static const short kNRingsEB = EcalRingCalibrationTools::N_RING_BARREL;
     static const short kNRingsEE = EcalRingCalibrationTools::N_RING_ENDCAP;
     PhiSymRecHit ebXstals_[EBDetId::kSizeForDenseIndexing];
+    PhiSymRecHit ebXstalsEven_[EBDetId::kSizeForDenseIndexing];
+    PhiSymRecHit ebXstalsOdd_[EBDetId::kSizeForDenseIndexing];
     PhiSymRecHit eeXstals_[EEDetId::kSizeForDenseIndexing];
+    PhiSymRecHit eeXstalsEven_[EEDetId::kSizeForDenseIndexing];
+    PhiSymRecHit eeXstalsOdd_[EEDetId::kSizeForDenseIndexing];
 
     //---outputs
     auto_ptr<CalibrationFile> outFile_;
@@ -170,7 +174,11 @@ void PhiSymMerger::endJob()
     //---finalize outputs
     outFile_->cd();
     outFile_->eb_xstals.Write("eb_xstals");
+    outFile_->eb_xstals_even.Write("eb_even");
+    outFile_->eb_xstals_odd.Write("eb_odd");
     outFile_->ee_xstals.Write("ee_xstals");
+    outFile_->ee_xstals_even.Write("ee_even");
+    outFile_->ee_xstals_odd.Write("ee_odd");
 }
 
 void PhiSymMerger::endRun(edm::Run const& run, edm::EventSetup const& setup)
@@ -277,6 +285,10 @@ void PhiSymMerger::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Eve
             continue;
         EBDetId ebXstal(recHit.GetRawId());
         ebXstals_[ebXstal.denseIndex()] += recHit;
+        if(thisRunLumi.lumi % 2 == 0)
+            ebXstalsEven_[ebXstal.denseIndex()] += recHit;
+        else
+            ebXstalsOdd_[ebXstal.denseIndex()] += recHit;
     }
     //---EE---
     //---fill the rings Et sum
@@ -286,6 +298,10 @@ void PhiSymMerger::endLuminosityBlock(edm::LuminosityBlock const& lumi, edm::Eve
             continue;
         EEDetId eeXstal(recHit.GetRawId());
         eeXstals_[eeXstal.denseIndex()] += recHit;
+        if(thisRunLumi.lumi % 2 == 0)
+            eeXstalsEven_[eeXstal.denseIndex()] += recHit;
+        else
+            eeXstalsOdd_[eeXstal.denseIndex()] += recHit;
     }
     //---BeamSpot info---
     //---update current sum, each bs lumi value is weighted by the number of events.
@@ -325,15 +341,28 @@ void PhiSymMerger::FillOutput()
     for(uint32_t index=0; index<EBDetId::kSizeForDenseIndexing; ++index)
     {
         EBDetId ebXstal = EBDetId::detIdFromDenseIndex(index);
-        //---fill the output tree
+        //---fill the output trees
+        //---global
         outFile_->eb_xstals.n_events = nEvents_;
         outFile_->eb_xstals.rec_hit = &ebXstals_[index];
         outFile_->eb_xstals.ieta = ebXstal.ieta();
         outFile_->eb_xstals.iphi = ebXstal.iphi();
         outFile_->eb_xstals.Fill();
-
+        //---even lumis (or block of lumis)
+        outFile_->eb_xstals_even.rec_hit = &ebXstalsEven_[index];
+        outFile_->eb_xstals_even.ieta = ebXstal.ieta();
+        outFile_->eb_xstals_even.iphi = ebXstal.iphi();
+        outFile_->eb_xstals_even.Fill();
+        //---odd lumis (or block of lumis)
+        outFile_->eb_xstals_odd.rec_hit = &ebXstalsOdd_[index];
+        outFile_->eb_xstals_odd.ieta = ebXstal.ieta();
+        outFile_->eb_xstals_odd.iphi = ebXstal.iphi();
+        outFile_->eb_xstals_odd.Fill();
+        
         //---reset channel status and sum
         ebXstals_[index].Reset();
+        ebXstalsEven_[index].Reset();
+        ebXstalsOdd_[index].Reset();
     }
     //---loop over the EE channels and store summed rechits
     for(uint32_t index=0; index<EEDetId::kSizeForDenseIndexing; ++index)
@@ -347,9 +376,23 @@ void PhiSymMerger::FillOutput()
         outFile_->ee_xstals.ix = eeXstal.ix();
         outFile_->ee_xstals.iy = eeXstal.iy();
         outFile_->ee_xstals.Fill();            
+        //---even lumis (or block of lumis)
+        outFile_->ee_xstals_even.rec_hit = &eeXstalsEven_[index];
+        outFile_->ee_xstals_even.iring = outFile_->ee_xstals.iring;
+        outFile_->ee_xstals_even.ix = eeXstal.ix();
+        outFile_->ee_xstals_even.iy = eeXstal.iy();
+        outFile_->ee_xstals_even.Fill();
+        //---odd lumis (or block of lumis)
+        outFile_->ee_xstals_odd.rec_hit = &eeXstalsOdd_[index];
+        outFile_->ee_xstals_odd.iring = outFile_->ee_xstals.iring;
+        outFile_->ee_xstals_odd.ix = eeXstal.ix();
+        outFile_->ee_xstals_odd.iy = eeXstal.iy();
+        outFile_->ee_xstals_odd.Fill();
 
         //---reset channel status and sum
         eeXstals_[index].Reset();
+        eeXstalsEven_[index].Reset();
+        eeXstalsOdd_[index].Reset();
     }
     
     //---reset counters and kFactor flag
