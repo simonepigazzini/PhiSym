@@ -97,6 +97,15 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  globaltag = cms.string('80X_dataRun2_2016SeptRepro_v3')
 )
 
+### Custum alpha tag from 2012
+process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(record = cms.string("EcalLaserAlphasRcd"),
+             tag = cms.string(" EcalLaserAlphas_resolution_v1"),
+             connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
+         )
+    )
+
+### Force tags: examples
 # process.GlobalTag.toGet = cms.VPSet(
 #     cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
 #              tag = cms.string("EcalADCToGeVConstant_2016_Bon"),
