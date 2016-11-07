@@ -100,7 +100,7 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
 ### Custum alpha tag from 2012
 process.GlobalTag.toGet = cms.VPSet(
     cms.PSet(record = cms.string("EcalLaserAlphasRcd"),
-             tag = cms.string(" EcalLaserAlphas_resolution_v1"),
+             tag = cms.string("EcalLaserAlphas_resolution_v1"),
              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
          )
     )
