@@ -95,13 +95,16 @@ int main(int argc, char *argv[])
         TGraphErrors* gr_uncorr_b60_EBm = new TGraphErrors();
         TGraphErrors* gr_sm_sub_b60_EBp = new TGraphErrors();
         TGraphErrors* gr_sm_sub_b60_EBm = new TGraphErrors();
-        TH1F* sm_mean_EBm = new TH1F("sb_mean_EBm", "", 360, 1, 360);
-        TH1F* sm_mean_EBp = new TH1F("sb_mean_EBp", "", 360, 1, 360);
+        TH1F* sm_mean_EBm = new TH1F("sb_mean_EBm", "", 360, 0.5, 360.5);
+        TH1F* sm_mean_EBp = new TH1F("sb_mean_EBp", "", 360, 0.5, 360.5);
         TH1F* h_ic_uncorr = new TH1F("h_ic_uncorr", "PhiSym uncorrected ICs ;#it{IC_{uncorr}};", 100, 0.95, 1.05);
         TH1F* h_ic_corr = new TH1F("h_ic_corr", "PhiSym corrected ICs ;#it{IC_{corr}};", 100, 0.95, 1.05);
-        TH2F* map_ic_uncorr = new TH2F("map_ic_uncorr", "PhiSym uncorrected ICs map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
-        TH2F* map_ic_corr = new TH2F("map_ic_corr", "PhiSym corrected ICs map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
-        TH2F* map_corrections = new TH2F("map_corrections", "Corrections map;#it{i#phi};#it{i#eta}", 360, 1, 360, 171, -85, 85);
+        TH2F* map_ic_uncorr = new TH2F("map_ic_uncorr", "PhiSym uncorrected ICs map;#it{i#phi};#it{i#eta}",
+                                       360, 0.5, 360.5, 171, -85.5, 85.5);
+        TH2F* map_ic_corr = new TH2F("map_ic_corr", "PhiSym corrected ICs map;#it{i#phi};#it{i#eta}",
+                                     360, 0.5, 360.5, 171, -85.5, 85.5);
+        TH2F* map_corrections = new TH2F("map_corrections", "Corrections map;#it{i#phi};#it{i#eta}",
+                                         360, 0.5, 360.5, 171, -85.5, 85.5);
         
         TFile* file = TFile::Open(inputFile.c_str(), "READ");
         CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
@@ -137,25 +140,22 @@ int main(int argc, char *argv[])
         {
             if(n_hits[index] == 0)
                 continue;
+            int sm = (ebMap[index].second-1) / 20;
+            int side = ebMap[index].first < 0 ? 0 : 1;
             if(abs(ebMap[index].first) < 60)
+                iphi_ic[ebMap[index].second][side].push_back(ic_uncorr[index]);
+            else
+                iphi_ic_b60[ebMap[index].second][side].push_back(ic_uncorr[index]);
+            //---SM boundries rejection
+            if(!(ebMap[index].second % 20 == 0 && ebMap[index].first > 0) &&
+               !(ebMap[index].second % 20 == 1 && ebMap[index].first < 0))
             {
-                int sm = (ebMap[index].second-1) / 20;
-                int side = ebMap[index].first < 0 ? 0 : 1;
+                //---inside Tracker Barrel
                 if(abs(ebMap[index].first) < 60)
-                    iphi_ic[ebMap[index].second][side].push_back(ic_uncorr[index]);
+                    sm_ics[sm][side].push_back(ic_uncorr[index]);
+                //---outside Tracker Barrel
                 else
-                    iphi_ic_b60[ebMap[index].second][side].push_back(ic_uncorr[index]);
-                //---SM boundries rejection
-                if(!(ebMap[index].second % 20 == 0 && ebMap[index].first > 0) &&
-                   !(ebMap[index].second % 20 == 1 && ebMap[index].first < 0))
-                {
-                    //---inside Tracker Barrel
-                    if(abs(ebMap[index].first) < 60)
-                        sm_ics[sm][side].push_back(ic_uncorr[index]);
-                    //---outside Tracker Barrel
-                    else
-                        sm_ics_b60[sm][side].push_back(ic_uncorr[index]);
-                }
+                    sm_ics_b60[sm][side].push_back(ic_uncorr[index]);
             }
         }
     
@@ -221,8 +221,8 @@ int main(int argc, char *argv[])
             //---no TB
             sort(iphi_ic_b60[iPhi][0].begin(), iphi_ic_b60[iPhi][0].end());
             sort(iphi_ic_b60[iPhi][1].begin(), iphi_ic_b60[iPhi][1].end());
-            tmp_ebm = PhiSym::IterativeCut(iphi_ic_b60[iPhi][0], 0, iphi_ic_b60[iPhi][0].size(), 0.001);
-            tmp_ebp = PhiSym::IterativeCut(iphi_ic_b60[iPhi][1], 0, iphi_ic_b60[iPhi][1].size(), 0.001);
+            tmp_ebm = PhiSym::IterativeCut(iphi_ic_b60[iPhi][0], 0, iphi_ic_b60[iPhi][0].size(), 0.005);
+            tmp_ebp = PhiSym::IterativeCut(iphi_ic_b60[iPhi][1], 0, iphi_ic_b60[iPhi][1].size(), 0.005);
             point_unc[0] = tmp_ebm.first;
             point_unc[1] = tmp_ebp.first;
             error_unc[0] = tmp_ebm.second;
