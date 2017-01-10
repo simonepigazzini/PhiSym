@@ -395,9 +395,15 @@ void PhiSymMerger::FillOutput()
         eeXstalsOdd_[index].Reset();
     }
     
-    //---reset counters and kFactor flag
+    //---reset global variables
     nEvents_=0;
     nBlocks_=0;
+    outFile_->eb_xstals.mean_bs_x = 0;
+    outFile_->eb_xstals.mean_bs_sigmax = 0;
+    outFile_->eb_xstals.mean_bs_y = 0;
+    outFile_->eb_xstals.mean_bs_sigmay = 0;
+    outFile_->eb_xstals.mean_bs_z = 0;
+    outFile_->eb_xstals.mean_bs_sigmaz = 0;
 }
 
 void PhiSymMerger::SearchLumiIOV(PhiSymRunLumi current)

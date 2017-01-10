@@ -72,8 +72,8 @@ process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit",
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 # process.PhiSymProducer.makeSpectraTreeEB = True
 # process.PhiSymProducer.makeSpectraTreeEE = True
-# process.PhiSymProducer.eThreshold_barrel = 1.0
-# process.PhiSymProducer.thrEEmod = 12.
+process.PhiSymProducer.eThreshold_barrel = 0.95
+process.PhiSymProducer.thrEEmod = 12.
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
@@ -98,12 +98,12 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
 )
 
 ### Custum alpha tag from 2012
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalLaserAlphasRcd"),
-             tag = cms.string("EcalLaserAlphas_resolution_v1"),
-             connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
-         )
-    )
+# process.GlobalTag.toGet = cms.VPSet(
+#     cms.PSet(record = cms.string("EcalLaserAlphasRcd"),
+#              tag = cms.string("alphaTest"),
+#              connect = cms.string("sqlite_file:alphas_eflow2012.db")
+#          )
+#     )
 
 ### Force tags: examples
 # process.GlobalTag.toGet = cms.VPSet(

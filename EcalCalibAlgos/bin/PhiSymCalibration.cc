@@ -17,6 +17,7 @@
 #include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
+#include "FWCore/ParameterSet/interface/ProcessDesc.h"
 
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
 #include "DataFormats/EcalDetId/interface/EEDetId.h"
@@ -35,6 +36,12 @@ using namespace std;
 bool normalizeAbsIC=true;
 int nLumis_=0;
 int nEvents_=0;
+float thisBlkSumMeanX_=0;
+float thisBlkSumSigmaX_=0;
+float thisBlkSumMeanY_=0;
+float thisBlkSumSigmaY_=0;
+float thisBlkSumMeanZ_=0;
+float thisBlkSumSigmaZ_=0;
 int nMisCalib_=-1;
 vector<float>* misCalibValuesEB_;
 vector<float>* misCalibValuesEE_;
@@ -174,9 +181,7 @@ void ComputeICs()
     
     //---increment block output trees counters
     outFile_->eb_xstals.block++;
-    outFile_->eb_xstals.n_lumis = nLumis_;
     outFile_->ee_xstals.block++;
-    outFile_->ee_xstals.n_lumis = nLumis_;
 
     //---compute EB rings averages
     for(int iRing=0; iRing<kNRingsEB; ++iRing)
@@ -271,6 +276,13 @@ void ComputeICs()
         {
             //---main tree
             outFile_->eb_xstals.n_events = nEvents_;
+            outFile_->eb_xstals.n_lumis = nLumis_;
+            outFile_->eb_xstals.mean_bs_x = thisBlkSumMeanX_ / nEvents_;
+            outFile_->eb_xstals.mean_bs_sigmax = thisBlkSumSigmaX_ / nEvents_;
+            outFile_->eb_xstals.mean_bs_y = thisBlkSumMeanY_ / nEvents_;
+            outFile_->eb_xstals.mean_bs_sigmay = thisBlkSumSigmaY_ / nEvents_;
+            outFile_->eb_xstals.mean_bs_z = thisBlkSumMeanZ_ / nEvents_;
+            outFile_->eb_xstals.mean_bs_sigmaz = thisBlkSumSigmaZ_ / nEvents_;
             outFile_->eb_xstals.bounds[0] = ebSumEtCuts_[currentRing][0];
             outFile_->eb_xstals.bounds[1] = ebSumEtCuts_[currentRing][1];
             outFile_->eb_xstals.rec_hit = &ebXstals_[index];
@@ -346,6 +358,13 @@ void ComputeICs()
         {
             //---main tree
             outFile_->ee_xstals.n_events = nEvents_;
+            outFile_->ee_xstals.n_lumis = nLumis_;
+            outFile_->ee_xstals.mean_bs_x = thisBlkSumMeanX_ / nEvents_;
+            outFile_->ee_xstals.mean_bs_sigmax = thisBlkSumSigmaX_ / nEvents_;
+            outFile_->ee_xstals.mean_bs_y = thisBlkSumMeanY_ / nEvents_;
+            outFile_->ee_xstals.mean_bs_sigmay = thisBlkSumSigmaY_ / nEvents_;
+            outFile_->ee_xstals.mean_bs_z = thisBlkSumMeanZ_ / nEvents_;
+            outFile_->ee_xstals.mean_bs_sigmaz = thisBlkSumSigmaZ_ / nEvents_;
             outFile_->ee_xstals.rec_hit = &eeXstals_[index];
             outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
             outFile_->ee_xstals.ix = eeXstal.ix();
@@ -468,13 +487,7 @@ int main( int argc, char *argv[] )
 
     if(argc < 2)
     {
-        cout << "Usage : " << argv[0] << " [parameters.py]" << endl;
-        return 0;
-    }
-    if(!edm::readPSetsFrom(argv[1])->existsAs<edm::ParameterSet>("process"))
-    {
-        cout << " ERROR: ParametersSet 'process' is missing in your configuration file"
-             << endl;
+        cout << "Usage : " << argv[0] << " parameters.py [opts]" << endl;
         return 0;
     }
 
@@ -486,11 +499,17 @@ int main( int argc, char *argv[] )
     kFactorsComputed_=false;
     nLumis_=0;
     nEvents_=0;
-    
+    thisBlkSumMeanX_=0;
+    thisBlkSumSigmaX_=0;
+    thisBlkSumMeanY_=0;
+    thisBlkSumSigmaY_=0;
+    thisBlkSumMeanZ_=0;
+    thisBlkSumSigmaZ_=0;
+
     //-----get the python configuration-----
-    const edm::ParameterSet &process = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("process");
-    const edm::ParameterSet &filesOpt = process.getParameter<edm::ParameterSet>("ioFilesOpt");
-    const edm::ParameterSet &IOVBounds = process.getParameter<edm::ParameterSet>("IOVBounds");
+    auto process = edm::readConfig(argv[1], argc, argv);
+    const edm::ParameterSet &filesOpt = process->getParameter<edm::ParameterSet>("ioFilesOpt");
+    const edm::ParameterSet &IOVBounds = process->getParameter<edm::ParameterSet>("IOVBounds");
         
     //---get IOV boundaries    
     vector<PhiSymRunLumi> IOVBegins, IOVEnds;
@@ -720,12 +739,18 @@ int main( int argc, char *argv[] )
                 if(thisBlkBegin < IOVBegins[iIOV] || thisBlkEnd > IOVEnds[iIOV])                    
                     continue;
                 
-                //---counts summed lumis
+                //---compute global variables (just once!)
                 if(currentBlock != ebTree.block)
                 {
                     nLumis_ += ebTree.n_lumis;
                     nEvents_ += ebTree.n_events;
                     currentBlock = ebTree.block;
+                    thisBlkSumMeanX_ += ebTree.mean_bs_x*ebTree.n_events;
+                    thisBlkSumSigmaX_ += ebTree.mean_bs_sigmax*ebTree.n_events;
+                    thisBlkSumMeanY_ += ebTree.mean_bs_y*ebTree.n_events;
+                    thisBlkSumSigmaY_ += ebTree.mean_bs_sigmay*ebTree.n_events;
+                    thisBlkSumMeanZ_ += ebTree.mean_bs_z*ebTree.n_events;
+                    thisBlkSumSigmaZ_ += ebTree.mean_bs_sigmaz*ebTree.n_events;
                 }
             
                 int index = EBDetId(ebTree.ieta, ebTree.iphi).denseIndex();

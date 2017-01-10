@@ -9,6 +9,7 @@ oldargv = sys.argv[:]
 sys.argv = [ '-b-' ]
 from optparse import OptionParser
 import ROOT
+ROOT.PyConfig.IgnoreCommandLineOptions = True
 ROOT.gROOT.SetBatch(True)
 sys.argv = oldargv
 
