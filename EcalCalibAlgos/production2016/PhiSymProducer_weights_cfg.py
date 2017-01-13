@@ -98,12 +98,12 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
 )
 
 ### APD gain loss due to dark current corrections (for 2016 legacy ReReco)
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalLinearCorrectionsRcd"),
-             tag = cms.string("EcalLinearCorrections_from2011_offline"),
-             connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
-         )
-)       
+# process.GlobalTag.toGet = cms.VPSet(
+#     cms.PSet(record = cms.string("EcalLinearCorrectionsRcd"),
+#              tag = cms.string("EcalLinearCorrections_from2011_offline"),
+#              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
+#          )
+# )       
 
 ### Custum alpha tag from 2012
 # process.GlobalTag.toGet = cms.VPSet(
