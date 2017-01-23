@@ -24,7 +24,8 @@ config.Data.lumiMask             = ''
 config.Data.unitsPerJob          = 10
 config.Data.totalUnits           = -1
 config.Data.publication          = True
-#config.Data.isbchecksum        = 'aa6d0f694fbde2c60e6338a92e82f36e'
+config.Data.ignoreLocality       = True
+#config.Data.isbchecksum          = 'aa6d0f694fbde2c60e6338a92e82f36e'
 
 # This string is used to construct the output dataset name
 config.Data.publishWithGroupName = True
@@ -32,5 +33,5 @@ config.Data.outLFNDirBase        = '/store/group/dpg_ecal/alca_ecalcalib/phiSymm
 
 config.section_('Site')
 # Where the output files will be transmitted to
-config.Site.storageSite          = 'T2_CH_CERN'
+config.Site.storageSite          = 'T3_IT_MIB'
 config.Site.blacklist            = ['T2_US_Nebraska']
