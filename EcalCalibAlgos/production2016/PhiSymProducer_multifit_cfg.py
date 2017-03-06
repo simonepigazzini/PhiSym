@@ -73,6 +73,8 @@ process.ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 #process.PhiSymProducer.makeSpectraTreeEB = True
 #process.PhiSymProducer.makeSpectraTreeEE = True
+process.PhiSymProducer.eThreshold_barrel = 0.9
+process.PhiSymProducer.thrEEmod = 14.
 
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
@@ -93,15 +95,16 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('80X_dataRun2_Prompt_v8')
+                                 globaltag = cms.string('80X_dataRun2_2016LegacyRepro_Candidate_v2')
 )
 
+### APD gain loss due to dark current corrections (for 2016 legacy ReReco)
 process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalPulseShapesRcd"),
-             tag = cms.string("EcalPulseShapes_data"),
-             connect = cms.string("sqlite_file:ecaltemplates_popcon_data_Run2016B_since_271983.db")
+    cms.PSet(record = cms.string("EcalLinearCorrectionsRcd"),
+             tag = cms.string("EcalLinearCorrections_from2011_offline"),
+             connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
          )
-    )
+)       
 
 # SCHEDULE
 process.reconstruction_step = cms.Sequence( process.bunchSpacingProducer * (process.ecalMultiFitUncalibRecHit + process.ecalRecHit) )
