@@ -12,7 +12,7 @@ config.JobType.pluginName        = 'Analysis'
 
 # Name of the CMSSW configuration file
 config.JobType.psetName          = 'PhiSymProducer_cfg.py'
-config.JobType.inputFiles        = ['alphas_eflow2012.db']
+#config.JobType.inputFiles        = ['alphas_eflow2012.db']
 config.JobType.priority          = 30
 
 config.section_('Data')
@@ -33,5 +33,5 @@ config.Data.outLFNDirBase        = '/store/group/dpg_ecal/alca_ecalcalib/phiSymm
 
 config.section_('Site')
 # Where the output files will be transmitted to
-config.Site.storageSite          = 'T3_IT_MIB'
+config.Site.storageSite          = 'T2_CH_CERN'
 config.Site.blacklist            = ['T2_US_Nebraska']

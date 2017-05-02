@@ -92,7 +92,11 @@ for aline in files:
     if options.debug:
         print options.prefix+aline
 
-    lumis = Lumis(fullpath_file)
+    try:
+        lumis = Lumis(fullpath_file)
+    except:
+        print "File "+fullpath_file+" NOT FOUND!"
+        continue;
 
     for i,lumi in enumerate(lumis):
         lumi.getByLabel(labelPhiSymInfo,handlePhiSymInfo)

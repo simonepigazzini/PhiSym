@@ -13,6 +13,11 @@ options.register('iovmaps',
                  VarParsing.multiplicity.list,
                  VarParsing.varType.string,
                  "List of IOVMap files")
+options.register('iovbounds',
+                 '',
+                 VarParsing.multiplicity.list,
+                 VarParsing.varType.int,
+                 "List of IOV bounds: begin1, end1, begin2, end2, ...")
 options.register('firstiov',
                  0,
                  VarParsing.multiplicity.singleton,
@@ -30,6 +35,7 @@ options.register('debug',
                  "Print debug messages")
 options.parseArguments()
 
+files = []
 for eosdir in options.eosdirs:
     if eosdir[-1] != '/':
         eosdir += '/'
@@ -38,7 +44,7 @@ for eosdir in options.eosdirs:
     print('>> Creating list of files from: \n'+eosdir)
     lsCmd = subprocess.Popen(['eos', 'ls', eosdir+'*.root'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     str_files, err = lsCmd.communicate()
-    files = ['root://eoscms/'+eosdir+ifile for ifile in str_files.split("\n")]
+    files.extend(['root://eoscms/'+eosdir+ifile for ifile in str_files.split("\n")])
     files.pop()
     if options.debug:
         for ifile in files:
@@ -46,14 +52,19 @@ for eosdir in options.eosdirs:
     
 process = cms.Process('Calibration')
 
+manual_splitting = True if len(options.iovbounds) > 0 else False
+
 process.IOVBounds = cms.PSet(
     startingIOV     = cms.int32(options.firstiov),
     nIOVs           = cms.int32(options.niovs),
-    manualSplitting = cms.bool(False),
-    beginRuns       = cms.vint32(),
-    endRuns         = cms.vint32(),
+    manualSplitting = cms.bool(manual_splitting),
+    beginRuns       = cms.vint32( [options.iovbounds[i] for i in range(0, len(options.iovbounds), 2)] ),
+    endRuns         = cms.vint32( [options.iovbounds[i] for i in range(1, len(options.iovbounds), 2)] ),
     IOVMaps         = cms.vstring(options.iovmaps)
 )
+
+if options.debug:
+    print(process.IOVBounds)
 
 process.ioFilesOpt = cms.PSet(    
     outputFile = cms.string('summed_'),

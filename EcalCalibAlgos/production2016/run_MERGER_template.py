@@ -12,7 +12,7 @@ config.JobType.pluginName      = 'Analysis'
 
 # Name of the CMSSW configuration file
 config.JobType.psetName        = 'PhiSymMerger_cfg.py'
-config.JobType.inputFiles      = ['IOVmap.root']
+#config.JobType.inputFiles      = ['IOVmap.root']
 config.JobType.priority        = 20
 
 config.section_('Data')
@@ -36,4 +36,4 @@ config.section_('Site')
 # Where the output files will be transmitted to
 config.Site.storageSite        = 'T2_CH_CERN'
 #config.Site.blacklist          = ['T2_US_Nebraska']
-config.Site.whitelist          = ['T1_IT_CNAF', 'T2_IT_Rome', 'T2_IT_Bari']
+config.Site.whitelist          = ['T1_IT_CNAF', 'T2_CH_CERN', 'T2_IT_Bari']

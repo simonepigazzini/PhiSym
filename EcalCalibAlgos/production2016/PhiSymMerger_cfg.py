@@ -16,14 +16,12 @@ process.options = cms.untracked.PSet(
 
 # Global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Prompt_v11')
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_2016LegacyRepro_Candidate_v2')
 
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-                                "root://xrootd-cms.infn.it:1194//store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_803-multifit-80X_dataRun2_Prompt_v4-Commisioning2016_v2/160411_124756/0000/phisym_multifit_1lumis_001.root",
-                                "root://xrootd-cms.infn.it:1194//store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_803-multifit-80X_dataRun2_Prompt_v4-Commisioning2016_v2/160411_124756/0000/phisym_multifit_1lumis_1.root"
-                                #'root://xrootd-cms.infn.it:1194//store/user/spigazzi/AlCaPhiSym/crab_PHISYM-CMSSW_7415-weights-74X_dataRun2_Prompt_v4-Run2015B_v1/151109_102420/0000/phisym_weights_1lumis_219.root'
+                                "root://cms-xrd-global.cern.ch//store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_8_0_17-multifit-80X_dataRun2_2016LegacyRepro_Candidate_v2-Run2016F_legacy_v3/170323_085418/0000/phisym_multifit_1lumis_1.root"
                             )
 )                                
 process.source.skipBadFiles = cms.untracked.bool(True)

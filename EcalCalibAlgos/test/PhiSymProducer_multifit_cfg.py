@@ -1,3 +1,4 @@
+import subprocess
 import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -6,6 +7,16 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 options = VarParsing('analysis')
 options.maxEvents = -1
 options.outputFile = 'phisym_multifit_1lumis.root'
+options.register('datasets',
+                 '',
+                 VarParsing.multiplicity.list,
+                 VarParsing.varType.string,
+                 "Input dataset(s)")
+options.register('debug',
+                 False,
+                 VarParsing.multiplicity.singleton,
+                 VarParsing.varType.bool,
+                 "Print debug messages")
 options.parseArguments()
 
 process=cms.Process("PHISYM")
@@ -39,15 +50,28 @@ process.options = cms.untracked.PSet(
 )
 
 # Input source
+files = []
+for dataset in options.datasets:
+    print('>> Creating list of files from: \n'+dataset)
+    query = "--query='file instance=prod/global dataset="+dataset+"'"
+    if options.debug:
+        print(query)
+    lsCmd = subprocess.Popen(['das_client.py '+query+' --limit=0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    str_files, err = lsCmd.communicate()
+    files.extend(['root://cms-xrd-global.cern.ch/'+ifile for ifile in str_files.split("\n")])
+    files.pop()
+    if options.debug:
+        for ifile in files:
+            print(ifile)
+
 process.source = cms.Source("PoolSource",
 #                             inputCommands = cms.untracked.vstring(
 #                                 'keep *',
 #                                 'drop *_hltEcalDigis_*_*',
 #                                 'drop *_hltTriggerSummaryAOD_*_*'
 #                             ),
-                            fileNames = cms.untracked.vstring(
-                                "/store/data/Commissioning2016/AlCaPhiSym/RAW/v1/000/268/930/00000/D624B590-A2FD-E511-B7AD-02163E011AEE.root"
-))
+                            fileNames = cms.untracked.vstring(files)
+)
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -71,8 +95,8 @@ process.ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
-#process.PhiSymProducer.makeSpectraTreeEB = True
-#process.PhiSymProducer.makeSpectraTreeEE = True
+process.PhiSymProducer.makeSpectraTreeEB = True
+process.PhiSymProducer.makeSpectraTreeEE = True
 process.PhiSymProducer.eThreshold_barrel = 0.9
 process.PhiSymProducer.thrEEmod = 14.
 
