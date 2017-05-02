@@ -96,7 +96,8 @@ private:
     //---output plain tree
     bool makeSpectraTreeEB_;
     bool makeSpectraTreeEE_;
-    auto_ptr<PhiSymFile> outFile_;
+    EBTree outEBTree_;
+    EETree outEETree_;    
     edm::Service<TFileService> fs_;
 };
 
@@ -125,6 +126,18 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     produces<PhiSymInfoCollection, edm::InLumi>();
     produces<PhiSymRecHitCollection, edm::InLumi>("EB");
     produces<PhiSymRecHitCollection, edm::InLumi>("EE");
+
+    //---create spectra output file
+    if(makeSpectraTreeEB_)
+    {
+        outEBTree_ = EBTree("eb", "EB sprectra");
+        outEBTree_.GetTTreePtr()->SetDirectory(fs_->file().GetDirectory(0));
+    }
+    if(makeSpectraTreeEE_)
+    {
+        outEETree_ = EETree("ee", "EE sprectra");
+        outEETree_.GetTTreePtr()->SetDirectory(fs_->file().GetDirectory(0));        
+    }
 }
 
 PhiSymProducer::~PhiSymProducer()
@@ -158,34 +171,29 @@ void PhiSymProducer::beginJob()
         misCalibStepsEB_[index] = iMis*misCalibStepEB;
         misCalibStepsEE_[index] = iMis*misCalibStepEE;
     }
-    
-    //---create spectra output file
-    if(makeSpectraTreeEB_ || makeSpectraTreeEE_)
-        outFile_ = auto_ptr<PhiSymFile>(new PhiSymFile(&fs_->file()));
+
+    //---reset spectra output file
+    if(makeSpectraTreeEB_)
+        outEBTree_.Reset();
+    if(makeSpectraTreeEE_)            
+        outEETree_.Reset();
 }
 
 void PhiSymProducer::endJob()
-{
-    if(makeSpectraTreeEB_ || makeSpectraTreeEE_)
-        outFile_->cd();
-    if(makeSpectraTreeEB_)
-        outFile_->ebTree.GetTTreePtr()->Write("eb_xstals");
-    if(makeSpectraTreeEE_)
-        outFile_->eeTree.GetTTreePtr()->Write("ee_xstals");
-}
+{}
 
 void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
     //---update plain tree run and lumi info
     if(makeSpectraTreeEB_)
     {
-        outFile_->ebTree.run = lumi.luminosityBlockAuxiliary().run();
-        outFile_->ebTree.lumi = lumi.luminosityBlockAuxiliary().luminosityBlock();
+        outEBTree_.run = lumi.luminosityBlockAuxiliary().run();
+        outEBTree_.lumi = lumi.luminosityBlockAuxiliary().luminosityBlock();
     }
     if(makeSpectraTreeEE_)
     {
-        outFile_->eeTree.run = lumi.luminosityBlockAuxiliary().run();
-        outFile_->eeTree.lumi = lumi.luminosityBlockAuxiliary().luminosityBlock();
+        outEETree_.run = lumi.luminosityBlockAuxiliary().run();
+        outEETree_.lumi = lumi.luminosityBlockAuxiliary().luminosityBlock();
     }
     
     //---reset the RecHit and LumiInfo collection
@@ -330,10 +338,10 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         //---fill the plain tree
         if(makeSpectraTreeEB_)
         {
-            outFile_->ebTree.ieta = ebHit.ieta();
-            outFile_->ebTree.iphi = ebHit.iphi();
-            outFile_->ebTree.et = recHit.energy()/cosh(eta);
-            outFile_->ebTree.GetTTreePtr()->Fill();
+            outEBTree_.ieta = ebHit.ieta();
+            outEBTree_.iphi = ebHit.iphi();
+            outEBTree_.et = recHit.energy()/cosh(eta);
+            outEBTree_.GetTTreePtr()->Fill();
         }
     }
 
@@ -388,11 +396,11 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
         //---fill the plain tree
         if(makeSpectraTreeEE_)
         {
-            outFile_->eeTree.iring = ring;
-            outFile_->eeTree.ix = eeHit.ix();
-            outFile_->eeTree.iy = eeHit.iy();
-            outFile_->eeTree.et = recHit.energy()/cosh(eta);
-            outFile_->eeTree.GetTTreePtr()->Fill();
+            outEETree_.iring = ring;
+            outEETree_.ix = eeHit.ix();
+            outEETree_.iy = eeHit.iy();
+            outEETree_.et = recHit.energy()/cosh(eta);
+            outEETree_.GetTTreePtr()->Fill();
         }
     }
 

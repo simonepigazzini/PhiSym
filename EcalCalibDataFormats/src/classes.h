@@ -19,7 +19,6 @@ namespace
 
         EBTree dummy31;
         EETree dummy32;
-        PhiSymFile dummy33;
 
         // RingsTree dummy41;
         CrystalsEBTree dummy42;

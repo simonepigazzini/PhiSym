@@ -9,7 +9,6 @@
   
   <class name="EBTree"/>
   <class name="EETree"/>
-  <class name="PhiSymFile"/>
   <class name="CrystalsEBTree"/>
   <class name="CrystalsEETree"/>
   <class name="CalibrationFile"/>
