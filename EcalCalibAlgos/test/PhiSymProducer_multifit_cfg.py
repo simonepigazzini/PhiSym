@@ -70,7 +70,10 @@ process.source = cms.Source("PoolSource",
 #                                 'drop *_hltEcalDigis_*_*',
 #                                 'drop *_hltTriggerSummaryAOD_*_*'
 #                             ),
-                            fileNames = cms.untracked.vstring(files)
+                            #fileNames = cms.untracked.vstring(files)
+                            fileNames = cms.untracked.vstring("file:$CMSSW_BASE/src/PU_23to27_v4.2.2_PS_7.5e33.root",
+                                                              "file:$CMSSW_BASE/src/PU_23to27_v4.2.2_PS_8.5e33.root"
+                                                          )
 )
 
 # Production Info
@@ -97,7 +100,7 @@ process.ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 process.PhiSymProducer.makeSpectraTreeEB = True
 process.PhiSymProducer.makeSpectraTreeEE = True
-process.PhiSymProducer.eThreshold_barrel = 0.9
+process.PhiSymProducer.eThreshold_barrel = 1.1
 process.PhiSymProducer.thrEEmod = 14.
 
 # Output definition

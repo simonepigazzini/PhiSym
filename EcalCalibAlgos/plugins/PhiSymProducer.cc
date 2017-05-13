@@ -90,9 +90,9 @@ private:
     float                          eThresholdsEE_[kNRingsEE];
 
     //---output edm
-    auto_ptr<PhiSymInfoCollection>   lumiInfo_;
-    auto_ptr<PhiSymRecHitCollection> recHitCollEB_;
-    auto_ptr<PhiSymRecHitCollection> recHitCollEE_;
+    unique_ptr<PhiSymInfoCollection>   lumiInfo_;
+    unique_ptr<PhiSymRecHitCollection> recHitCollEB_;
+    unique_ptr<PhiSymRecHitCollection> recHitCollEE_;
     //---output plain tree
     bool makeSpectraTreeEB_;
     bool makeSpectraTreeEE_;
@@ -199,11 +199,11 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
     //---reset the RecHit and LumiInfo collection
     if(nLumis_ == 0)
     {
-        lumiInfo_ = auto_ptr<PhiSymInfoCollection>(new PhiSymInfoCollection);
+        lumiInfo_ = make_unique<PhiSymInfoCollection>();
         lumiInfo_->push_back(PhiSymInfo());
         lumiInfo_->back().SetStartLumi(lumi);
-        recHitCollEB_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
-        recHitCollEE_ = auto_ptr<PhiSymRecHitCollection>(new PhiSymRecHitCollection);
+        recHitCollEB_ = std::make_unique<PhiSymRecHitCollection>();
+        recHitCollEE_ = make_unique<PhiSymRecHitCollection>();
 	//---get the ecal geometry
         edm::ESHandle<CaloGeometry> geoHandle;
         setup.get<CaloGeometryRecord>().get(geoHandle);
@@ -253,9 +253,9 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
     if(nLumis_ == lumisToSum_)
     {
         lumiInfo_->back().SetEndLumi(lumi);
-        lumi.put(lumiInfo_);
-        lumi.put(recHitCollEB_, "EB");
-        lumi.put(recHitCollEE_, "EE");
+        lumi.put(std::move(lumiInfo_));
+        lumi.put(std::move(recHitCollEB_), "EB");
+        lumi.put(std::move(recHitCollEE_), "EE");
         nLumis_ = 0;
     }
 }
