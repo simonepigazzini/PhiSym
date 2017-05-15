@@ -71,10 +71,10 @@ process.source = cms.Source("PoolSource",
 #                                 'drop *_hltTriggerSummaryAOD_*_*'
 #                             ),
                             #fileNames = cms.untracked.vstring(files)
-                            fileNames = cms.untracked.vstring("file:$CMSSW_BASE/src/PU_23to27_v4.2.2_PS_7.5e33.root",
-                                                              "file:$CMSSW_BASE/src/PU_23to27_v4.2.2_PS_8.5e33.root"
-                                                          )
-)
+                            fileNames = cms.untracked.vstring(
+                                "/store/data/Commissioning2017/AlCaPhiSym/RAW/v1/000/293/910/00000/0018D0AC-7C37-E711-9F45-02163E019E4E.root"
+                            )
+                        )
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
@@ -98,9 +98,9 @@ process.ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
 
 # PHISYM producer
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
-process.PhiSymProducer.makeSpectraTreeEB = True
-process.PhiSymProducer.makeSpectraTreeEE = True
-process.PhiSymProducer.eThreshold_barrel = 1.1
+# process.PhiSymProducer.makeSpectraTreeEB = True
+# process.PhiSymProducer.makeSpectraTreeEE = True
+#process.PhiSymProducer.eThreshold_barrel = 1.1
 process.PhiSymProducer.thrEEmod = 14.
 
 # Output definition
@@ -122,34 +122,13 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('80X_dataRun2_2016LegacyRepro_Candidate_v2'),
-                                 toGet = cms.VPSet(
-                                     cms.PSet(record = cms.string("EcalPedestalsRcd"),
-                                              tag = cms.string("EcalPedestals_timestamp_2016"),
-                                              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
-                                          ),
-                                     cms.PSet(
-                                         record = cms.string('EcalLaserAlphasRcd'),
-                                         tag = cms.string('EcalLaserAlphas_EB_1.52Russian_1.5Chinese'),
-                                         connect = cms.string('frontier://FrontierPrep/CMS_CONDITIONS')
-                                     ),
-                                     cms.PSet(record = cms.string("ESIntercalibConstantsRcd"),
-                                              tag = cms.string("ESIntercalibConstants_Run1_Run2_V07_offline"),
-                                              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
-                                          ),
-                                     cms.PSet(record = cms.string("ESEEIntercalibConstantsRcd"),
-                                              tag = cms.string("ESEEIntercalibConstants_Legacy2016_v3"),
-                                              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
-                                          ),
-                                     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-                                              tag = cms.string("EcalIntercalibConstants_Cal_Mar2017_PNcorrection_eop_v2"),
-                                              connect = cms.string('frontier://FrontierPrep/CMS_CONDITIONS')
-                                          ),
-                                     cms.PSet(record = cms.string("EcalLinearCorrectionsRcd"),
-                                              tag = cms.string("EcalLinearCorrections_from2011_offline"),
-                                              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
-                                          ),
-                                 )
+                                 globaltag = cms.string('90X_dataRun2_Prompt_v3'),
+                                 # Get individual tags (template)
+                                 # toGet = cms.VPSet(
+                                 #     cms.PSet(record = cms.string(""),
+                                 #              tag = cms.string(""),
+                                 #              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
+                                 #          )
 )
 
 # SCHEDULE

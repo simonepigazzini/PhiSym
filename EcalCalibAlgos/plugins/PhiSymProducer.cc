@@ -67,7 +67,7 @@ private:
     edm::EDGetTokenT<EBRecHitCollection> eeToken_;
     edm::EDGetTokenT<reco::BeamSpot>     beamSpotToken_;
     float          etCutEB_;
-    float          eThresholdEB_;
+    vector<double> eThresholdsEB_;
     float          etCutEE_;
     vector<double> A_;
     vector<double> B_;
@@ -108,7 +108,7 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     eeToken_(consumes<EBRecHitCollection>(pSet.getParameter<edm::InputTag>("endcapHitCollection"))),
     beamSpotToken_(consumes<reco::BeamSpot>(pSet.getParameter<edm::InputTag>("beamspot"))),
     etCutEB_(pSet.getParameter<double>("etCut_barrel")),
-    eThresholdEB_(pSet.getParameter<double>("eThreshold_barrel")),
+    eThresholdsEB_(pSet.getParameter<vector<double> >("eThresholds_barrel")),
     etCutEE_(pSet.getParameter<double>("etCut_endcap")),
     A_(pSet.getParameter<vector<double> >("A")),
     B_(pSet.getParameter<vector<double> >("B")),
@@ -227,7 +227,7 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
             {
                 const CaloCellGeometry *cellGeometry = barrelGeometry->getGeometry(myId);
                 float eta=cellGeometry->getPosition().eta();
-                etCutsEB_[ring] = eThresholdEB_/cosh(eta) + etCutEB_;
+                etCutsEB_[ring] = eThresholdsEB_[ring]/cosh(eta) + etCutEB_;
             }
         }
 	for(auto& eeDetId : endcapDetIds)
@@ -290,15 +290,14 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     for(auto& recHit : *barrelRecHitsHandle_.product())
     {
         float energy = recHit.energy();
-        //---if recHit energy is below thr even with the highest miscalib skip this recHit
-        if(energy*misCalibRangeEB_[1] < eThresholdEB_ && !makeSpectraTreeEB_)
-            continue;
-
-        //---check channel status
         EBDetId ebHit = EBDetId(recHit.id());
-        float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
         int ring = calibRing_.getRingIndex(ebHit);
-
+        //---if recHit energy is below thr even with the highest miscalib skip this recHit
+        if(energy*misCalibRangeEB_[1] < eThresholdsEB_[ring] && !makeSpectraTreeEB_)
+            continue;
+        float eta=barrelGeometry->getGeometry(ebHit)->getPosition().eta();
+        
+        //---check channel status
         if((*chStatus_)[ebHit].getStatusCode() > statusThreshold_)
             lumiInfo_->back().SetBadChannel(recHit.id(), (*chStatus_)[ebHit].getStatusCode());
 
@@ -314,7 +313,7 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             int index = iMis + nMisCalib_ + 1; 
             etValues[index] = etValues[0]*(1+misCalibStepsEB_[index]);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[index]*cosh(eta) < eThresholdEB_ || etValues[index] > etCutsEB_[ring])
+            if(etValues[index]*cosh(eta) < eThresholdsEB_[ring] || etValues[index] > etCutsEB_[ring])
                 etValues[index] = 0;
         }
         for(int iMis=1; iMis<=nMisCalib_; ++iMis)
@@ -323,11 +322,11 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
             int index = iMis + nMisCalib_; 
             etValues[index] = etValues[0]*(1+misCalibStepsEB_[index]);
             //---set et to zero if out of range [e_thr, et_thr+1]
-            if(etValues[index]*cosh(eta) < eThresholdEB_ || etValues[index] > etCutsEB_[ring])
+            if(etValues[index]*cosh(eta) < eThresholdsEB_[ring] || etValues[index] > etCutsEB_[ring])
                 etValues[index] = 0;
         }
         //---set et to zero if out of range [e_thr, et_thr+1]
-        if(energy < eThresholdEB_ || etValues[0] > etCutsEB_[ring])
+        if(energy < eThresholdsEB_[ring] || etValues[0] > etCutsEB_[ring])
             etValues[0] = 0;
         else
             ++totHitsEB;

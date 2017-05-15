@@ -40,7 +40,8 @@ process.options = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-                                "root://cms-xrd-global.cern.ch//store/data/Run2016H/AlCaPhiSym/RAW/v1/000/281/110/00000/02780885-647E-E611-AE36-02163E0140F5.root"
+                                "/store/data/Commissioning2017/AlCaPhiSym/RAW/v1/000/293/910/00000/0018D0AC-7C37-E711-9F45-02163E019E4E.root"
+                                #"root://cms-xrd-global.cern.ch//store/data/Run2016H/AlCaPhiSym/RAW/v1/000/281/110/00000/02780885-647E-E611-AE36-02163E0140F5.root"
                                 #"root://cms-xrd-global.cern.ch//store/data/Run2016G/AlCaPhiSym/RAW/v1/000/278/815/00000/0A63C6B5-0D62-E611-88E8-02163E011FA4.root"
                                 #"/store/data/Commissioning2016/AlCaPhiSym/RAW/v1/000/268/930/00000/D624B590-A2FD-E511-B7AD-02163E011AEE.root"
                                 #"/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root"
@@ -73,7 +74,7 @@ process.ecalRecHit.EEuncalibRecHitCollection = cms.InputTag("ecalUncalibRecHit",
 process.load('PhiSym.EcalCalibAlgos.PhiSymProducer_cfi')
 # process.PhiSymProducer.makeSpectraTreeEB = True
 # process.PhiSymProducer.makeSpectraTreeEE = True
-process.PhiSymProducer.eThreshold_barrel = 0.9
+# process.PhiSymProducer.eThreshold_barrel = 0.9
 process.PhiSymProducer.thrEEmod = 14.
 
 # Output definition
@@ -95,52 +96,14 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('80X_dataRun2_2016LegacyRepro_Candidate_v2')
+                                 globaltag = cms.string('90X_dataRun2_Prompt_v3'),
+                                 # Get individual tags (template)
+                                 # toGet = cms.VPSet(
+                                 #     cms.PSet(record = cms.string(""),
+                                 #              tag = cms.string(""),
+                                 #              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
+                                 #          )
 )
-
-### APD gain loss due to dark current corrections (for 2016 legacy ReReco)
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalLinearCorrectionsRcd"),
-             tag = cms.string("EcalLinearCorrections_from2011_offline"),
-             connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
-         )
-)       
-
-### Test E/p PN corrections for 2016 legac
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-             tag = cms.string("EcalIntercalibConstants_Cal_Mar2017_PNcorrection_eop_v2"),
-             connect = cms.string('frontier://FrontierPrep/CMS_CONDITIONS')
-         )
-)
-
-### New alpha tag from 2016 B and C
-# process.GlobalTag.toGet = cms.VPSet(
-#     cms.PSet(record = cms.string("EcalLaserAlphasRcd"),
-#              tag = cms.string("EcalLaserAlphas_EFlow_3sigma"),
-#              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
-#          )
-#      )
-
-### Custum alpha tag from 2012
-# process.GlobalTag.toGet = cms.VPSet(
-#     cms.PSet(record = cms.string("EcalLaserAlphasRcd"),
-#              tag = cms.string("alphaTest"),
-#              connect = cms.string("sqlite_file:alphas_eflow2012.db")
-#          )
-#     )
-
-### Force tags: examples
-# process.GlobalTag.toGet = cms.VPSet(
-#     cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
-#              tag = cms.string("EcalADCToGeVConstant_2016_Bon"),
-#              connect = cms.string("sqlite_file:EcalADCToGeVConstant_2016_Bon.db")
-#          ),
-#     # cms.PSet(record = cms.string("EcalLaserAPDPNRatiosRcd"),
-#     #          tag = cms.string("EcalLaserAPDPNRatios_offline_2016"),
-#     #          connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS")
-#     #      )
-# )
 
 # SCHEDULE
 process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
