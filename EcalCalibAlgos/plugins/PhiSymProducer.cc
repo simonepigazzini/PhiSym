@@ -199,11 +199,11 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
     //---reset the RecHit and LumiInfo collection
     if(nLumis_ == 0)
     {
-        lumiInfo_ = make_unique<PhiSymInfoCollection>();
+        lumiInfo_ = std::make_unique<PhiSymInfoCollection>();
         lumiInfo_->push_back(PhiSymInfo());
         lumiInfo_->back().SetStartLumi(lumi);
         recHitCollEB_ = std::make_unique<PhiSymRecHitCollection>();
-        recHitCollEE_ = make_unique<PhiSymRecHitCollection>();
+        recHitCollEE_ = std::make_unique<PhiSymRecHitCollection>();
 	//---get the ecal geometry
         edm::ESHandle<CaloGeometry> geoHandle;
         setup.get<CaloGeometryRecord>().get(geoHandle);

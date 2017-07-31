@@ -21,7 +21,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_Prompt_v10')
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-                                "file:phisym_multifit_1lumis.root"
+                                #"file:phisym_multifit_1lumis.root"
+                                "/store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_2016LegacyRepro_Candidate_v2-Run2016G_v1/170113_163441/0000/phisym_weights_1lumis_1.root"
                                 #"root://eoscms.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_8_0_17-weights-80X_dataRun2_Prompt_v10-Run2016F/160830_091917/0000/phisym_weights_1lumis_1.root"
                                 #"root://xrootd-cms.infn.it:1194//store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_803-multifit-80X_dataRun2_Prompt_v4-Commisioning2016_v2/160411_124756/0000/phisym_multifit_1lumis_1.root"
                                 #'root://xrootd-cms.infn.it:1194//store/user/spigazzi/AlCaPhiSym/crab_PHISYM-CMSSW_7415-weights-74X_dataRun2_Prompt_v4-Run2015B_v1/151109_102420/0000/phisym_weights_1lumis_219.root'

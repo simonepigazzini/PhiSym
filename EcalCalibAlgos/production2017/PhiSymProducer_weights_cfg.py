@@ -11,7 +11,7 @@ options.parseArguments()
 process=cms.Process("PHISYM")
 
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.load('Configuration.Geometry.GeometryExtended2015Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2017Reco_cff')
 process.load('Configuration.StandardSequences.L1Reco_cff')
 process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
 process.load('RecoLocalCalo.EcalRecProducers.ecalMultiFitUncalibRecHit_cfi')

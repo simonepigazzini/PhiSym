@@ -40,9 +40,9 @@ process.options = cms.untracked.PSet(
 # Input source
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
-                                "/store/data/Commissioning2017/AlCaPhiSym/RAW/v1/000/293/910/00000/0018D0AC-7C37-E711-9F45-02163E019E4E.root"
+                                #"root://cms-xrd-global.cern.ch//store/data/Commissioning2017/AlCaPhiSym/RAW/v1/000/293/910/00000/0018D0AC-7C37-E711-9F45-02163E019E4E.root"
                                 #"root://cms-xrd-global.cern.ch//store/data/Run2016H/AlCaPhiSym/RAW/v1/000/281/110/00000/02780885-647E-E611-AE36-02163E0140F5.root"
-                                #"root://cms-xrd-global.cern.ch//store/data/Run2016G/AlCaPhiSym/RAW/v1/000/278/815/00000/0A63C6B5-0D62-E611-88E8-02163E011FA4.root"
+                                "root://cms-xrd-global.cern.ch//store/data/Run2016G/AlCaPhiSym/RAW/v1/000/278/820/00000/86C8B625-3A62-E611-B6B9-02163E013677.root"
                                 #"/store/data/Commissioning2016/AlCaPhiSym/RAW/v1/000/268/930/00000/D624B590-A2FD-E511-B7AD-02163E011AEE.root"
                                 #"/store/data/Run2015A/AlCaPhiSym/RAW/v1/000/247/720/00000/4C0AF78B-4810-E511-8C09-02163E0143CB.root"
                                 #"root://cmsxrootd-site.fnal.gov//store/data/Run2015B/AlCaPhiSym/RAW/v1/000/251/562/00000/0014158C-7728-E511-8847-02163E0122C2.root",
@@ -54,6 +54,22 @@ process.configurationMetadata = cms.untracked.PSet(
     annotation = cms.untracked.string('step_PHISYM nevts:'+str(options.maxEvents)),
     name = cms.untracked.string('PhiSymProducer')
 )
+
+# Offline luminosity
+
+# LumiProducer and LumiCorrectionSource (for offline luminosity)
+process.DBService = cms.Service('DBService')
+
+process.LumiProducer = cms.EDProducer('LumiProducer',
+                              connect       = cms.string('frontier://LumiProd/CMS_LUMI_PROD'),
+                              lumiversion   = cms.untracked.string(''),
+                              ncacheEntries = cms.untracked.uint32(5),
+)
+
+process.LumiCorrectionSource = cms.ESSource( "LumiCorrectionSource",
+                                     connect = cms.string('frontier://LumiCalc/CMS_LUMI_PROD'),
+)
+
 
 #ecalUncalibRecHit
 process.ecalUncalibRecHit.EBdigiCollection = cms.InputTag("hltEcalPhiSymFilter","phiSymEcalDigisEB")
@@ -80,6 +96,7 @@ process.PhiSymProducer.thrEEmod = 14.
 # Output definition
 PHISYM_output_commands = cms.untracked.vstring(
     "drop *",
+    "keep *_LumiProducer_*_*",
     "keep *_PhiSymProducer_*_*")
 
 process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
@@ -109,6 +126,7 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
 process.reconstruction_step = cms.Sequence( process.ecalUncalibRecHit + process.ecalRecHit )
 
 process.p = cms.Path(process.reconstruction_step)
+process.p *= process.LumiProducer
 process.p *= process.offlineBeamSpot
 process.p *= process.PhiSymProducer
 
