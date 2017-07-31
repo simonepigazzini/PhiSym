@@ -3,6 +3,7 @@
 import sys
 import os
 import json
+import subprocess
 from commands import getstatusoutput
 
 oldargv = sys.argv[:]
@@ -43,13 +44,14 @@ def resetInterval( interval , index ):
     interval["lastRun"] = 0
     interval["lastLumi"] = 0
     interval["unixTimeEnd"] = 0
+    interval["norm"] = 0
     interval["nHit"] = 0
     interval["nLS"] =0
     interval["unixTimeMean"] = 0
     interval["flag"] = ""
 
 def closeInterval( interval ):
-    interval["unixTimeMean"]=interval["unixTimeStart"]+float(interval["unixTimeMean"])/float(interval["nHit"])
+    interval["unixTimeMean"]=interval["unixTimeStart"]+float(interval["unixTimeMean"])/float(interval["norm"])
 
 def startInterval( interval, run, lumi, start ):
     interval["firstRun"] = run
@@ -59,7 +61,7 @@ def startInterval( interval, run, lumi, start ):
 parser = OptionParser()
 parser.add_option("", "--debug", dest="debug", action='store_true')
 parser.add_option("", "--saveIsolatedIntervals", dest="saveIsolatedIntervals", action='store_true')
-parser.add_option("-n", "--maxHit", dest="maxHit", type="int", default=3000000000)
+parser.add_option("-n", "--maxHit", dest="maxHit", type="int", default=7000000000)
 parser.add_option("-f", "--fileList", dest="fileList", type="string", default="fileList.txt")
 parser.add_option("-d", "--dataset", dest="dataset", type="string", default="")
 parser.add_option("-o", "--output", dest="output", type="string", default="readMap.root")
@@ -76,21 +78,35 @@ if options.dataset != "":
 with open(options.fileList,'r') as textfile:
     files = [line.strip() for line in textfile]
 
-if options.debug:
-    print "Reading files: "
-
 handlePhiSymInfo  = Handle ("std::vector<PhiSymInfo>")
 labelPhiSymInfo = ("PhiSymProducer")
 
 timeMap={}
 
+### get PU informations
 if options.jsonFile != "":
     lumiList = LumiList(os.path.expandvars(options.jsonFile))
+    with open(options.jsonFile) as lumis_file:
+        lumiJson = json.load(lumis_file)
+        runs = lumiJson.keys()
+else:
+    cmd_lumi = subprocess.Popen(['${CMSSW_BASE}/src/PhiSym/EcalCalibAlgos/scripts/get_dataset_lumi_json.sh', options.dataset, 'phys03'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    lumi_string, err_lumi = cmd_lumi.communicate()
+    lumiJson = json.loads(lumi_string)
+    runs = lumiJson.keys()
+    
+runs_string = ','.join(runs)
 
+cmd_pu = subprocess.Popen(['${CMSSW_BASE}/src/PhiSym/EcalCalibAlgos/scripts/get_pu_info.sh '+runs_string+' > test.json'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+pu_string, err_pu = cmd_pu.communicate()
+puJson = {}
+with open('test.json') as pu_file:
+    puJson = json.load(pu_file)
+    
 for aline in files:
     fullpath_file = options.prefix+aline
     if options.debug:
-        print options.prefix+aline
+        print "Reading files:", options.prefix+aline
 
     try:
         lumis = Lumis(fullpath_file)
@@ -103,10 +119,26 @@ for aline in files:
         phiSymInfo = handlePhiSymInfo.product()
         # skipping BAD lumiSections
         if options.jsonFile != "" and not lumiList.contains(phiSymInfo.back().getStartLumi().run(),phiSymInfo.back().getStartLumi().luminosityBlock()):
+            if options.debug:
+                print "Lumi section not in json file"
             continue
-
-        beginTime=lumi.luminosityBlockAuxiliary().beginTime().unixTime()
-        timeMap[beginTime]={"run":phiSymInfo.back().getStartLumi().run(),"lumi":phiSymInfo.back().getStartLumi().luminosityBlock(),"totHitsEB":phiSymInfo.back().GetTotHitsEB()}
+        
+        # normalization is rate * PU
+        beginTime = lumi.luminosityBlockAuxiliary().beginTime().unixTime()
+        run_num = str(lumi.luminosityBlockAuxiliary().run())
+        lumi_num = str(lumi.luminosityBlockAuxiliary().luminosityBlock())
+        if run_num not in puJson.keys() or lumi_num not in puJson[run_num].keys():
+            print run_num
+            print lumi_num
+            #print puJson[run_num][lumi_num]
+            print "Lumi skipped since not in puJson"
+            continue
+        timeMap[beginTime] = {
+            "run" : phiSymInfo.back().getStartLumi().run(),
+            "lumi" : phiSymInfo.back().getStartLumi().luminosityBlock(),
+            #"totHitsEB" : phiSymInfo.back().GetTotHitsEB(),
+            "norm" : phiSymInfo.back().GetNEvents()*float(puJson[run_num][lumi_num])
+        }
 
         if options.debug:
             print "====>"
@@ -131,6 +163,7 @@ currentInterval={}
 resetInterval( currentInterval , 0 )
 
 # splitting logic
+print("### Start splitting logic")
 for key in sorted(timeMap):    
     if currentInterval["nLS"]==0 and currentInterval["unixTimeStart"]==0:
        #start a new interval
@@ -138,7 +171,7 @@ for key in sorted(timeMap):
 
     if key-currentInterval["unixTimeStart"]>=maxStopTime and currentInterval["unixTimeStart"] != 0:
 
-        if currentInterval["nHit"] >= nMaxHits/2.:
+        if currentInterval["norm"] >= nMaxHits/2.:
             # Enough statistics. Closing previous interval 
             if options.debug:
                 print "Closing interval by time condition"
@@ -161,9 +194,9 @@ for key in sorted(timeMap):
                     interval[lastInterval]["lastRun"]=currentInterval["lastRun"]
                     interval[lastInterval]["lastLumi"]=currentInterval["lastLumi"]
                     interval[lastInterval]["unixTimeEnd"]=currentInterval["unixTimeEnd"]
-                    interval[lastInterval]["unixTimeMean"]=(interval[lastInterval]["unixTimeMean"]*interval[lastInterval]["nHit"]+currentInterval["unixTimeMean"]*currentInterval["nHit"])/(float(interval[lastInterval]["nHit"]+currentInterval["nHit"]))
+                    interval[lastInterval]["unixTimeMean"]=(interval[lastInterval]["unixTimeMean"]*interval[lastInterval]["norm"]+currentInterval["unixTimeMean"]*currentInterval["norm"])/(float(interval[lastInterval]["norm"]+currentInterval["norm"]))
                     interval[lastInterval]["nHit"]+=currentInterval["nHit"]
-                    interval[lastInterval]["nLS"]+=currentInterval["nLS"]
+                    interval[lastInterval]["norm"]+=currentInterval["norm"]
                     interval[lastInterval]["flag"]="M"
                 else:
                     if options.saveIsolatedIntervals:
@@ -201,11 +234,12 @@ for key in sorted(timeMap):
     currentInterval["lastRun"] = timeMap[key]["run"]
     currentInterval["lastLumi"] = timeMap[key]["lumi"]
     currentInterval["unixTimeEnd"] = key+23.1
-    currentInterval["nHit"] += timeMap[key]["totHitsEB"]
+    #currentInterval["nHit"] += timeMap[key]["totHitsEB"]
+    currentInterval["norm"] += timeMap[key]["norm"]
     currentInterval["nLS"] +=1
-    currentInterval["unixTimeMean"] += float((key-currentInterval["unixTimeStart"]+11.55)*timeMap[key]["totHitsEB"])
+    currentInterval["unixTimeMean"] += float((key-currentInterval["unixTimeStart"]+11.55)*timeMap[key]["norm"])
     
-    if currentInterval["nHit"] >= nMaxHits:
+    if currentInterval["norm"] >= nMaxHits:
         # adding as new interval
         closeInterval( currentInterval )
         currentInterval["flag"]="F"
@@ -216,6 +250,7 @@ for key in sorted(timeMap):
 
 interval_number=n.zeros(1,dtype=int)
 hit=n.zeros(1,dtype=long)
+norm=n.zeros(1,dtype=float)
 flag=bytearray(2)
 nLSBranch=n.zeros(1,dtype=int)
 firstRunBranch=n.zeros(1,dtype=int)
@@ -230,10 +265,11 @@ outFile = ROOT.TFile(options.output, "RECREATE")
 if not outFile:
     print "Cannot open outputFile "+options.output
 
-tree = ROOT.TTree('outTree_barl', 'outTree_barl')
+tree = ROOT.TTree('iov_map', 'IOV map')
 tree.Branch('index', interval_number, 'index/I')
 tree.Branch('flag', flag, 'flag/C')
 tree.Branch('nHit', hit, 'nHit/L')
+tree.Branch('norm', norm, 'norm/D')
 tree.Branch('nLS', nLSBranch, 'nLS/I')
 tree.Branch('firstRun', firstRunBranch, 'firstRun/I')
 tree.Branch('lastRun', lastRunBranch, 'lastRun/I')
@@ -247,6 +283,7 @@ for key in sorted(interval):
     interval_number[0]=interval[key]["index"]
     flag[0]=interval[key]["flag"][0]
     hit[0]=interval[key]["nHit"]
+    norm[0]=interval[key]["norm"]
     nLSBranch[0]=interval[key]["nLS"]
     firstRunBranch[0]=interval[key]["firstRun"]
     lastRunBranch[0]=interval[key]["lastRun"]
@@ -265,6 +302,7 @@ if options.debug:
         print "------------------"
         print "Index: " + str(interval[key]["index"])
         print "nHit: " + str(interval[key]["nHit"])
+        print "norm: " + str(interval[key]["norm"])
         print "nLS: " + str(interval[key]["nLS"])
         print "First Run: " + str(interval[key]["firstRun"])
         print "Last Run: " + str(interval[key]["lastRun"])
