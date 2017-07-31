@@ -18,6 +18,7 @@ proxy='/tmp/x509up_u68758'
 storage='T3_IT_MIB'
 template='run_RECO_template.py'
 user_tmpl=0
+help=0
 
 while true; do
     case "$1" in
