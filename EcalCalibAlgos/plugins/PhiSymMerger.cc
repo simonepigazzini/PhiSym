@@ -122,7 +122,7 @@ void PhiSymMerger::beginJob()
     TFile* file = TFile::Open(iovFile_.c_str(), "READ");
     if(file->IsOpen())
     {
-        TTree* map = (TTree*)file->Get("outTree_barl");
+        TTree* map = (TTree*)file->Get("iov_map");
         int firstRun, lastRun;
         int firstLumi, lastLumi;
         double avg_time;

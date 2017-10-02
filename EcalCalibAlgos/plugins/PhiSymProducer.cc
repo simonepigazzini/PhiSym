@@ -2,6 +2,7 @@
 #define _PHISYM_PRODUCER_
 
 #include <iostream>
+#include <fstream>
 #include <memory>
 
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -93,6 +94,8 @@ private:
     unique_ptr<PhiSymInfoCollection>   lumiInfo_;
     unique_ptr<PhiSymRecHitCollection> recHitCollEB_;
     unique_ptr<PhiSymRecHitCollection> recHitCollEE_;
+    //---output bookeeping json
+    ofstream outLSInfoJson_;
     //---output plain tree
     bool makeSpectraTreeEB_;
     bool makeSpectraTreeEE_;
@@ -180,7 +183,11 @@ void PhiSymProducer::beginJob()
 }
 
 void PhiSymProducer::endJob()
-{}
+{
+    //---close LS info json file
+    outLSInfoJson_ << endl << "}" << endl;
+    outLSInfoJson_.close();
+}
 
 void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm::EventSetup const& setup)
 {
@@ -253,6 +260,24 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
     if(nLumis_ == lumisToSum_)
     {
         lumiInfo_->back().SetEndLumi(lumi);
+
+        //---dump LS information into json
+        if(!outLSInfoJson_.is_open())
+        {
+            //---CRAB3 only transfers files ending in .root, so name this .root even though is a json
+            outLSInfoJson_.open("phisym_lumi_info_json.root", ofstream::out);
+            outLSInfoJson_ << "{" << endl;
+        }
+        else
+            outLSInfoJson_ << "," << endl;
+
+        outLSInfoJson_ << "\"" << lumi.luminosityBlockAuxiliary().beginTime().unixTime() << "\" : " 
+                       << "["
+                       << lumiInfo_->back().getStartLumi().run() << ","
+                       << lumiInfo_->back().getStartLumi().luminosityBlock() << ","
+                       << lumiInfo_->back().GetTotHitsEB()
+                       << "]";
+        
         lumi.put(std::move(lumiInfo_));
         lumi.put(std::move(recHitCollEB_), "EB");
         lumi.put(std::move(recHitCollEE_), "EE");

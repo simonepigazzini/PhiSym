@@ -537,7 +537,7 @@ int main( int argc, char *argv[] )
         for(auto fileName : maps)
         {
             TFile* file = TFile::Open(fileName.c_str(), "READ");
-            TTree* map = (TTree*)file->Get("outTree_barl");
+            TTree* map = (TTree*)file->Get("iov_map");
             char flag;
             int firstRun, lastRun;
             int firstLumi, lastLumi;
