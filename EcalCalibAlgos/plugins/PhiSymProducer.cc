@@ -275,7 +275,8 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
                        << "["
                        << lumiInfo_->back().getStartLumi().run() << ","
                        << lumiInfo_->back().getStartLumi().luminosityBlock() << ","
-                       << lumiInfo_->back().GetTotHitsEB()
+                       << lumiInfo_->back().GetTotHitsEB() << ","
+                       << lumiInfo_->back().GetNEvents() 
                        << "]";
         
         lumi.put(std::move(lumiInfo_));
