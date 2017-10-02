@@ -16,7 +16,6 @@
 <use   name="DataFormats/Math"/>
 <use   name="RecoEcal/EgammaCoreTools"/>
 <use   name="root"/>
-<use   name="xerces-c"/>
 <use   name="Calibration/Tools"/>
 <use   name="CalibCalorimetry/CaloMiscalibTools"/>
 <use   name="CondTools/Ecal"/>
