@@ -13,6 +13,7 @@ config.JobType.pluginName        = 'Analysis'
 # Name of the CMSSW configuration file
 config.JobType.psetName          = 'PhiSymProducer_cfg.py'
 #config.JobType.inputFiles        = ['alphas_eflow2012.db']
+config.JobType.outputFiles        = ['phisym_lumi_info_json.root']
 config.JobType.priority          = 30
 
 config.section_('Data')

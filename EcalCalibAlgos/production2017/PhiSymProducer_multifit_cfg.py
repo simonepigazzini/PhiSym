@@ -122,13 +122,18 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('90X_dataRun2_Prompt_v3'),
+                                 globaltag = cms.string('92X_dataRun2_2017Repro_v4'),
                                  # Get individual tags (template)
-                                 # toGet = cms.VPSet(
-                                 #     cms.PSet(record = cms.string(""),
-                                 #              tag = cms.string(""),
-                                 #              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
-                                 #          )
+                                 toGet = cms.VPSet(
+                                     cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
+                                              tag = cms.string("EcalADCToGeVConstant_plus_2.4prct_in_EE"),
+                                              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                          ),
+                                     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
+                                              tag = cms.string("EcalIntercalibConstants_2017_2015_at_high_eta"),
+                                              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                          )
+                                 )
 )
 
 # SCHEDULE
