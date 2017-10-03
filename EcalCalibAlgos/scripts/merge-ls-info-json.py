@@ -1,4 +1,4 @@
-#!/bin/python2.7
+#!/usr/bin/python
 
 import os
 import re
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         json.dump(data, json_file, sort_keys=True, indent=4, separators=(',', ' : '))
 
     print "#########Summary##################", ""
-    print "LS summary json file stored in: "+merged_json
-    print "PU summary file: "+options.pu_file
+    print "\033[1;34m LS summary \033[0;10m json file stored in: \033[1;34m"+merged_json+"\033[0;10m"
+    print "\033[1;34m PU summary \033[0;10m file: \033[1;34m"+os.path.expandvars(pu_file_str)+"\033[0;10m"
     if options.pu_file == "":
-        print "NOTE: You can copy the PU file to speed up further reprocessing passing it to this script with the -p option"
+        print "\033[1;34m NOTE \033[0;10m: You can copy the PU file to speed up further reprocessing passing it to this script with the -p option"
