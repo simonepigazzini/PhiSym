@@ -1,38 +1,28 @@
 * PhiSym
-** Setup:
-   : cmsrel CMSSW_8_0_X
-   : cd CMSSW_8_0_X/src/
-   : git clone https://github.com/ECALELFS/PhiSym
-   : git clone git@github.com:simonepigazzini/DynamicTTree.git ExternalTools/DynamicTTree
-   : scram b -j
+** Setup:   
+   : cmsrel CMSSW_X_Y_Z
+   : cd CMSSW_X_Y_Z/src/
    : cmsenv
-
-** Local test with Run2015A data
-   + run the prodecer on few lumis:
-   : cmsRun test/PhiSymProducer_cfg.py
-   + explore the results with test/drawSimpleChecks.py
-
-   + run the calibration routine with:
-   : cmsRun test/PhiSymCalibration_cfg.py
-
+   : git-cms-init
+   : git clone https://github.com/ECALELFS/PhiSym -b current-branch
+   : ./EcalCalibAlgos/scripts/setup_ext_tools.sh
 
 ** Run CRAB jobs:
-   : cd crab-jobs
-   : source /cvmfs/cms.cern.ch/crab3/crab.sh 
+   : cd production2017
    : cmsenv
-   : crab submit run_PHISYM_crab3.py
-
-   + MISSING: script for dataset growth.
-
+   : voms-proxy-init -voms cms --valid 168:00
+   : source /cvmfs/cms.cern.ch/crab3/crab.sh 
+   Use the submit.sh script to submit GRID tasks for RECO (aka step-1) and MERGER (aka step-2)
 
 ** EcalCalibAlgos:
 *** PhiSymProducer (aka "step1"):
-    + Produce slim EDM files to be read in PhiSymCalibration where the inter-calibration constants are computed.
+    + Produce slim EDM files with information stored on a lumi-base
+    + Produce a json file suitable for the splitting script =scripts/make-iovs.py=
+    + Optionally at this step is possible to store spectra for each channel (DO NOT DO THIS ON THE GRID. SPECTRA FILES ARE HUGE)
     + The number of luminosity blocks summed at this step can be set from the cfg python (default 1).
     + Bad channels are processed in the same way of the good ones, except that a flag is set in the PhiSymInfos collection.
 
-*** PhiSymCalibration 
-
+*** PhiSymMerger
 
 ** EcalCalibDataFomats:
    Contains PhiSym custum RecHits and Lumi-informations collections definition:

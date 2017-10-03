@@ -69,7 +69,7 @@ if __name__ == "__main__":
     with open(options.ls_info_file) as json_file:
         lsInfo = json.load(json_file)
         for time, info in lsInfo.items():
-            timeMap[time] = {
+            timeMap[int(time)] = {
                 "run"       : info[0],
                 "lumi"      : info[1],
                 "totHitsEB" : info[2],
@@ -94,15 +94,14 @@ if __name__ == "__main__":
     
     # splitting logic
     print("### Start splitting logic")
-    for key, info in sorted(timeMap).items():
-        if options.lumiFile != "" and
-        (info["run"] not in goodLumisMap.keys() or info["lumi"] not in goodLumisMap[info["run"]].keys()):
-            print "Skipping lumi: %d:%d not in %s" % (info["run"], info["lumi"], options.lumiFile)
+    for key in sorted(timeMap):
+        if options.lumiFile != "" and (timeMap[key]["run"] not in goodLumisMap.keys() or timeMap[key]["lumi"] not in goodLumisMap[timeMap[key]["run"]].keys()):
+            print "Skipping lumi: %d:%d not in %s" % (timeMap[key]["run"], timeMap[key]["lumi"], options.lumiFile)
             continue
         
         if currentInterval["nLS"]==0 and currentInterval["unixTimeStart"]==0:
            #start a new interval
-            startInterval( currentInterval, info["run"], info["lumi"], key)
+            startInterval( currentInterval, timeMap[key]["run"], timeMap[key]["lumi"], key)
 
         if key-currentInterval["unixTimeStart"]>=maxStopTime and currentInterval["unixTimeStart"] != 0:
 
@@ -164,15 +163,15 @@ if __name__ == "__main__":
 
             # Start a new interval
             resetInterval( currentInterval, full_interval_count )
-            startInterval( currentInterval, info["run"], info["lumi"], key)
+            startInterval( currentInterval, timeMap[key]["run"], timeMap[key]["lumi"], key)
 
-        currentInterval["lastRun"] = info["run"]
-        currentInterval["lastLumi"] = info["lumi"]
+        currentInterval["lastRun"] = timeMap[key]["run"]
+        currentInterval["lastLumi"] = timeMap[key]["lumi"]
         currentInterval["unixTimeEnd"] = key+23.1
-        currentInterval["nHit"] += info["totHitsEB"]
-        currentInterval["norm"] += info["norm"]
+        currentInterval["nHit"] += timeMap[key]["totHitsEB"]
+        currentInterval["norm"] += timeMap[key]["norm"]
         currentInterval["nLS"] +=1
-        currentInterval["unixTimeMean"] += float((key-currentInterval["unixTimeStart"]+11.55)*info["nHit"])
+        currentInterval["unixTimeMean"] += float((key-currentInterval["unixTimeStart"]+11.55)*timeMap[key]["totHitsEB"])
 
         if currentInterval["nHit"] >= nMaxHits:
             # adding as new interval

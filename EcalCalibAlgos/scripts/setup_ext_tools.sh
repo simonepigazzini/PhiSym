@@ -1,13 +1,13 @@
 #!/bin/bash
 
 cd $CMSSW_BASE/src
-mkdir -p ExternalTools/
+mkdir -p ExternalTools
 
-packages="CfgManager DynamicTTree FuriousPlotter"
-
-for package in $packages
+for package in CfgManager DynamicTTree FuriousPlotter
 do
-    git clone -b CMSSW git@github.com:simonepigazzini/$package.git ExternalTools/$package 
+    set -x
+    git clone -b CMSSW git@github.com:simonepigazzini/${package}.git ExternalTools/${package}
+    set +x
 done
 
 scram b -j 4
