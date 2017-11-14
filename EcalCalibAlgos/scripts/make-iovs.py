@@ -61,7 +61,7 @@ if __name__ == "__main__":
     parser.add_option("-i", "--ls-info-file", dest="ls_info_file", type="string", default="")
     parser.add_option("-o", "--output", dest="output", type="string", default="readMap.root")
     parser.add_option("-t","--max-time", dest="maxTime", type = "int", default=86400)
-    parser.add_option("-l","--lumi-ile", dest="lumiFile", type = "string", default="")
+    parser.add_option("-l","--lumi-file", dest="lumiFile", type = "string", default="")
     (options, args) = parser.parse_args()
 
     timeMap = {}
