@@ -78,8 +78,10 @@ if __name__ == "__main__":
 
     ###--- Certification json
     if options.lumiFile != "":
-        with open(options.ls_info_file) as json_file:
+        with open(options.lumiFile) as json_file:
             goodLumisMap = json.load(json_file)
+            if options.debug:
+                print(goodLumisMap)
     
     nMaxHits=options.maxHit    
     maxStopTime=options.maxTime

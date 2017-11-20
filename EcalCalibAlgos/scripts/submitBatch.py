@@ -14,12 +14,12 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 # ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
-def lxbatchSubmitJob(eosdir, iovmap, iov, basedir, outdir, queue, dryrun):
+def lxbatchSubmitJob(eosdir, iovmap, iov, basedir, outdir, queue, proxy, dryrun):
     jobname = outdir+'/PhiSymCalibration_'+queue+'_'+str(iov)+'.sh'
     logname = jobname.replace('.sh', '.log')
     f = open (jobname, 'w')
     f.write ('#!/bin/sh' + '\n\n')
-    f.write ('export X509_USER_PROXY=/afs/cern.ch/user/s/spigazzi/x509up_u68758 \n\n')
+    f.write ('export X509_USER_PROXY='+proxy+' \n\n')
     f.write ('cp '+iovmap+' IOVMap.root \n')
     f.write ('cp '+basedir+'/src/PhiSym/EcalCalibAlgos/test/PhiSymCalibration_cfg.py . \n')
     f.write ('cd '+basedir+' \n')
@@ -73,6 +73,18 @@ if __name__ == '__main__':
     print("Output will be copied to: "+stage_out_dir)
     getstatusoutput('mkdir -p '+stage_out_dir)
 
+    ## get GRID proxy
+    # check validity
+    stat,out = commands.getstatusoutput("voms-proxy-info -e --valid 2:00")
+    if stat:
+        raise Exception,"voms proxy not found or validity less than 2 hours:\n%s.\n\033[1;34m Please run: voms-proxy-init -voms cms\033[0;10m" % out
+    # get proxy name
+    stat,proxy = commands.getstatusoutput("voms-proxy-info -p")
+    if stat:
+        raise Exception,"Unable to voms proxy:\n%s" % proxy
+    commands.getstatusoutput("cp %s %s/" % (proxy, stage_out_dir))
+    proxy = stage_out_dir+"/"+proxy.split("/")[2]
+
     ## resubmit failed jobs
     if args.resub:
         resubmitJobs(stage_out_dir, args.queue)
@@ -81,9 +93,9 @@ if __name__ == '__main__':
         iovfile = ROOT.TFile.Open(args.iovmap, "READ")
         iovtree = iovfile.Get("iov_map")
         n_jobs = iovtree.GetEntries()
-
+        
         ## create jobs
         basedir = os.path.expandvars("$CMSSW_BASE")
         print("Submitting "+str(n_jobs)+" jobs to queue "+args.queue+"...")
         for iov in range(0, n_jobs):
-            lxbatchSubmitJob(args.eosdir, os.path.abspath(args.iovmap), iov, basedir, stage_out_dir, args.queue, args.dryrun) 
+            lxbatchSubmitJob(args.eosdir, os.path.abspath(args.iovmap), iov, basedir, stage_out_dir, args.queue, proxy, args.dryrun) 
