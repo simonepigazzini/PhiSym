@@ -72,7 +72,7 @@ process.source = cms.Source("PoolSource",
 #                             ),
                             #fileNames = cms.untracked.vstring(files)
                             fileNames = cms.untracked.vstring(
-                                "root://cms-xrd-global.cern.ch//store/data/Run2017B/AlCaPhiSym/RAW/v1/000/298/996/00000/F6D4B3A9-7168-E711-B9A4-02163E019DEC.root"
+                                "root://eoscms//eos/cms/store/data/Run2016B/AlCaPhiSym/RAW/v1/000/272/798/00000/0040CAC7-8114-E611-B271-02163E0135C0.root"
                             )
                         )
 
@@ -122,30 +122,45 @@ from CondCore.DBCommon.CondDBSetup_cfi import *
 process.GlobalTag = cms.ESSource("PoolDBESSource",
                                  CondDBSetup,
                                  connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
-                                 globaltag = cms.string('92X_dataRun2_Prompt_v9'),
-                                 # Get individual tags (template)
+                                 globaltag = cms.string('80X_dataRun2_2016LegacyRepro_Candidate_v2'),
                                  toGet = cms.VPSet(
-                                     cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
-                                              tag = cms.string("EcalADCToGeVConstant_plus_2.4prct_in_EE"),
-                                              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                     cms.PSet(record = cms.string("EcalPedestalsRcd"),
+                                              tag = cms.string("EcalPedestals_timestamp_2016"),
+                                              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
                                           ),
-                                     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
-                                              tag = cms.string("EcalIntercalibConstants_2017_2015_at_high_eta"),
-                                              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
-                                          ),
-                                     # cms.PSet(record = cms.string("EcalPedestalsRcd"),
-                                     #          tag = cms.string("EcalPedestals_Legacy2017_time_v1"),
-                                     #          connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
-                                     #      ),
                                      cms.PSet(
-                                         record = cms.string('EcalLaserAPDPNRatiosRcd'),
-                                         tag = cms.string('EcalLaserAPDPNRatios_offline_2017pp_v4_for_tests'),
-                                         connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS')
+                                         record = cms.string('EcalLaserAlphasRcd'),
+                                         tag = cms.string('EcalLaserAlphas_EB_1.52Russian_1.5Chinese'),
+                                         connect = cms.string('frontier://FrontierPrep/CMS_CONDITIONS')
                                      ),
-                                     cms.PSet(record = cms.string("EcalPulseShapesRcd"),
-                                              tag = cms.string("EcalPulseShapes_October2017_rereco_v1"),
-                                              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                     cms.PSet(record = cms.string("EcalLinearCorrectionsRcd"),
+                                              tag = cms.string("EcalLinearCorrections_from2011_offline"),
+                                              connect = cms.string("frontier://FrontierPrep/CMS_CONDITIONS"),
                                           ),
+                                 #     globaltag = cms.string('92X_dataRun2_Prompt_v9'),
+                                 # # Get individual tags (template)
+                                 # toGet = cms.VPSet(
+                                 #     cms.PSet(record = cms.string("EcalADCToGeVConstantRcd"),
+                                 #              tag = cms.string("EcalADCToGeVConstant_plus_2.4prct_in_EE"),
+                                 #              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                 #          ),
+                                 #     cms.PSet(record = cms.string("EcalIntercalibConstantsRcd"),
+                                 #              tag = cms.string("EcalIntercalibConstants_2017_2015_at_high_eta"),
+                                 #              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                 #          ),
+                                 #     # cms.PSet(record = cms.string("EcalPedestalsRcd"),
+                                 #     #          tag = cms.string("EcalPedestals_Legacy2017_time_v1"),
+                                 #     #          connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                 #     #      ),
+                                 #     cms.PSet(
+                                 #         record = cms.string('EcalLaserAPDPNRatiosRcd'),
+                                 #         tag = cms.string('EcalLaserAPDPNRatios_offline_2017pp_v4_for_tests'),
+                                 #         connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS')
+                                 #     ),
+                                 #     cms.PSet(record = cms.string("EcalPulseShapesRcd"),
+                                 #              tag = cms.string("EcalPulseShapes_October2017_rereco_v1"),
+                                 #              connect = cms.string("frontier://FrontierProd/CMS_CONDITIONS"),
+                                 #     ),
                                  )
 )
 
