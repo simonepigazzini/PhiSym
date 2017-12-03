@@ -46,10 +46,10 @@ void MakeHistoryTreesEB(std::vector<INT> eb_iovs, std::vector<INT> eb_even_iovs,
             eb_ratio->mean_bs_z[iV-ref] = eb_iovs[iV]->mean_bs_z; 
             eb_ratio->mean_bs_sigmaz[iV-ref] = eb_iovs[iV]->mean_bs_sigmaz; 
             eb_ratio->ic_ratio_abs[iV-ref] = eb_iovs[iV]->ic_ch/eb_iovs[ref]->ic_ch; 
-            eb_ratio->ic_ratio_rel[iV-ref] = eb_iovs[iV]->ic_ch/eb_iovs[iV-1]->ic_ch; 
+            eb_ratio->ic_ratio_rel[iV-ref] = eb_iovs[iV]->ic_ch/eb_iovs[iV==0?0:iV-1]->ic_ch; 
             eb_ratio->ic_precision[iV-ref] = eb_even_iovs[iV]->ic_ch/eb_odd_iovs[iV]->ic_ch; 
             eb_ratio->k_ratio_abs[iV-ref] = eb_iovs[iV]->k_ch/eb_iovs[ref]->k_ch; 
-            eb_ratio->k_ratio_rel[iV-ref] = eb_iovs[iV]->k_ch/eb_iovs[iV-1]->k_ch; 
+            eb_ratio->k_ratio_rel[iV-ref] = eb_iovs[iV]->k_ch/eb_iovs[iV==0?0:iV-1]->k_ch; 
             eb_ratio->mean_et_ratio[iV-ref] = (eb_iovs[iV]->rec_hit->GetSumEt()/eb_iovs[iV]->rec_hit->GetNhits())/(eb_iovs[ref]->rec_hit->GetSumEt()/eb_iovs[ref]->rec_hit->GetNhits()); 
             eb_ratio->eflow_pn_abs[iV-ref] = 1+((eb_iovs[iV]->rec_hit->GetSumEt()/etSumPN[eb_ratio->pn][iV])/(eb_iovs[ref]->rec_hit->GetSumEt()/etSumPN[eb_ratio->pn][ref])-1)/eb_iovs[iV]->k_ch; 
             eb_ratio->eflow_abs[iV-ref] = 1+((eb_iovs[iV]->rec_hit->GetSumEt()/etSumEB[iV])/(eb_iovs[ref]->rec_hit->GetSumEt()/etSumEB[ref])-1)/eb_iovs[iV]->k_ch; 
@@ -94,10 +94,10 @@ void MakeHistoryTreesEE(std::vector<INT> ee_iovs, std::vector<INT> ee_even_iovs,
             ee_ratio->mean_bs_z[iV-ref] = ee_iovs[iV]->mean_bs_z; 
             ee_ratio->mean_bs_sigmaz[iV-ref] = ee_iovs[iV]->mean_bs_sigmaz; 
             ee_ratio->ic_ratio_abs[iV-ref] = ee_iovs[iV]->ic_ch/ee_iovs[ref]->ic_ch; 
-            ee_ratio->ic_ratio_rel[iV-ref] = ee_iovs[iV]->ic_ch/ee_iovs[iV-1]->ic_ch; 
+            ee_ratio->ic_ratio_rel[iV-ref] = ee_iovs[iV]->ic_ch/ee_iovs[iV==0?0:iV-1]->ic_ch; 
             ee_ratio->ic_precision[iV-ref] = ee_even_iovs[iV]->ic_ch/ee_odd_iovs[iV]->ic_ch;   
             ee_ratio->k_ratio_abs[iV-ref] = ee_iovs[iV]->k_ch/ee_iovs[ref]->k_ch; 
-            ee_ratio->k_ratio_rel[iV-ref] = ee_iovs[iV]->k_ch/ee_iovs[iV-1]->k_ch; 
+            ee_ratio->k_ratio_rel[iV-ref] = ee_iovs[iV]->k_ch/ee_iovs[iV==0?0:iV-1]->k_ch; 
             ee_ratio->eflow_abs[iV-ref] = 1+((ee_iovs[iV]->rec_hit->GetSumEt()/etSumEB[iV])/(ee_iovs[ref]->rec_hit->GetSumEt()/etSumEB[ref])-1)/ee_iovs[iV]->k_ch; 
             ee_ratio->eflow_norm[iV-ref] = 1+((ee_iovs[iV]->rec_hit->GetSumEt()/ee_iovs[iV]->eflow_norm)/(ee_iovs[ref]->rec_hit->GetSumEt()/ee_iovs[ref]->eflow_norm)-1)/ee_iovs[iV]->k_ch; 
             ee_ratio->lc[iV-ref] = ee_iovs[iV]->rec_hit->GetNhits()>0 ? ee_iovs[iV]->rec_hit->GetLCSum()/ee_iovs[iV]->rec_hit->GetNhits() : 0;
