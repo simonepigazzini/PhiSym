@@ -100,7 +100,8 @@ private:
     bool makeSpectraTreeEB_;
     bool makeSpectraTreeEE_;
     EBTree outEBTree_;
-    EETree outEETree_;    
+    EETree outEETree_;
+    vector<unsigned int> eventsInBX_;
     edm::Service<TFileService> fs_;
 };
 
@@ -129,7 +130,7 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     produces<PhiSymInfoCollection, edm::InLumi>();
     produces<PhiSymRecHitCollection, edm::InLumi>("EB");
     produces<PhiSymRecHitCollection, edm::InLumi>("EE");
-
+    
     //---create spectra output file
     if(makeSpectraTreeEB_)
     {
@@ -206,11 +207,16 @@ void PhiSymProducer::beginLuminosityBlock(edm::LuminosityBlock const& lumi, edm:
     //---reset the RecHit and LumiInfo collection
     if(nLumis_ == 0)
     {
+        //---The max number of BXs is 3560 (more or less). Set all BX counters to zero.
+        //   NOTE: one additional BX is added in the json to minimize the lines of code. 
+        eventsInBX_.clear();
+        eventsInBX_.resize(3560, 0);
         lumiInfo_ = std::make_unique<PhiSymInfoCollection>();
         lumiInfo_->push_back(PhiSymInfo());
         lumiInfo_->back().SetStartLumi(lumi);
         recHitCollEB_ = std::make_unique<PhiSymRecHitCollection>();
         recHitCollEE_ = std::make_unique<PhiSymRecHitCollection>();
+        
 	//---get the ecal geometry
         edm::ESHandle<CaloGeometry> geoHandle;
         setup.get<CaloGeometryRecord>().get(geoHandle);
@@ -271,13 +277,26 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
         else
             outLSInfoJson_ << "," << endl;
 
+        //---LS info json:
+        //   key : LS time
+        //   values :
+        //            - run
+        //            - lumi
+        //            - # hits in EB
+        //            - # events
+        //            - BS mean Z
+        //            - array of 3561 values: # events in each BX
+        //   NOTE: this piece of code is ok only for nLumis==1
         outLSInfoJson_ << "\"" << lumi.luminosityBlockAuxiliary().beginTime().unixTime() << "\" : " 
                        << "["
                        << lumiInfo_->back().getStartLumi().run() << ","
                        << lumiInfo_->back().getStartLumi().luminosityBlock() << ","
                        << lumiInfo_->back().GetTotHitsEB() << ","
-                       << lumiInfo_->back().GetNEvents() 
-                       << "]";
+                       << lumiInfo_->back().GetNEvents() << ","
+                       << lumiInfo_->back().GetMean('Z') << ",[";
+        for(auto& eBX : eventsInBX_)
+            outLSInfoJson_ << eBX << ",";
+        outLSInfoJson_ << "0]]";
         
         lumi.put(std::move(lumiInfo_));
         lumi.put(std::move(recHitCollEB_), "EB");
@@ -291,6 +310,13 @@ void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
     uint64_t totHitsEB=0;
     uint64_t totHitsEE=0;
 
+    //---get BX number and increment counter
+    //   NOTE: in principle one should check for iBX == -1 (-> invalid BX)
+    //         but this should have already been filtered by HLT (?).
+    //         No check is performed to save time
+    auto iBX = event.eventAuxiliary().bunchCrossing();
+    ++eventsInBX_[iBX]; 
+    
     //---get recHits collections 
     event.getByToken(ebToken_, barrelRecHitsHandle_);  
     event.getByToken(eeToken_, endcapRecHitsHandle_);

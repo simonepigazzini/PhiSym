@@ -3,7 +3,7 @@
 dump=""
 for run in `echo ${1} | tr ',' ' '`
 do
-    dump+=`brilcalc lumi -r ${run} --byls -u /nb | cut -d '|' -f 2,3,8,9 | sed -r '1,4 d; s:\|::g; s/:[0-9]+//g; /\+-----/d; s:^ ::g; s: {2,}: :g' | awk '(NF>3){print $0}'`
+    dump+=`brilcalc lumi --normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_PHYSICS.json -r ${run} --byls -u /nb | cut -d '|' -f 2,3,8,9 | sed -r '1,4 d; s:\|::g; s/:[0-9]+//g; /\+-----/d; s:^ ::g; s: {2,}: :g' | awk '(NF>3){print $0}'`
 done
 
 echo "{"

@@ -7,7 +7,7 @@ process = cms.Process("PHISYMstep2")
 process.load('FWCore/MessageService/MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 
-process.load('Configuration.Geometry.GeometryExtended2015Reco_cff')
+process.load('Configuration.Geometry.GeometryExtended2017Reco_cff')
 
 # skip bad events
 process.options = cms.untracked.PSet(
@@ -20,8 +20,9 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '80X_dataRun2_2016LegacyRepro_C
 
 # Input source
 process.source = cms.Source("PoolSource",
+                            processingMode = cms.untracked.string("RunsAndLumis"),
                             fileNames = cms.untracked.vstring(
-                                "root://cms-xrd-global.cern.ch//store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_8_0_17-multifit-80X_dataRun2_2016LegacyRepro_Candidate_v2-Run2016F_legacy_v3/170323_085418/0000/phisym_multifit_1lumis_1.root"
+                                "/store/group/dpg_ecal/alca_ecalcalib/phiSymmetry/AlCaPhiSym/crab_PHISYM-CMSSW_9_0_3-weights-90X_dataRun2_Prompt_v3-Comm2017_v1/170515_113632/0000/phisym_weights_1lumis_100.root"
                             )
 )                                
 process.source.skipBadFiles = cms.untracked.bool(True)

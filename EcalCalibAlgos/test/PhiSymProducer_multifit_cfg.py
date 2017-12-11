@@ -60,21 +60,22 @@ for dataset in options.datasets:
     str_files, err = lsCmd.communicate()
     files.extend(['root://cms-xrd-global.cern.ch/'+ifile for ifile in str_files.split("\n")])
     files.pop()
-    if options.debug:
-        for ifile in files:
-            print(ifile)
 
+for ifile in options.inputFiles:
+    files.append(ifile)
+
+if options.debug:
+    for ifile in files:
+        print(ifile)
+    
 process.source = cms.Source("PoolSource",
 #                             inputCommands = cms.untracked.vstring(
 #                                 'keep *',
 #                                 'drop *_hltEcalDigis_*_*',
 #                                 'drop *_hltTriggerSummaryAOD_*_*'
 #                             ),
-                            #fileNames = cms.untracked.vstring(files)
-                            fileNames = cms.untracked.vstring(
-                                "root://eoscms//eos/cms/store/data/Run2016B/AlCaPhiSym/RAW/v1/000/272/798/00000/0040CAC7-8114-E611-B271-02163E0135C0.root"
-                            )
-                        )
+                            fileNames = cms.untracked.vstring(files)
+)
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
