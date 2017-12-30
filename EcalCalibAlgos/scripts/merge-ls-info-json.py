@@ -44,7 +44,7 @@ if __name__ == "__main__":
         if options.debug:
             print("List of runs read from: "+options.dataset, runs_string)
         cmd_pu = subprocess.Popen(
-            ['${CMSSW_BASE}/src/PhiSym/EcalCalibAlgos/scripts/get_pu_info.sh '+runs_string+' > /tmp/$USER/pu_list.json'],
+            ['${CMSSW_BASE}/src/PhiSym/EcalCalibAlgos/scripts/get_pu_bybx_info.sh '+runs_string+' /tmp/$USER/pu_list.json'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         pu_string, err_pu = cmd_pu.communicate()
         pu_file_str = '/tmp/$USER/pu_list.json'
@@ -61,8 +61,12 @@ if __name__ == "__main__":
                 run_num = str(info[0])
                 lumi_num = str(info[1])
                 if run_num in pu_data.keys() and lumi_num in pu_data[run_num].keys():
-                    if float(pu_data[run_num][lumi_num]) > 0:
-                        info[3] = info[3]*float(pu_data[run_num][lumi_num])
+                    if float(pu_data[run_num][lumi_num][2]) > 0:
+                        bx_norm = 0.
+                        for i in range(0, len(info[-1])):
+                            bx_norm = bx_norm + pu_data[run_num][lumi_num][4+i]*80*1000/11246*info[-1][i]
+                        info[3] = bx_norm
+                        info[-1] = float(pu_data[run_num][lumi_num][1])
                         data[time] = info
 
     merged_json = eosdir+'/ls_info.json' if options.output == "" else options.output
