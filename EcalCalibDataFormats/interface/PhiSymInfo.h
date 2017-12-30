@@ -1,5 +1,5 @@
-#ifndef DATAFORMAT_PHISYMINFO_H
-#define DATAFORMAT_PHISYMINFO_H
+#ifndef DATAFORMAT_PHISYM_INFO_H
+#define DATAFORMAT_PHISYM_INFO_H
 
 #include <vector>
 #include <map>

@@ -36,7 +36,7 @@
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
-#include "PhiSym/EcalCalibDataFormats/interface/PhiSymFile.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymSpectraFile.h"
 
 using namespace std;
 
@@ -89,7 +89,7 @@ private:
     float                          etCutsEB_[kNRingsEB];
     float                          etCutsEE_[kNRingsEE];
     float                          eThresholdsEE_[kNRingsEE];
-
+    
     //---output edm
     unique_ptr<PhiSymInfoCollection>   lumiInfo_;
     unique_ptr<PhiSymRecHitCollection> recHitCollEB_;
@@ -99,8 +99,8 @@ private:
     //---output plain tree
     bool makeSpectraTreeEB_;
     bool makeSpectraTreeEE_;
-    EBTree outEBTree_;
-    EETree outEETree_;
+    EBSpectraTree outEBTree_;
+    EESpectraTree outEETree_;
     vector<unsigned int> eventsInBX_;
     edm::Service<TFileService> fs_;
 };
@@ -134,12 +134,12 @@ PhiSymProducer::PhiSymProducer(const edm::ParameterSet& pSet):
     //---create spectra output file
     if(makeSpectraTreeEB_)
     {
-        outEBTree_ = EBTree("eb", "EB sprectra");
+        outEBTree_ = EBSpectraTree("eb", "EB sprectra");
         outEBTree_.GetTTreePtr()->SetDirectory(fs_->file().GetDirectory(0));
     }
     if(makeSpectraTreeEE_)
     {
-        outEETree_ = EETree("ee", "EE sprectra");
+        outEETree_ = EESpectraTree("ee", "EE sprectra");
         outEETree_.GetTTreePtr()->SetDirectory(fs_->file().GetDirectory(0));        
     }
 }
@@ -306,7 +306,7 @@ void PhiSymProducer::endLuminosityBlockProduce(edm::LuminosityBlock& lumi, edm::
 }
 
 void PhiSymProducer::produce(edm::Event& event, const edm::EventSetup& setup)
-{
+{    
     uint64_t totHitsEB=0;
     uint64_t totHitsEE=0;
 

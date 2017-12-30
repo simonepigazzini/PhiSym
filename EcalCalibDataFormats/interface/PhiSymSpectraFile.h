@@ -1,5 +1,5 @@
-#ifndef PHISYMFILE_H
-#define PHISYMFILE_H
+#ifndef PHISYM_SPECTRAFILE_H
+#define PHISYM_SPECTRAFILE_H
 
 #include <string>
 #include <vector>
@@ -13,7 +13,7 @@ using namespace std;
 
 //**********EB TREE***********************************************************************
 
-#define DYNAMIC_TREE_NAME EBTree
+#define DYNAMIC_TREE_NAME EBSpectraTree
 //---create branches
 #define DATA_TABLE                              \
     DATA(unsigned int, run)                     \
@@ -26,7 +26,7 @@ using namespace std;
 
 //**********EE TREE***********************************************************************
 
-#define DYNAMIC_TREE_NAME EETree
+#define DYNAMIC_TREE_NAME EESpectraTree
 //---create branches
 #define DATA_TABLE                             \
     DATA(unsigned int, run)                    \

@@ -26,7 +26,7 @@
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
-#include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymCalibrationFile.h"
 #include "PhiSym/EcalCalibAlgos/interface/utils.h"
 
 using namespace std;
@@ -100,7 +100,7 @@ float  icAbsChMeanEE_[kNRingsEE];
 bool kFactorsComputed_;
 
 //---outputs
-auto_ptr<CalibrationFile> outFile_;
+auto_ptr<PhiSymCalibrationFile> outFile_;
 
 //**********FUNCTIONS*********************************************************************
 //----------compute the ring-dependent k-factors for both EB and EE-----------------------
@@ -574,7 +574,7 @@ int main( int argc, char *argv[] )
     {
         //---open the next file
         TFile* file = TFile::Open(fileName.c_str());
-        CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
+        PhiSymCrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
 
         //---assign file to the correct IOVs 
         //---(requires only that the file last run is > the IOV first run)
@@ -674,7 +674,7 @@ int main( int argc, char *argv[] )
                                   to_string(IOVBegins[iIOV].run)+"-"+to_string(IOVBegins[iIOV].lumi)+"_"+
                                   to_string(IOVEnds[iIOV].run)+"-"+to_string(IOVEnds[iIOV].lumi)+".root").c_str(),
                                  "RECREATE");
-        outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(out));        
+        outFile_ = auto_ptr<PhiSymCalibrationFile>(new PhiSymCalibrationFile(out));        
         outFile_->eb_xstals.avg_time   = IOVTimes[iIOV];
         outFile_->ee_xstals.avg_time   = IOVTimes[iIOV];
         outFile_->eb_xstals.iov_flag   = IOVFlags[iIOV];
@@ -699,12 +699,12 @@ int main( int argc, char *argv[] )
         {
             //---open the next file
             TFile* file = TFile::Open(fileName.c_str());
-            CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
-            CrystalsEBTree ebTreeEven((TTree*)file->Get("eb_even"));
-            CrystalsEBTree ebTreeOdd((TTree*)file->Get("eb_odd"));
-            CrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
-            CrystalsEETree eeTreeEven((TTree*)file->Get("ee_even"));
-            CrystalsEETree eeTreeOdd((TTree*)file->Get("ee_odd"));
+            PhiSymCrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
+            PhiSymCrystalsEBTree ebTreeEven((TTree*)file->Get("eb_even"));
+            PhiSymCrystalsEBTree ebTreeOdd((TTree*)file->Get("eb_odd"));
+            PhiSymCrystalsEETree eeTree((TTree*)file->Get("ee_xstals"));
+            PhiSymCrystalsEETree eeTreeEven((TTree*)file->Get("ee_even"));
+            PhiSymCrystalsEETree eeTreeOdd((TTree*)file->Get("ee_odd"));
 
             cout << "IOV: " << iIOV << endl;
             cout << "Reading file: " << fileName.c_str() << " / blk: " << ebTree.block << "..." << endl;

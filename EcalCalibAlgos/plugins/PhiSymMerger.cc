@@ -38,7 +38,7 @@
 #include "PhiSym/EcalCalibAlgos/interface/utils.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymInfo.h"
-#include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymCalibrationFile.h"
 
 using namespace std;
 
@@ -95,7 +95,7 @@ private:
     PhiSymRecHit eeXstalsOdd_[EEDetId::kSizeForDenseIndexing];
 
     //---outputs
-    auto_ptr<CalibrationFile> outFile_;
+    auto_ptr<PhiSymCalibrationFile> outFile_;
     edm::Service<TFileService> fs_;
     bool firstRound_;
 };
@@ -154,7 +154,7 @@ void PhiSymMerger::beginJob()
     }
     
     //---output file
-    outFile_ = auto_ptr<CalibrationFile>(new CalibrationFile(&fs_->file()));
+    outFile_ = auto_ptr<PhiSymCalibrationFile>(new PhiSymCalibrationFile(&fs_->file()));
 }
 
 void PhiSymMerger::endJob()
@@ -173,12 +173,12 @@ void PhiSymMerger::endJob()
     }
     //---finalize outputs
     outFile_->cd();
-    outFile_->eb_xstals.Write("eb_xstals");
-    outFile_->eb_xstals_even.Write("eb_even");
-    outFile_->eb_xstals_odd.Write("eb_odd");
-    outFile_->ee_xstals.Write("ee_xstals");
-    outFile_->ee_xstals_even.Write("ee_even");
-    outFile_->ee_xstals_odd.Write("ee_odd");
+    outFile_->eb_xstals.GetTTreePtr()->Write("eb_xstals");
+    outFile_->eb_xstals_even.GetTTreePtr()->Write("eb_even");
+    outFile_->eb_xstals_odd.GetTTreePtr()->Write("eb_odd");
+    outFile_->ee_xstals.GetTTreePtr()->Write("ee_xstals");
+    outFile_->ee_xstals_even.GetTTreePtr()->Write("ee_even");
+    outFile_->ee_xstals_odd.GetTTreePtr()->Write("ee_odd");
 }
 
 void PhiSymMerger::endRun(edm::Run const& run, edm::EventSetup const& setup)
@@ -347,17 +347,17 @@ void PhiSymMerger::FillOutput()
         outFile_->eb_xstals.rec_hit = &ebXstals_[index];
         outFile_->eb_xstals.ieta = ebXstal.ieta();
         outFile_->eb_xstals.iphi = ebXstal.iphi();
-        outFile_->eb_xstals.Fill();
+        outFile_->eb_xstals.GetTTreePtr()->Fill();
         //---even lumis (or block of lumis)
         outFile_->eb_xstals_even.rec_hit = &ebXstalsEven_[index];
         outFile_->eb_xstals_even.ieta = ebXstal.ieta();
         outFile_->eb_xstals_even.iphi = ebXstal.iphi();
-        outFile_->eb_xstals_even.Fill();
+        outFile_->eb_xstals_even.GetTTreePtr()->Fill();
         //---odd lumis (or block of lumis)
         outFile_->eb_xstals_odd.rec_hit = &ebXstalsOdd_[index];
         outFile_->eb_xstals_odd.ieta = ebXstal.ieta();
         outFile_->eb_xstals_odd.iphi = ebXstal.iphi();
-        outFile_->eb_xstals_odd.Fill();
+        outFile_->eb_xstals_odd.GetTTreePtr()->Fill();
         
         //---reset channel status and sum
         ebXstals_[index].Reset();
@@ -375,19 +375,19 @@ void PhiSymMerger::FillOutput()
         outFile_->ee_xstals.iring = currentRing<kNRingsEE/2 ? currentRing-kNRingsEE/2 : currentRing-kNRingsEE/2 + 1;
         outFile_->ee_xstals.ix = eeXstal.ix();
         outFile_->ee_xstals.iy = eeXstal.iy();
-        outFile_->ee_xstals.Fill();            
+        outFile_->ee_xstals.GetTTreePtr()->Fill();            
         //---even lumis (or block of lumis)
         outFile_->ee_xstals_even.rec_hit = &eeXstalsEven_[index];
         outFile_->ee_xstals_even.iring = outFile_->ee_xstals.iring;
         outFile_->ee_xstals_even.ix = eeXstal.ix();
         outFile_->ee_xstals_even.iy = eeXstal.iy();
-        outFile_->ee_xstals_even.Fill();
+        outFile_->ee_xstals_even.GetTTreePtr()->Fill();
         //---odd lumis (or block of lumis)
         outFile_->ee_xstals_odd.rec_hit = &eeXstalsOdd_[index];
         outFile_->ee_xstals_odd.iring = outFile_->ee_xstals.iring;
         outFile_->ee_xstals_odd.ix = eeXstal.ix();
         outFile_->ee_xstals_odd.iy = eeXstal.iy();
-        outFile_->ee_xstals_odd.Fill();
+        outFile_->ee_xstals_odd.GetTTreePtr()->Fill();
 
         //---reset channel status and sum
         eeXstals_[index].Reset();

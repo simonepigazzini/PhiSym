@@ -7,9 +7,9 @@
   <class name="std::vector<PhiSymInfo>"/>
   <class name="edm::Wrapper<std::vector<PhiSymInfo> >"/>
   
-  <class name="EBTree"/>
-  <class name="EETree"/>
-  <class name="CrystalsEBTree"/>
-  <class name="CrystalsEETree"/>
-  <class name="CalibrationFile"/>
+  <class name="EBSpectraTree"/>
+  <class name="EESpectraTree"/>
+  <class name="PhiSymCrystalsEBTree"/>
+  <class name="PhiSymCrystalsEETree"/>
+  <class name="PhiSymCalibrationFile"/>
 </lcgdict>

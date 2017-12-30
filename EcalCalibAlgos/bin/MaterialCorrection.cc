@@ -25,7 +25,7 @@
 #include "Calibration/Tools/interface/EcalRingCalibrationTools.h"
 
 #include "PhiSym/EcalCalibDataFormats/interface/PhiSymRecHit.h"
-#include "PhiSym/EcalCalibDataFormats/interface/CalibrationFile.h"
+#include "PhiSym/EcalCalibDataFormats/interface/PhiSymCalibrationFile.h"
 #include "PhiSym/EcalCalibAlgos/interface/utils.h"
 
 using namespace std;
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
                                          360, 0.5, 360.5, 171, -85.5, 85.5);
         
         TFile* file = TFile::Open(inputFile.c_str(), "READ");
-        CrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
+        PhiSymCrystalsEBTree ebTree((TTree*)file->Get("eb_xstals"));
 
         for(int iPhi=1; iPhi<=360; ++iPhi)
         {
