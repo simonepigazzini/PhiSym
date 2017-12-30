@@ -296,13 +296,13 @@ void ComputeICs()
             outFile_->eb_xstals.ic_ch_err = ebICChErr_[index]/(ebRingsSumEt_[currentRing][0]*outFile_->eb_xstals.k_ch);
             outFile_->eb_xstals.ic_ch_err = outFile_->eb_xstals.ic_ch_err/pow(outFile_->eb_xstals.ic_ch, 2);
             outFile_->eb_xstals.ic_err_sys = ebOldICsErr_[currentRing][ebXstal.iphi()];
-            outFile_->eb_xstals.Fill();
+            outFile_->eb_xstals.GetTTreePtr()->Fill();
             //---even lumis tree
             outFile_->eb_xstals_even.ic_ch = icChEvenEB[index]/icChEvenMeanEB_[currentRing];
-            outFile_->eb_xstals_even.Fill();
+            outFile_->eb_xstals_even.GetTTreePtr()->Fill();
             //---odd lumis tree
             outFile_->eb_xstals_odd.ic_ch = icChOddEB[index]/icChOddMeanEB_[currentRing];
-            outFile_->eb_xstals_odd.Fill();
+            outFile_->eb_xstals_odd.GetTTreePtr()->Fill();
         }
     }
     
@@ -378,13 +378,13 @@ void ComputeICs()
             outFile_->ee_xstals.ic_ch_err = eeICChErr_[index]/(eeRingsSumEt_[currentRing][0]*outFile_->ee_xstals.k_ch);
             outFile_->ee_xstals.ic_ch_err = outFile_->ee_xstals.ic_ch_err/pow(outFile_->ee_xstals.ic_ch, 2);
             outFile_->ee_xstals.ic_err_sys = eeOldICsErr_[eeXstal.ix()][eeXstal.iy()][eeXstal.zside()<0 ? 0 : 1];
-            outFile_->ee_xstals.Fill();
+            outFile_->ee_xstals.GetTTreePtr()->Fill();
             //---even lumis tree
             outFile_->ee_xstals_even.ic_ch = icChEvenEE[index]/icChEvenMeanEE_[currentRing];
-            outFile_->ee_xstals_even.Fill();
+            outFile_->ee_xstals_even.GetTTreePtr()->Fill();
             //---odd lumis tree
             outFile_->ee_xstals_odd.ic_ch = icChOddEE[index]/icChOddMeanEE_[currentRing];
-            outFile_->ee_xstals_odd.Fill();
+            outFile_->ee_xstals_odd.GetTTreePtr()->Fill();
         }
     }
 }
@@ -513,7 +513,7 @@ int main( int argc, char *argv[] )
         
     //---get IOV boundaries    
     vector<PhiSymRunLumi> IOVBegins, IOVEnds;
-    vector<double> IOVTimes, IOVNormalization;
+    vector<double> IOVTimes, IOVNormalization, IOVIntegratedLumi;
     vector<char> IOVFlags;
     vector<string> maps = IOVBounds.getParameter<vector<string> >("IOVMaps");
     int startingIOV = IOVBounds.getParameter<int>("startingIOV");
@@ -541,8 +541,9 @@ int main( int argc, char *argv[] )
             char flag;
             int firstRun, lastRun;
             int firstLumi, lastLumi;
-            double avg_time=0, norm=0;
+            double avg_time=0, intLumi=0, norm=0;
             map->SetBranchAddress("flag", &flag);
+            map->SetBranchAddress("intLumi", &intLumi);            
             map->SetBranchAddress("norm", &norm);            
             map->SetBranchAddress("firstRun", &firstRun);
             map->SetBranchAddress("lastRun", &lastRun);
@@ -555,7 +556,8 @@ int main( int argc, char *argv[] )
                 IOVBegins.push_back(PhiSymRunLumi(firstRun, firstLumi));
                 IOVEnds.push_back(PhiSymRunLumi(lastRun, lastLumi));
                 IOVTimes.push_back(avg_time);
-                IOVNormalization.push_back(norm);
+                IOVIntegratedLumi.push_back(intLumi);
+                IOVNormalization.push_back(norm);                
                 IOVFlags.push_back(flag);
             }
             file->Close();
@@ -579,7 +581,7 @@ int main( int argc, char *argv[] )
         //ebTree.NextEntry();
         for(int iIOV=startingIOV; iIOV<startingIOV+nIOVs; ++iIOV)
         {
-            for(int iBlk=0; iBlk<nIOVs; ++iBlk)
+            for(int iBlk=0; iBlk<ebTree.GetTTreePtr()->GetEntriesFast()/61200; ++iBlk)
             {
                 if(ebTree.NextEntry(61200*iBlk+1))
                 {
@@ -677,6 +679,8 @@ int main( int argc, char *argv[] )
         outFile_->ee_xstals.avg_time   = IOVTimes[iIOV];
         outFile_->eb_xstals.iov_flag   = IOVFlags[iIOV];
         outFile_->ee_xstals.iov_flag   = IOVFlags[iIOV];
+        outFile_->eb_xstals.eflow_norm = IOVIntegratedLumi[iIOV];
+        outFile_->ee_xstals.eflow_norm = IOVIntegratedLumi[iIOV];
         outFile_->eb_xstals.eflow_norm = IOVNormalization[iIOV];
         outFile_->ee_xstals.eflow_norm = IOVNormalization[iIOV];
 
@@ -927,12 +931,12 @@ int main( int argc, char *argv[] )
 
         //---finalize outputs
         outFile_->cd();
-        outFile_->eb_xstals.Write("eb_xstals");
-        outFile_->eb_xstals_even.Write("eb_even");
-        outFile_->eb_xstals_odd.Write("eb_odd");
-        outFile_->ee_xstals.Write("ee_xstals");
-        outFile_->ee_xstals_even.Write("ee_even");
-        outFile_->ee_xstals_odd.Write("ee_odd");
+        outFile_->eb_xstals.GetTTreePtr()->Write("eb_xstals");
+        outFile_->eb_xstals_even.GetTTreePtr()->Write("eb_even");
+        outFile_->eb_xstals_odd.GetTTreePtr()->Write("eb_odd");
+        outFile_->ee_xstals.GetTTreePtr()->Write("ee_xstals");
+        outFile_->ee_xstals_even.GetTTreePtr()->Write("ee_even");
+        outFile_->ee_xstals_odd.GetTTreePtr()->Write("ee_odd");
         out->Close();
     }    
 }
